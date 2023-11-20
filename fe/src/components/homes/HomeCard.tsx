@@ -25,26 +25,22 @@ const HomeCard: React.FC<HomeCardProps> = ({ item: { id, cover, name, rating, ti
           <img src={cover} alt='' />
         </div>
         <div className='content flex'>
-          <div className='details row'>
+          <div className='row'>
             <h1>{name}</h1>
             <div className='rating flex'>
+              {/* Modidy rating here */}
               <div className='rate'>
                 <i className='fas fa-star'></i>
                 <i className='fa fa-star'></i>
                 <i className='fa fa-star'></i>
                 <i className='fa fa-star'></i>
-                <i className='fa fa-star-half'></i>
+                <i className='fa fa-star'></i>
               </div>
-              <label>{rating}(Imdb)</label>
-              <span>GP</span>
+              <label>{rating}(rate count)</label>
               <label>{time}</label>
             </div>
             <p>{desc}</p>
             <div className='cast'>
-              <h4>
-                <span>Starring </span>
-                {starring}
-              </h4>
               <h4>
                 <span>Genres </span>
                 {genres}
@@ -54,18 +50,16 @@ const HomeCard: React.FC<HomeCardProps> = ({ item: { id, cover, name, rating, ti
                 {tags}
               </h4>
             </div>
-            <button className='primary-btn'>
-              <i className='fas fa-play'></i> PLAY NOW
-            </button>
+            
           </div>
           <div className='palyButton row'>
-            <Link to={`/singlepage/${id}`}>
+            <Link to={`/singlepage/${id}`} className='custom-text-deco'>
               <button>
                 <div className='img'>
                   <img src='./images/play-button.png' alt='' />
                   <img src='./images/play.png' className='change' alt='' />
                 </div>
-                WATCH TRAILER
+                PLAY NOW
               </button>
             </Link>
           </div>

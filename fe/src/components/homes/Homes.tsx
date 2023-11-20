@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './home.css';
+import './home.scss';
 import { homeData } from '../../dummyData';
 import Home from './Home';
 
@@ -10,8 +10,9 @@ const Homes: React.FC = () => {
     <>
       <section className='home'>
         <Home items={items} />
+        <div> some thing</div>
       </section>
-      <div className='mragin'></div>
+      <div className='custom-margin'></div>
     </>
   );
 };

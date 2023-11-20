@@ -10,13 +10,13 @@ const HomePage: React.FC = () => {
   const [rec, setRec] = useState(recommended);
 
   return (
-    <>
+    <div>
       <Homes />
       <Upcomming items={items} title='Upcoming Movies' />
       <Upcomming items={item} title='Latest Movies' />
-      <Trending />
+      {/* <Trending /> */}
       <Upcomming items={rec} title='Recommended Movies' />
-    </>
+    </div>
   );
 };
 
