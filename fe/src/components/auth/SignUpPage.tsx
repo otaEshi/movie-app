@@ -5,9 +5,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ISignUpPayload } from '../../types/auth';
 import { signUpRequest } from './authApi';
 
-function SignUpPage() {
+function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
   const [fullname, setfullname] = useState<string>('');
   const [email, setEmail] = useState<string>('');
+  const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [fullnameError, setfullnameError] = useState<string>('');
@@ -28,9 +29,8 @@ function SignUpPage() {
       setfullname(value);
       setfullnameError('');
     }
-    if (id === 'email') {
-      setEmail(value);
-      setEmailError('');
+    if (id === 'username') {
+      setUsername(value);
     }
     if (id === 'password') {
       setPassword(value);
@@ -47,14 +47,14 @@ function SignUpPage() {
       setfullnameError('This field must not be blank.');
       return;
     }
-    if (email === '') {
-      setEmailError('This field must not be blank.');
-      return;
-    }
-    if (!emailRegex.test(email)) {
-      setEmailError('Please enter a valid email address.');
-      return;
-    }
+    // if (email === '') {
+    //   setEmailError('This field must not be blank.');
+    //   return;
+    // }
+    // if (!emailRegex.test(email)) {
+    //   setEmailError('Please enter a valid email address.');
+    //   return;
+    // }
     if (password === '') {
       setPasswordError('This field must not be blank.');
       return;
@@ -78,21 +78,27 @@ function SignUpPage() {
 
     // Dispatch sign up request
     const payload: ISignUpPayload = {
-      fullname: fullname,
-      email: email,
+      name: fullname,
+      email: "",
+      username: username,
       password: password,
+      day_of_birth: 0,
+      month_of_birth: 0,
+      year_of_birth: 0,
     };
     dispatch<any>(signUpRequest(payload))
       .then((result: any) => {
         if (result.payload?.response?.request?.response) {
           const response = JSON.parse(result.payload.response.request.response);
+          console.log(response)
           const errorMessage = response.detail;
+
           console.log(errorMessage);
           if (errorMessage === "User is existed") {
             setEmailError('User Exists');
           }
         } else {
-          setShowSuccessMessage(!showSuccessMessage);
+          // setShowSuccessMessage(!showSuccessMessage);
         }
       });
     // console.log("test: ", showSuccessMessage)
@@ -125,12 +131,12 @@ function SignUpPage() {
             <div className='custom-error-text-wrapper'>{fullnameError && <div className="text-danger small custom-error-text">{fullnameError}</div>}</div>
             <div>
               <input
-                type="email"
-                id="email"
+                type="text"
+                id="username"
                 className="custom-input"
-                value={email || ''}
+                value={username || ''}
                 onChange={(e) => handleInputChange(e)}
-                placeholder="Email"
+                placeholder="Username"
               />
             </div>
             <div className='custom-error-text-wrapper'>{emailError && <div className="text-danger small custom-error-text">{emailError}</div>}</div>
@@ -165,11 +171,19 @@ function SignUpPage() {
                 Sign Up
               </button>
             </div>
-            <p>
-              Already have an account? <Link to='/sign_in' className='custom-nav-text' tabIndex={-1}>
-                Sign in
-              </Link>
-            </p>
+            <div>
+              <p>
+                {/* Already have an account? <Link to='/sign_in' className='custom-nav-text' tabIndex={-1}>
+                  Sign in
+                </Link> */}
+                Already have an account? <span className='custom-text-link' onClick={() => { 
+                  setOpenSignInModal(true);
+                  setOpenSignUpModal(false);
+                 }} tabIndex={-1}>
+                  Sign in
+                </span>
+              </p>
+            </div>
           </div>
         </div>
       </div>
