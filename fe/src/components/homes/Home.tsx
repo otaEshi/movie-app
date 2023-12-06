@@ -27,7 +27,7 @@ const SamplePrevArrow: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
 
 
 interface HomeProps {
-  items: Array<any>; // Update the type of `items` accordingly
+  items: Array<any>; 
 }
 
 const Home: React.FC<HomeProps> = ({ items }) => {

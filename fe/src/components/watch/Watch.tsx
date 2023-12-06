@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './style.css';
 import { useParams } from 'react-router-dom';
-import { homeData, recommended } from '../../dummyData';
+import { homeData} from '../../dummyData';
 import Upcomming from '../listFilm/ListFilm';
 
 interface Item {
@@ -34,7 +34,7 @@ const Watch: React.FC = () => {
         <>
           <section className='watch'>
             <div className='watchHeading'>
-              <h1>{item.name}</h1> <span> | {item.time} | </span> <span> HD </span>
+              <h1>{item.name} (name) </h1> <span> | {item.time} (time) </span> 
             </div>
             <div className='container'>
               <div style={{height:"600px"}}>
@@ -42,11 +42,12 @@ const Watch: React.FC = () => {
                 src={item.video}
                 height="100%" 
                 allowFullScreen
+                allow='autoplay mute'
+                
                 >
                 </iframe> 
                 <h3>Date : {item.date}</h3>
                 <p>{item.desc}</p>
-                <p>smt</p>
               </div>
               {/* <div className=''> */}
                 
@@ -54,10 +55,9 @@ const Watch: React.FC = () => {
               
             </div>
           </section>
-          {/* <Upcomming items={rec} title='Recommended Movies' /> */}
         </>
       ) : (
-        'no'
+        'not found'
       )}
     </>
   );

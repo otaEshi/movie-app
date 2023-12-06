@@ -19,7 +19,7 @@ function ViewAllPageSport() {
     const [travels, setTravels] = useState(travel);
 
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [moviesPerPage, setMoviesPerPage] = useState<number>(20); // Default value
+    const [moviesPerPage, setMoviesPerPage] = useState<number>(10); // Default value
 
     const indexOfLastItem = currentPage * moviesPerPage;
     const indexOfFirstItem = indexOfLastItem - moviesPerPage;
@@ -110,7 +110,7 @@ function ViewAllPageSport() {
                             <option value={20}>20</option>
                             <option value={50}>50</option>
                         </select>
-                        phim
+                        video
                     </label>
 
                 </div>

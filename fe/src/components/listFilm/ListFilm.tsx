@@ -11,7 +11,6 @@ interface ListFilmProps {
     id: number;
     cover: string;
     name: string;
-    time: string;
   }>;
   title: string;
   itemName: string;
@@ -61,7 +60,7 @@ const ListFilm: React.FC<ListFilmProps> = ({ items, title, itemName }) => {
     <>
       <section className='upcome pt-4'>
         <div className='container'>
-          <div className='heading flexSB'>
+          <div className='heading flexSB pt-4'>
             <h1>{title}</h1>
             <Link to={`/tags/${itemName}`}>Xem tất cả</Link>
           </div>

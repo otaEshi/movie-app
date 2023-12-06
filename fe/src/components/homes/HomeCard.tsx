@@ -16,11 +16,12 @@ interface HomeCardProps {
     genres: string;
     tags: string;
     video: string;
+    date: string;
   };
 }
 
-const HomeCard: React.FC<HomeCardProps> = ({ item: { id, cover, name, rating, time, desc, starring, genres, tags, video } }) => {
-  const [ratingStar, setRatingStar] = useState(0);
+const HomeCard: React.FC<HomeCardProps> = ({ item: { id, cover, name, rating, time, desc, starring, genres, tags, video, date } }) => {
+  const [ratingStar, setRatingStar] = useState(rating);
 
   const handleRatingChange = (newRating: number) => {
     setRatingStar(newRating);
@@ -72,6 +73,10 @@ const HomeCard: React.FC<HomeCardProps> = ({ item: { id, cover, name, rating, ti
                 <span>Thể loại: </span>
                 {tags}
               </h4>
+              <h4>
+                <span>Ngày cập nhật: </span>
+                {date}
+              </h4>
             </div>
             
           </div>
@@ -82,7 +87,7 @@ const HomeCard: React.FC<HomeCardProps> = ({ item: { id, cover, name, rating, ti
                   <img src='./images/play-button.png' alt='' />
                   <img src='./images/play.png' className='change' alt='' />
                 </div>
-                PLAY NOW
+                 
               </button>
             </Link>
           </div>

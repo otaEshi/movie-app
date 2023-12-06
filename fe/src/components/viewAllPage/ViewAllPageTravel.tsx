@@ -17,7 +17,7 @@ function ViewAllPageTravel() {
     const [travels, setTravels] = useState(travel);
 
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [moviesPerPage, setMoviesPerPage] = useState<number>(20);
+    const [moviesPerPage, setMoviesPerPage] = useState<number>(10);
 
     const indexOfLastItem = currentPage * moviesPerPage;
     const indexOfFirstItem = indexOfLastItem - moviesPerPage;
@@ -108,7 +108,7 @@ function ViewAllPageTravel() {
                             <option value={20}>20</option>
                             <option value={50}>50</option>
                         </select>
-                        phim
+                        video
                     </label>
 
                 </div>
