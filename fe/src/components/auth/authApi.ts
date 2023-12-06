@@ -2,10 +2,12 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { sendRequest } from "../../utils/sendRequest";
 import { ISignInPayload, ISignInResponse, ISignUpPayload } from "../../types/auth";
 
+const BASE_URL = 'http://localhost:8000';
+
 export const signUpRequest = createAsyncThunk<void, ISignUpPayload>(
     "api/sign-up",
     async (SignUpInfo, thunkApi) => {
-        const res  = await sendRequest('/auth/register/', {
+        const res  = await sendRequest(`${BASE_URL}/signup/`, {
             payload: SignUpInfo,
             thunkApi,
             method: 'POST',
@@ -18,10 +20,14 @@ export const signUpRequest = createAsyncThunk<void, ISignUpPayload>(
 export const signInRequest = createAsyncThunk<ISignInResponse, ISignInPayload>(
   "api/signin",
   async (signInInfo, thunkApi) => {
-    const res = await sendRequest('/auth/signin/', {
+    const res = await sendRequest(`${BASE_URL}/login/`, {
       payload: signInInfo,
       thunkApi,
       method: 'POST',
+      headers: { 
+        'accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded' 
+      },
     });
     return res;
   }

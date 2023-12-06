@@ -3,10 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import './header.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 import { Dropdown } from 'react-bootstrap';
+import Modal from '@mui/material/Modal';
+import SignInPage from '../auth/SignInPage';
+import SignUpPage from '../auth/SignUpPage';
 
 const Header = () => {
   const [Mobile, setMobile] = useState(false);
   const [search, setSearch] = useState<string>('');
+  const [openSignInModal, setOpenSignInModal] = useState<boolean>(false);
+  const [openSignUpModal, setOpenSignUpModal] = useState<boolean>(false);
 
   const navigate = useNavigate();
 
@@ -95,12 +100,32 @@ const Header = () => {
               </Dropdown.Menu>
             </Dropdown>
           ) : (
-            <button className='header-button' onClick={() => { navigate('/sign_in') }}>
+            <button className='header-button' onClick={() => { 
+              setOpenSignInModal(true);
+             }}>
               <i className="fa fa-sign-in" aria-hidden="true"></i>
             </button>
           )}
         </div>
       </div>
+
+      {/* Modals */}
+      <Modal
+        open={openSignInModal}
+        onClose={() => setOpenSignInModal(false)}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <SignInPage setOpenSignUpModal={setOpenSignUpModal} setOpenSignInModal={setOpenSignInModal}/>
+      </Modal>
+      
+      <Modal
+        open={openSignUpModal}
+        onClose={() => setOpenSignUpModal(false)}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description">
+        <SignUpPage setOpenSignUpModal={setOpenSignUpModal} setOpenSignInModal={setOpenSignInModal}/>
+      </Modal>
     </header>
   );
 };

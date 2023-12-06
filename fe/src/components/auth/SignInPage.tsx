@@ -5,8 +5,9 @@ import { ISignInPayload } from "../../types/auth";
 import { signInRequest } from "./authApi";
 import './auth.scss';
 
-function SignInPage() {
+function SignInPage({setOpenSignUpModal, setOpenSignInModal}:any) {
     const [email, setEmail] = useState<string>('');
+    const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [emailError, setEmailError] = useState<string>('');
     const [passwordError, setPasswordError] = useState<string>('');
@@ -27,9 +28,12 @@ function SignInPage() {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
-        if (id === 'email') {
-            setEmail(value);
-            setEmailError('');
+        // if (id === 'email') {
+        //     setEmail(value);
+        //     setEmailError('');
+        // }
+        if (id === 'username') {
+            setUsername(value);
         }
         if (id === 'password') {
             setPassword(value);
@@ -38,14 +42,14 @@ function SignInPage() {
     };
 
     const handleSignIn = () => {
-        if (email === '') {
-            setEmailError('This field must not be blank.');
-            return;
-        }
-        if (!emailRegex.test(email)) {
-            setEmailError('Please enter a valid email address.');
-            return;
-        }
+        // if (email === '') {
+        //     setEmailError('This field must not be blank.');
+        //     return;
+        // }
+        // if (!emailRegex.test(email)) {
+        //     setEmailError('Please enter a valid email address.');
+        //     return;
+        // }
         if (password === '') {
             setPasswordError('This field must not be blank.');
             return;
@@ -60,7 +64,7 @@ function SignInPage() {
         }
 
         const payload: ISignInPayload = {
-            email: email,
+            username: username,
             password: password
         };
 
@@ -83,12 +87,12 @@ function SignInPage() {
                         <h1 className="custom-signin-title mb-4">Sign In</h1>
                         <div>
                             <input
-                                type="email"
-                                id="email"
+                                type="text"
+                                id="username"
                                 className="custom-input"
-                                value={email || ''}
+                                value={username || ''}
                                 onChange={(e) => handleInputChange(e)}
-                                placeholder="Email"
+                                placeholder="username"
                                 onKeyDown={handleKeyDown}
                             />
                         </div>
@@ -114,9 +118,15 @@ function SignInPage() {
                                 Sign In
                             </button>
                         </div>
-                        <p>
-                            Don't have an account? <Link className='custom-nav-text' to='/sign_up' tabIndex={-1}>Sign up</Link>
-                        </p>
+                        <div>
+                            <p>
+                                {/* Don't have an account? <Link className='custom-nav-text' to='/sign_up' tabIndex={-1}>Sign up</Link> */}
+                                Don't have an account? <span className='custom-nav-text' onClick={() => {
+                                    setOpenSignInModal(false);
+                                    setOpenSignUpModal(true);
+                                }} tabIndex={-1}>Sign up</span>
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
