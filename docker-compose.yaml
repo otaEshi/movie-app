@@ -11,6 +11,6 @@ services:
     ports:
       - 3306:3306
     volumes:
-      - db_data:/home/hoangle/etc/mysql/db_data
+      - db_data:/etc/mysql/db_data
 volumes:
   db_data:

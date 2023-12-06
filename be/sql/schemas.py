@@ -10,7 +10,8 @@ class User(BaseModel):
     is_active: bool = True
     is_admin: bool = False
     movie_lists: list = []
-    hashed_password: str = None
+    username: str = None
+    password_hash: str = None
     
     class Config:
         orm_mode = True
@@ -21,6 +22,7 @@ class UserCreate(BaseModel):
     year_of_birth: int
     month_of_birth: int
     day_of_birth: int
+    username: str
     password: str
 
 class UserEdit(BaseModel):

@@ -1,27 +1,50 @@
 from sqlalchemy.orm import Session
-from . import models, schemas
 import bcrypt
+from . import models, schemas
 
-def get_user(db: Session, user_id: int):
+async def get_user(db: Session, username: str):
     """
-        Get a user by id
-    """
-    return db.query(models.User).filter(models.User.id == user_id).first()
+    Retrieve a user from the database based on the user_id.
 
-def get_users(db: Session, skip: int = 0, limit: int = 100):
+    Args:
+        db (Session): The database session.
+        user_id (int): The ID of the user to retrieve.
+
+    Returns:
+        User: The user object if found, None otherwise.
     """
-        Get all users
+    return db.query(models.User).filter(models.User.username == username).first()
+
+async def get_users(db: Session, skip: int = 0, limit: int = 100):
+    """
+    Retrieve a list of users from the database.
+
+    Args:
+        db (Session): The database session.
+        skip (int, optional): Number of users to skip. Defaults to 0.
+        limit (int, optional): Maximum number of users to retrieve. Defaults to 100.
+
+    Returns:
+        List[User]: A list of User objects.
     """
     return db.query(models.User).offset(skip).limit(limit).all()
 
-def create_user(db: Session, user: schemas.UserCreate):
+async def create_user(db: Session, user: schemas.UserCreate):
     """
-        Create a user
+    Create a new user in the database.
+
+    Parameters:
+    - db (Session): The database session.
+    - user (UserCreate): The user data to be created.
+
+    Returns:
+    - User: The created user object.
     """
     password_hash = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
     db_user = models.User(
         email=user.email, 
-        hashed_password=password_hash,
+        username=user.username,
+        password_hash=password_hash,
         name=user.name,
         year_of_birth=user.year_of_birth,
         month_of_birth=user.month_of_birth,
@@ -33,9 +56,17 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
     return db_user
 
-def edit_user(db: Session, user: schemas.UserEdit, user_id: int):
+async def edit_user(db: Session, user: schemas.UserEdit, user_id: int):
     """
-        Edit a user
+    Edit a user in the database.
+
+    Args:
+        db (Session): The database session.
+        user (schemas.UserEdit): The updated user data.
+        user_id (int): The ID of the user to edit.
+
+    Returns:
+        models.User: The edited user object.
     """
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
     if user.email:
@@ -49,52 +80,101 @@ def edit_user(db: Session, user: schemas.UserEdit, user_id: int):
     if user.day_of_birth:
         db_user.day_of_birth = user.day_of_birth
     if user.password:
-        db_user.hashed_password = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
+        db_user.password_hash = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
     db.commit()
     db.refresh(db_user)
     return db_user
 
-def delete_user(db: Session, user_id: int):
+async def delete_user(db: Session, user_id: int):
     """
-        Delete a user
+    Delete a user from the database.
+
+    Args:
+        db (Session): The database session.
+        user_id (int): The ID of the user to be deleted.
+
+    Returns:
+        User: The deleted user object.
     """
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
     db.delete(db_user)
     db.commit()
     return db_user
 
-def verify_password(plain_password, hashed_password):
+async def verify_password(plain_password, password_hash):
     """
-        Verify a password
-    """
-    return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password)
+    Verify if the plain password matches the hashed password.
 
-def authenticate_user(db: Session, email: str, password: str):
+    Args:
+        plain_password (str): The plain password to be verified.
+        password_hash (str): The hashed password to compare against.
+
+    Returns:
+        bool: True if the plain password matches the hashed password, False otherwise.
     """
-        Authenticate a user
+    return bcrypt.checkpw(plain_password.encode('utf-8'), password_hash)
+
+async def authenticate_user(db: Session, username: str, password: str):
     """
-    user = db.query(models.User).filter(models.User.email == email).first()
+    Authenticates a user by checking if the provided username and password match the stored credentials.
+
+    Args:
+        db (Session): The database session.
+        username (str): The username of the user.
+        password (str): The password of the user.
+
+    Returns:
+        Union[models.User, bool]: The authenticated user if the credentials are valid, False otherwise.
+    """
+    user = db.query(models.User).filter(models.User.username == username).first()
+    print("DEBUG_01")
+    print(username)
     if not user:
+        print("user not found")
         return False
-    if not verify_password(password, user.hashed_password):
+    if not verify_password(password, user.password_hash):
+        print("password not verified")
         return False
     return user
 
-def get_movie_list(db: Session, movie_list_id: int):
+async def get_movie_list(db: Session, movie_list_id: int):
     """
-        Get a movie list by id
+    Retrieve a movie list from the database by its ID.
+
+    Args:
+        db (Session): The database session.
+        movie_list_id (int): The ID of the movie list to retrieve.
+
+    Returns:
+        MovieList: The movie list object if found, None otherwise.
     """
     return db.query(models.MovieList).filter(models.MovieList.id == movie_list_id).first()
 
-def get_movie_lists(db: Session, skip: int = 0, limit: int = 100):
+async def get_movie_lists(db: Session, skip: int = 0, limit: int = 100):
     """
-        Get all movie lists
+    Retrieve a list of movie lists from the database.
+
+    Args:
+        db (Session): The database session.
+        skip (int, optional): Number of records to skip. Defaults to 0.
+        limit (int, optional): Maximum number of records to retrieve. Defaults to 100.
+
+    Returns:
+        List[models.MovieList]: A list of movie lists.
     """
     return db.query(models.MovieList).offset(skip).limit(limit).all()
 
-def create_movie_list(db: Session, movie_list: schemas.MovieListCreate, user_id: int):
+async def create_movie_list(db: Session, movie_list: schemas.MovieListCreate, user_id: int):
     """
-        Create a movie list
+    Create a new movie list in the database.
+
+    Args:
+        db (Session): The database session.
+        movie_list (schemas.MovieListCreate): The movie list data to be created.
+        user_id (int): The ID of the owner of the movie list.
+
+    Returns:
+        models.MovieList: The created movie list object.
     """
     db_movie_list = models.MovieList(**movie_list.dict(), owner_id=user_id)
     db.add(db_movie_list)
@@ -102,21 +182,44 @@ def create_movie_list(db: Session, movie_list: schemas.MovieListCreate, user_id:
     db.refresh(db_movie_list)
     return db_movie_list
 
-def get_movie(db: Session, movie_id: int):
+async def get_movie(db: Session, movie_id: int):
     """
-        Get a movie by id
+    Retrieve a movie from the database by its ID.
+
+    Args:
+        db (Session): The database session.
+        movie_id (int): The ID of the movie to retrieve.
+
+    Returns:
+        Movie: The movie object if found, None otherwise.
     """
     return db.query(models.Movie).filter(models.Movie.id == movie_id).first()
 
-def get_movies(db: Session, skip: int = 0, limit: int = 100):
+async def get_movies(db: Session, skip: int = 0, limit: int = 100):
     """
-        Get all movies
+    Retrieve a list of movies from the database.
+
+    Args:
+        db (Session): The database session.
+        skip (int, optional): Number of movies to skip. Defaults to 0.
+        limit (int, optional): Maximum number of movies to retrieve. Defaults to 100.
+
+    Returns:
+        List[models.Movie]: A list of movie objects.
     """
     return db.query(models.Movie).offset(skip).limit(limit).all()
 
-def create_movie(db: Session, movie: schemas.MovieCreate, movie_list_id: int):
+async def create_movie(db: Session, movie: schemas.MovieCreate, movie_list_id: int):
     """
-        Create a movie
+    Create a new movie in the database.
+
+    Args:
+        db (Session): The database session.
+        movie (schemas.MovieCreate): The movie data to be created.
+        movie_list_id (int): The ID of the movie list to which the movie belongs.
+
+    Returns:
+        models.Movie: The created movie object.
     """
     db_movie = models.Movie(**movie.dict(), list_id=movie_list_id)
     db.add(db_movie)
