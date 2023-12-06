@@ -16,11 +16,12 @@ interface RequestOptions {
     thunkApi: any,
     method: Method;
     defineAlert?: boolean;
+    headers?: any;
 }
 
 export const sendRequest = async (url: string, options?: Partial<RequestOptions>) => {
     const method = options?.method || "GET";
-    let config: AxiosRequestConfig = { method: method, url: url };
+    let config: AxiosRequestConfig = { method: method, url: url, headers: options?.headers };
     if (options?.payload) {
         if (method.toUpperCase() === "GET") {
             config["params"] = options.payload;

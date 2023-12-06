@@ -1,11 +1,15 @@
 export interface ISignInPayload {
-    email: string,
+    username: string,
     password: string,
 }
 export interface ISignUpPayload {
-    fullname: string;
+    name: string;
     email: string;
+    username: string;
     password: string;
+    day_of_birth: number;
+    month_of_birth: number;
+    year_of_birth: number;
 }
 export interface IActivateInfo {
     uid: number;

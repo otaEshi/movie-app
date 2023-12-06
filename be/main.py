@@ -8,9 +8,18 @@ from sql.database import SessionLocal, Base, engine
 from sql.schemas import User, UserCreate 
 from sql import crud
 from sqlalchemy.orm import Session
+from fastapi.middleware.cors import CORSMiddleware
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI()
+origins = ['*']
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_headers=['*'],
+    allow_methods=['*'],
+)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # to get a string like this run:
 # openssl rand -hex 32

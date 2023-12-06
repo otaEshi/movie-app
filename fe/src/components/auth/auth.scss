@@ -1,6 +1,11 @@
 .custom-container {
-    width: 100%;
-    min-height: 100vh;
+    width: 45%;
+    height: fit-content;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+    border-radius: 20px;
+    // min-height: 100vh;
+    background-image: linear-gradient(rgba(0,0,0,0.3), rgb(156, 193, 241));
     display: flex;
     justify-content: center;
     align-items: center;
