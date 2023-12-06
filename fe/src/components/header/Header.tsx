@@ -18,32 +18,69 @@ const Header = () => {
       setSearch(value);
       // setEmailError('');
     }
+
+    // search while typing
+    const handleSearch = () => {
+
+    }
   };
 
-  const handleSearch = () => {
 
-  }
 
   return (
     <header>
       <div className='container flexSB'>
         <nav className='flexSB custom-height mt-3'>
-          <div className='logo'>
-            [logo here]
-            {/* <img src='./images/logo.png' alt='' /> */}
-          </div>
+          {/* <div className='logo'>
+            <img src='./logo.png' alt='logo' />
+          </div> */}
           <ul className={Mobile ? 'navMenu-list' : 'flexSB'} onClick={() => setMobile(false)}>
             <li>
               <a href='/'><i className="fa fa-home" aria-hidden="true"></i></a>
             </li>
             <li>
-              <a href='/'>Series</a>
+              {/* <a href='/tags'>Thể loại</a> */}
+              <div className="dropdown">
+                <div
+                  className="d-flex align-items-center justify-content-center p-3 link-light text-decoration-none dropdown-toggle"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                  style={{cursor:'pointer', borderBottom: '1px solid white' }}>
+                  Thể loại
+                </div>
+                <ul className="dropdown-menu text-small dropdown-user custom-dropdown" style={{ border:'none', color:'white'}}>
+                  <li>
+                    <button
+                      className="dropdown-item mb-3 mt-2"
+                      style={{background:'none', border:'none', color:'white', paddingTop:'6px'}}
+                    onClick={() => navigate('/tags/sports')}
+                    >
+                      {/* <i className="fa fa-sign-out" aria-hidden="true"></i>
+                      Sign out */}
+                      Thể thao
+                    </button>
+                    <button
+                      className="dropdown-item mb-3 mt-3"
+                      onClick={() => navigate('/tags/musics')}
+                    style={{background:'none', border:'none', color:'white'}}
+                    >
+                      Âm nhạc
+                    </button>
+                    <button
+                      className="dropdown-item"
+                      onClick={() => navigate('/tags/travels')}
+                    style={{background:'none', border:'none', color:'white'}}
+                    >
+                      Du lịch
+                    </button>
+                  </li>
+                </ul>
+              </div>
             </li>
-            <li>
-              <a href='/'>Tags</a>
-            </li>
-            <button className="ms-2 header-button" onClick={() => handleSearch}><i className="fa fa-search custom-i" aria-hidden="true"></i></button>
-            <input id='search' className="input-search" type="text" name="q" placeholder="Search" autoComplete="off" onChange={(e) => handleInputChange(e)}></input>
+            <div className='ms-4' >
+              <button className="ms-2 header-button" disabled><i className="fa fa-search custom-i" aria-hidden="true"></i></button>
+              <input id='search' className="input-search" type="text" name="q" placeholder="  Tìm kiếm" autoComplete="off" onChange={(e) => handleInputChange(e)}></input>
+            </div>
           </ul>
           <button className='toggle' onClick={() => setMobile(!Mobile)}>
             {Mobile ? <i className='fa fa-times'></i> : <i className='fa fa-bars'></i>}
@@ -64,7 +101,7 @@ const Header = () => {
               </Dropdown.Menu>
             </Dropdown>
           ) : (
-            <button className='header-button' onClick={() => {navigate('/sign_in')}}>
+            <button className='header-button' onClick={() => { navigate('/sign_in') }}>
               <i className="fa fa-sign-in" aria-hidden="true"></i>
             </button>
           )}

@@ -1,0 +1,15 @@
+.custom-btn-container{
+    button{
+        background-color: transparent;
+        color: black;
+        margin: 10px;
+    }
+    .pagination button.active {
+        background-color: #007bff;
+        color: #fff;
+      }
+}
+
+select {
+    border: none;
+}

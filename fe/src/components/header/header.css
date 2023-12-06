@@ -133,3 +133,11 @@ header i {
     background: none;
   }
 }
+
+.dropdown-toggle::after {
+  display: none !important;
+}
+.custom-dropdown {
+  background-image: linear-gradient(to right bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0));
+  
+}

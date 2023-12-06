@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Ucard from './Ucard';
+import ListFilmCard from './ListFilmCard';
 import Slider, { Settings } from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 
-interface UpcommingProps {
+interface ListFilmProps {
   items: Array<{
     id: number;
     cover: string;
@@ -14,6 +14,7 @@ interface UpcommingProps {
     time: string;
   }>;
   title: string;
+  itemName: string;
 }
 
 const SampleNextArrow: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
@@ -36,7 +37,7 @@ const SamplePrevArrow: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
   );
 };
 
-const Upcomming: React.FC<UpcommingProps> = ({ items, title }) => {
+const ListFilm: React.FC<ListFilmProps> = ({ items, title, itemName }) => {
   const settings: Settings = {
     dots: false,
     infinite: true,
@@ -58,16 +59,16 @@ const Upcomming: React.FC<UpcommingProps> = ({ items, title }) => {
 
   return (
     <>
-      <section className='upcome'>
+      <section className='upcome pt-4'>
         <div className='container'>
           <div className='heading flexSB'>
             <h1>{title}</h1>
-            <Link to='/'>View All</Link>
+            <Link to={`/tags/${itemName}`}>Xem tất cả</Link>
           </div>
           <div className='content'>
             <Slider {...settings}>
               {items.map((item) => (
-                <Ucard key={item.id} item={item} />
+                <ListFilmCard key={item.id} item={item} />
               ))}
             </Slider>
           </div>
@@ -77,4 +78,4 @@ const Upcomming: React.FC<UpcommingProps> = ({ items, title }) => {
   );
 };
 
-export default Upcomming;
+export default ListFilm;

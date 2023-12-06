@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
 import Homes from '../homes/Homes';
-import Trending from '../trending/Trending';
-import Upcomming from '../upcoming/Upcomming';
-import { latest, recommended, upcome } from '../../dummyData';
+// import Trending from '../trending/Trending';
+import ListFilm from '../listFilm/ListFilm';
+import { sport, music, travel } from '../../dummyData';
 
 const HomePage: React.FC = () => {
-  const [items, setItems] = useState(upcome);
-  const [item, setItem] = useState(latest);
-  const [rec, setRec] = useState(recommended);
+  const [sports, setSports] = useState(sport);
+  const [musics, setSusics] = useState(music);
+  const [travels, setTravels] = useState(travel);
 
   return (
-    <div>
+    <div className='m-4'>
       <Homes />
-      <Upcomming items={items} title='Upcoming Movies' />
-      <Upcomming items={item} title='Latest Movies' />
+      <ListFilm items={sports} title='Thể thao' itemName='sports' />
+      <ListFilm items={musics} title='Âm nhạc' itemName='musics' />
       {/* <Trending /> */}
-      <Upcomming items={rec} title='Recommended Movies' />
+      <ListFilm items={travels} title='Du lịch' itemName='travels' />
     </div>
   );
 };

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './style.css';
 import { useParams } from 'react-router-dom';
 import { homeData, recommended } from '../../dummyData';
-import Upcomming from '../upcoming/Upcomming';
+import Upcomming from '../listFilm/ListFilm';
 
 interface Item {
   id: number;
@@ -13,7 +13,7 @@ interface Item {
   desc: string;
 }
 
-const SinglePage: React.FC = () => {
+const Watch: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [item, setItem] = useState<Item | null>(null);
 
@@ -26,27 +26,35 @@ const SinglePage: React.FC = () => {
     }
   }, [id]);
 
-  const [rec, setRec] = useState(recommended);
+  // const [rec, setRec] = useState(recommended);
 
   return (
     <>
       {item ? (
         <>
-          <section className='singlePage'>
-            <div className='singleHeading'>
+          <section className='watch'>
+            <div className='watchHeading'>
               <h1>{item.name}</h1> <span> | {item.time} | </span> <span> HD </span>
             </div>
             <div className='container'>
-              <video src={item.video} controls></video>
-              <div className='para'>
+              <div style={{height:"600px"}}>
+                 <iframe 
+                src={item.video}
+                height="100%" 
+                allowFullScreen
+                >
+                </iframe> 
                 <h3>Date : {item.date}</h3>
                 <p>{item.desc}</p>
-                
+                <p>smt</p>
               </div>
+              {/* <div className=''> */}
+                
+              {/* </div> */}
               
             </div>
           </section>
-          <Upcomming items={rec} title='Recommended Movies' />
+          {/* <Upcomming items={rec} title='Recommended Movies' /> */}
         </>
       ) : (
         'no'
@@ -55,4 +63,4 @@ const SinglePage: React.FC = () => {
   );
 };
 
-export default SinglePage;
+export default Watch;

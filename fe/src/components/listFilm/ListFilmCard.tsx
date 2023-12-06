@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import '@fortawesome/fontawesome-free/css/all.css';
-import './ucard.css';
+import './listFilm.css';
 
-interface UcardProps {
+interface ListFilmCardProps {
   item: {
     id: string | number;
     cover: string;
@@ -12,7 +12,7 @@ interface UcardProps {
   };
 }
 
-const Ucard: React.FC<UcardProps> = ({ item: { id, cover, name, time } }) => {
+const ListFilm: React.FC<ListFilmCardProps> = ({ item: { id, cover, name, time } }) => {
   return (
     <>
       <div className='MovieBox'>
@@ -22,7 +22,7 @@ const Ucard: React.FC<UcardProps> = ({ item: { id, cover, name, time } }) => {
         <div className='text'>
           <h3>{name}</h3>
           <span>{time}</span> <br />
-          <Link to={`/singlepage/${id}`} className='custom-text-deco'>
+          <Link to={`/watch/${id}`} className='custom-text-deco'>
             <button>
               <div className='img'>
                 <img src='./images/play-button.png' alt='' />
@@ -37,4 +37,4 @@ const Ucard: React.FC<UcardProps> = ({ item: { id, cover, name, time } }) => {
   );
 };
 
-export default Ucard;
+export default ListFilm;

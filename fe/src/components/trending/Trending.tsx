@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { trending } from '../../dummyData';
+// import { trending } from '../../dummyData';
 import Home from '../homes/Home';
 import './trending.css';
 
 const Trending: React.FC = () => {
-  const [items, setItems] = useState(trending);
+  // const [items, setItems] = useState(trending);
   return (
     <>
       <section className='trending'>
-        <Home items={items} />
+        {/* <Home items={items} /> */}
       </section>
     </>
   );
