@@ -1,5 +1,8 @@
 fastapi==0.104.1
 pydantic==2.5.2
-python_bcrypt==0.3.2
+# python_bcrypt==0.3.2
 python_jose==3.3.0
 SQLAlchemy==2.0.23
+uvicorn
+pymysql
+python-multipart

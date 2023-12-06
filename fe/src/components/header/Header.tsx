@@ -31,15 +31,11 @@ const Header = () => {
     <header>
       <div className='container flexSB'>
         <nav className='flexSB custom-height mt-3'>
-          {/* <div className='logo'>
-            <img src='./logo.png' alt='logo' />
-          </div> */}
           <ul className={Mobile ? 'navMenu-list' : 'flexSB'} onClick={() => setMobile(false)}>
             <li>
               <a href='/'><i className="fa fa-home" aria-hidden="true"></i></a>
             </li>
             <li>
-              {/* <a href='/tags'>Thể loại</a> */}
               <div className="dropdown">
                 <div
                   className="d-flex align-items-center justify-content-center p-3 link-light text-decoration-none dropdown-toggle"
@@ -55,8 +51,6 @@ const Header = () => {
                       style={{background:'none', border:'none', color:'white', paddingTop:'6px'}}
                     onClick={() => navigate('/tags/sports')}
                     >
-                      {/* <i className="fa fa-sign-out" aria-hidden="true"></i>
-                      Sign out */}
                       Thể thao
                     </button>
                     <button
@@ -82,9 +76,9 @@ const Header = () => {
               <input id='search' className="input-search" type="text" name="q" placeholder="  Tìm kiếm" autoComplete="off" onChange={(e) => handleInputChange(e)}></input>
             </div>
           </ul>
-          <button className='toggle' onClick={() => setMobile(!Mobile)}>
+          {/* <button className='toggle' onClick={() => setMobile(!Mobile)}>
             {Mobile ? <i className='fa fa-times'></i> : <i className='fa fa-bars'></i>}
-          </button>
+          </button> */}
         </nav>
         <div className='account flexSB'>
           {isAuthenticated ? (
