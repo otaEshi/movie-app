@@ -1,7 +1,7 @@
 services:
   db:
     image: mysql:8.2.0
-    command: --default-authentication-plugin=mysql_native_password
+    command: --default-authentication-plugin=caching_sha2_password
     restart: on-failure
     environment:
       MYSQL_ROOT_PASSWORD: 8d49945f4b59b7511019ec0ea3dd61f650f6c8b9877268d04ff6d02d13bcd267

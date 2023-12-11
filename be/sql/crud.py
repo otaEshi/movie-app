@@ -1,8 +1,10 @@
 from sqlalchemy.orm import Session
 import bcrypt
 from . import models, schemas
+from datetime import datetime
 
-async def get_user(db: Session, username: str):
+### User CRUD ###
+async def get_user(db: Session, user_id: str):
     """
     Retrieve a user from the database based on the user_id.
 
@@ -13,7 +15,7 @@ async def get_user(db: Session, username: str):
     Returns:
         User: The user object if found, None otherwise.
     """
-    return db.query(models.User).filter(models.User.username == username).first()
+    return db.query(models.User).filter(models.User.id == user_id).first()
 
 async def get_users(db: Session, skip: int = 0, limit: int = 100):
     """
@@ -79,8 +81,12 @@ async def edit_user(db: Session, user: schemas.UserEdit, user_id: int):
         db_user.month_of_birth = user.month_of_birth
     if user.day_of_birth:
         db_user.day_of_birth = user.day_of_birth
-    if user.password:
-        db_user.password_hash = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
+    if user.avatar_url:
+        db_user.avatar_url = user.avatar_url
+    if user.is_active:
+        db_user.is_active = user.is_active
+    if user.is_content_admin:
+        db_user.is_content_admin = user.is_content_admin
     db.commit()
     db.refresh(db_user)
     return db_user
@@ -112,7 +118,7 @@ async def verify_password(plain_password, password_hash):
     Returns:
         bool: True if the plain password matches the hashed password, False otherwise.
     """
-    return bcrypt.checkpw(plain_password.encode('utf-8'), password_hash)
+    return bcrypt.checkpw(plain_password.encode('utf-8'), password_hash.encode('utf-8'))
 
 async def authenticate_user(db: Session, username: str, password: str):
     """
@@ -127,15 +133,35 @@ async def authenticate_user(db: Session, username: str, password: str):
         Union[models.User, bool]: The authenticated user if the credentials are valid, False otherwise.
     """
     user = db.query(models.User).filter(models.User.username == username).first()
-    print("DEBUG_01")
-    print(username)
     if not user:
         print("user not found")
         return False
-    if not verify_password(password, user.password_hash):
+    if not await verify_password(password, user.password_hash):
         print("password not verified")
         return False
     return user
+
+async def change_password(db: Session, user: schemas.UserEditPassword, user_id: int):
+    """
+    Change the password of a user.
+
+    Args:
+        db (Session): The database session.
+        user (schemas.UserEditPassword): The updated password data.
+        user_id (int): The ID of the user to edit.
+
+    Returns:
+        models.User: The edited user object.
+    """
+    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not await verify_password(user.old_password, db_user.password_hash):
+        return False
+    db_user.password_hash = bcrypt.hashpw(user.new_password.encode('utf-8'), bcrypt.gensalt())
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+### Movie List CRUD ###
 
 async def get_movie_list(db: Session, movie_list_id: int):
     """
@@ -176,11 +202,13 @@ async def create_movie_list(db: Session, movie_list: schemas.MovieListCreate, us
     Returns:
         models.MovieList: The created movie list object.
     """
-    db_movie_list = models.MovieList(**movie_list.dict(), owner_id=user_id)
+    db_movie_list = models.MovieList(**movie_list.model_dump(), owner_id=user_id)
     db.add(db_movie_list)
     db.commit()
     db.refresh(db_movie_list)
     return db_movie_list
+
+### Movie CRUD ###
 
 async def get_movie(db: Session, movie_id: int):
     """
@@ -195,7 +223,7 @@ async def get_movie(db: Session, movie_id: int):
     """
     return db.query(models.Movie).filter(models.Movie.id == movie_id).first()
 
-async def get_movies(db: Session, skip: int = 0, limit: int = 100):
+async def get_movies(db: Session, skip: int = 0, limit: int = 100, search_params: dict = None):
     """
     Retrieve a list of movies from the database.
 
@@ -207,6 +235,8 @@ async def get_movies(db: Session, skip: int = 0, limit: int = 100):
     Returns:
         List[models.Movie]: A list of movie objects.
     """
+    if search_params:
+        return db.query(models.Movie).filter_by(**search_params).offset(skip).limit(limit).all()
     return db.query(models.Movie).offset(skip).limit(limit).all()
 
 async def create_movie(db: Session, movie: schemas.MovieCreate, movie_list_id: int):
@@ -227,3 +257,124 @@ async def create_movie(db: Session, movie: schemas.MovieCreate, movie_list_id: i
     db.refresh(db_movie)
     return db_movie
 
+async def register_view(db: Session, movie_id: int):
+    """
+    Register a view for a movie.
+
+    Args:
+        db (Session): The database session.
+        movie_id (int): The ID of the movie to register the view for.
+        day (int): The day of the view.
+        month (int): The month of the view.
+        year (int): The year of the view.
+
+    Returns:
+        models.MovieViews: The created movie view object.
+    """
+
+    day = datetime.now().day
+    month = datetime.now().month
+    year = datetime.now().year
+    # if view count exists, increment it
+    # else create a new view count
+    if db.query(models.MovieViews).filter(models.MovieViews.movie_id == movie_id, 
+                                          models.MovieViews.day_of_view == day, 
+                                          models.MovieViews.month_of_view == month, 
+                                          models.MovieViews.year_of_view == year).first():
+        
+        db.update(models.MovieViews).where(models.MovieViews.movie_id == movie_id, 
+                                           models.MovieViews.day_of_view == day, 
+                                           models.MovieViews.month_of_view == month, 
+                                           models.MovieViews.year_of_view == year).values(view_count=models.MovieViews.view_count + 1)
+        db.commit()
+        return True
+    else:
+        db_view = models.MovieViews(movie_id=movie_id, day_of_view=day, month_of_view=month, year_of_view=year, view_count=1)
+        db.add(db_view)
+        db.commit()
+        db.refresh(db_view)
+        return True
+
+async def edit_movie(db: Session, movie: schemas.MovieEdit, movie_id: int):
+    """
+    Edit a movie in the database.
+
+    Args:
+        db (Session): The database session.
+        movie (schemas.MovieEdit): The updated movie data.
+        movie_id (int): The ID of the movie to edit.
+
+    Returns:
+        models.Movie: The edited movie object.
+    """
+    db_movie = db.query(models.Movie).filter(models.Movie.id == movie_id).first()
+    if movie.title:
+        db_movie.title = movie.title
+    if movie.description:
+        db_movie.description = movie.description
+    if movie.day_of_release:
+        db_movie.day_of_release = movie.day_of_release
+    if movie.month_of_release:
+        db_movie.month_of_release = movie.month_of_release
+    if movie.year_of_release:
+        db_movie.year_of_release = movie.year_of_release
+    if movie.url:
+        db_movie.url = movie.url
+    if movie.thumbnail_url:
+        db_movie.thumbnail_url = movie.thumbnail_url
+    if movie.views:
+        db_movie.views = movie.views
+    if movie.genre:
+        db_movie.genre = movie.genre
+    db.commit()
+    db.refresh(db_movie)
+    return db_movie
+
+async def delete_movie(db: Session, movie_id: int):
+    """
+    Delete a movie from the database.
+
+    Args:
+        db (Session): The database session.
+        movie_id (int): The ID of the movie to be deleted.
+
+    Returns:
+        Movie: The deleted movie object.
+    """
+    db_movie = db.query(models.Movie).filter(models.Movie.id == movie_id).first()
+    db.delete(db_movie)
+    db.commit()
+    return db_movie
+
+async def create_movie_ratings(db: Session, movie_rating: schemas.MovieRatingsCreate):
+    """
+    Create a new movie rating in the database.
+
+    Args:
+        db (Session): The database session.
+        movie_rating (schemas.MovieRatingCreate): The movie rating data to be created.
+
+    Returns:
+        models.MovieRating: The created movie rating object.
+    """
+    db_movie_rating = models.MovieRatings(**movie_rating.model_dump())
+    db.add(db_movie_rating)
+    db.commit()
+    db.refresh(db_movie_rating)
+    return db_movie_rating
+
+### Movie List Movie CRUD ###
+async def get_movies_from_movie_list(db: Session, movie_list_id: int, movie_id: int):
+    """
+    Retrieve a movie from a movie list by its ID.
+
+    Args:
+        db (Session): The database session.
+        movie_list_id (int): The ID of the movie list.
+        movie_id (int): The ID of the movie.
+
+    Returns:
+        MovieListMovie: The movie list movie object if found, None otherwise.
+    """
+    return db.query(models.MovieListMovie).filter(models.MovieListMovie.movie_list_id == movie_list_id, 
+                                                  models.MovieListMovie.movie_id == movie_id)

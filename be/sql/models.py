@@ -27,11 +27,10 @@ class User(Base):
     email = Column(String(32), unique=False, index=True)
     name = Column(String(128), index=True)
     avatar_url = Column(String(256), default="")
-    year_of_birth = Column(Integer, index=True)
-    month_of_birth = Column(Integer, index=True)
-    day_of_birth = Column(Integer, index=True)
+    time_of_birth = Column(Integer, index=True)
     is_active = Column(Boolean, index=True, default=True)
     is_admin = Column(Boolean, default=False)
+    is_content_admin = Column(Boolean, default=False)
 
     movielists = relationship("MovieList")
 
@@ -45,12 +44,21 @@ class MovieList(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(256), index=True)
     description = Column(String(1024))
-    year_of_creation = Column(Integer, index=True)
-    month_of_creation = Column(Integer, index=True)
-    day_of_creation = Column(Integer, index=True)
+    created_time = Column(Integer, index=True)
     owner_id = Column(Integer, ForeignKey("users.id"))
 
-    owner = relationship("User")
+class MovieViews(Base):
+    """
+        MovieViews model
+    """
+    __tablename__ = "movieviews"
+
+    id = Column(Integer, primary_key=True, index=True)
+    movie_id = Column(Integer, ForeignKey("movies.id"))
+    timestamp = Column(Integer, index=True)
+    view_count = Column(Integer, index=True)
+
+    movie = relationship("Movie")
 
 class MovieListMovie(Base):
     """
@@ -78,3 +86,27 @@ class Movie(Base):
     url = Column(String(256))
     thumbnail_url = Column(String(256))
     views = Column(Integer, index=True)
+
+class MovieComments(Base):
+    """
+        MovieComments model
+    """
+    __tablename__ = "moviecomments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    movie_id = Column(Integer, ForeignKey("movies.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    comment = Column(String(1024))
+    timestamp = Column(Integer, index=True)
+
+class MovieRatings(Base):
+    """
+        MovieRatings model
+    """
+    __tablename__ = "movieratings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    movie_id = Column(Integer, ForeignKey("movies.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    rating = Column(Integer, index=True)
+    timestamp = Column(Integer, index=True)
