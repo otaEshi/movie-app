@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 ### User ###
 class User(BaseModel):
@@ -9,9 +10,7 @@ class User(BaseModel):
             id (int): The ID of the user.
             email (str): The email address of the user.
             name (str): The name of the user.
-            year_of_birth (int): The year of birth of the user.
-            month_of_birth (int): The month of birth of the user.
-            day_of_birth (int): The day of birth of the user.
+            date_of_birth (datetime): The date of birth of the user.
             is_active (bool): Whether the user is active or not.
             is_admin (bool): Whether the user is an admin or not.
             movie_lists (list): The movie lists owned by the user.
@@ -21,9 +20,7 @@ class User(BaseModel):
     id: int
     email: str
     name: str
-    year_of_birth: int
-    month_of_birth: int
-    day_of_birth: int
+    date_of_birth: datetime
     is_active: bool = True
     is_admin: bool = False
     movie_lists: list = []
@@ -40,17 +37,13 @@ class UserCreate(BaseModel):
         Attributes:
             email (str): The email address of the user.
             name (str): The name of the user.
-            year_of_birth (int): The year of birth of the user.
-            month_of_birth (int): The month of birth of the user.
-            day_of_birth (int): The day of birth of the user.
+            date_of_birth (datetime): The date of birth of the user.
             username (str): The username of the user.
             password (str): The password of the user.
     """
     email: str
     name: str
-    year_of_birth: int
-    month_of_birth: int
-    day_of_birth: int
+    date_of_birth: datetime
     username: str
     password: str
 
@@ -61,15 +54,14 @@ class UserEdit(BaseModel):
         Attributes:
             email (str): The email address of the user.
             name (str): The name of the user.
-            year_of_birth (int): The year of birth of the user.
-            month_of_birth (int): The month of birth of the user.
-            day_of_birth (int): The day of birth of the user.
+            date_of_birth (datetime): The date of birth of the user.
+            avatar_url (str): The avatar URL of the user.
+            is_active (bool): Whether the user is active or not.
+            is_content_admin (bool): Whether the user is a content admin or not.
     """
     email: str = None
     name: str = None
-    year_of_birth: int = None
-    month_of_birth: int = None
-    day_of_birth: int = None
+    date_of_birth: datetime = None
     avatar_url: str = None
     is_active: bool = None
     is_content_admin: bool = None
@@ -95,9 +87,7 @@ class MovieBase(BaseModel):
             id (int): The ID of the movie.
             title (str): The title of the movie.
             description (str): The description of the movie.
-            day_of_release (int): The day of release of the movie.
-            month_of_release (int): The month of release of the movie.
-            year_of_release (int): The year of release of the movie.
+            date_of_release (datetime): The day of release of the movie.
             url (str): The URL of the movie.
             thumbnail_url (str): The thumbnail URL of the movie.
             views (int): The number of views of the movie.
@@ -107,9 +97,7 @@ class MovieBase(BaseModel):
     id: int
     title: str
     description: str = None
-    day_of_release: int = None
-    month_of_release: int = None
-    year_of_release: int = None
+    date_of_release: datetime = None
     url: str = None
     thumbnail_url: str = None
     views: int = None
@@ -131,9 +119,7 @@ class MovieViews(BaseModel):
             viewcount (int): The number of views of the movie.
     """
     movie_id: int
-    day_of_view: int
-    month_of_view: int
-    year_of_view: int
+    created_at: datetime
     viewcount: int
 
 
@@ -153,11 +139,10 @@ class MovieCreate(BaseModel):
     """
     title: str
     description: str = None
-    year_of_release: int = None
+    date_of_release: datetime = None
     url: str = None
     thumbnail_url: str = None
     views: int = None
-    movies: list = []
     genre: str = None
 
 class MovieEdit(BaseModel):
@@ -176,7 +161,7 @@ class MovieEdit(BaseModel):
     """
     title: str = None
     description: str = None
-    year_of_release: int = None
+    date_of_release: datetime = None
     url: str = None
     thumbnail_url: str = None
     views: int = None
@@ -193,7 +178,7 @@ class MovieRatingsCreate(BaseModel):
     movie_id: int
     user_id: int
     rating: int
-    timestamp: int
+    created_at: datetime
 
 class MovieCommentsCreate(BaseModel):
     """
@@ -206,7 +191,7 @@ class MovieCommentsCreate(BaseModel):
     movie_id: int
     user_id: int
     comment: str
-    timestamp: int
+    created_at: datetime
 
 ### Movie List ###
 
@@ -218,17 +203,13 @@ class MovieListBase(BaseModel):
             id (int): The ID of the movie list.
             name (str): The name of the movie list.
             description (str): The description of the movie list.
-            day_of_creation (int): The day of creation of the movie list.
-            month_of_creation (int): The month of creation of the movie list.
-            year_of_creation (int): The year of creation of the movie list.
+            created_at (datetime): The date of creation of the movie list.
             owner_id (int): The ID of the owner of the movie list.
     """
     id: int
     name: str
-    description: str = None
-    year_of_creation: int = None
-    month_of_creation: int = None
-    day_of_creation: int = None
+    description: str = None 
+    created_at: datetime
     owner_id: int
 
     class Config:
@@ -241,13 +222,9 @@ class MovieListCreate(BaseModel):
         Attributes:
             name (str): The name of the movie list.
             description (str): The description of the movie list.
-            day_of_creation (int): The day of creation of the movie list.
-            month_of_creation (int): The month of creation of the movie list.
-            year_of_creation (int): The year of creation of the movie list.
+            created_at (datetime): The date of creation of the movie list.
             owner_id (int): The ID of the owner of the movie list.
     """
     name: str
     description: str = None
-    year_of_creation: int = None
-    month_of_creation: int = None
-    day_of_creation: int = None
+    created_at: datetime

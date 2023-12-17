@@ -33,10 +33,10 @@ def upgrade() -> None:
     op.alter_column('users', 'password_hash',
                existing_type=mysql.VARCHAR(length=72),
                nullable=False)
-    op.alter_column('users', 'avatar_url',
-               existing_type=mysql.VARCHAR(length=128),
-               type_=sa.String(length=256),
-               existing_nullable=True)
+    # op.alter_column('users', 'avatar_url',
+    #            existing_type=mysql.VARCHAR(length=128),
+    #            type_=sa.String(length=256),
+    #            existing_nullable=True)
     op.drop_index('ix_users_email', table_name='users')
     op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=False)
     # ### end Alembic commands ###

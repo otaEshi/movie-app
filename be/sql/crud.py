@@ -239,7 +239,7 @@ async def get_movies(db: Session, skip: int = 0, limit: int = 100, search_params
         return db.query(models.Movie).filter_by(**search_params).offset(skip).limit(limit).all()
     return db.query(models.Movie).offset(skip).limit(limit).all()
 
-async def create_movie(db: Session, movie: schemas.MovieCreate, movie_list_id: int):
+async def create_movie(db: Session, movie: schemas.MovieCreate):
     """
     Create a new movie in the database.
 
@@ -251,7 +251,7 @@ async def create_movie(db: Session, movie: schemas.MovieCreate, movie_list_id: i
     Returns:
         models.Movie: The created movie object.
     """
-    db_movie = models.Movie(**movie.dict(), list_id=movie_list_id)
+    db_movie = models.Movie(**movie.model_dump())
     db.add(db_movie)
     db.commit()
     db.refresh(db_movie)
@@ -271,29 +271,15 @@ async def register_view(db: Session, movie_id: int):
     Returns:
         models.MovieViews: The created movie view object.
     """
-
-    day = datetime.now().day
-    month = datetime.now().month
-    year = datetime.now().year
     # if view count exists, increment it
     # else create a new view count
-    if db.query(models.MovieViews).filter(models.MovieViews.movie_id == movie_id, 
-                                          models.MovieViews.day_of_view == day, 
-                                          models.MovieViews.month_of_view == month, 
-                                          models.MovieViews.year_of_view == year).first():
-        
-        db.update(models.MovieViews).where(models.MovieViews.movie_id == movie_id, 
-                                           models.MovieViews.day_of_view == day, 
-                                           models.MovieViews.month_of_view == month, 
-                                           models.MovieViews.year_of_view == year).values(view_count=models.MovieViews.view_count + 1)
+    movie = db.query(models.Movie).filter(models.Movie.id == movie_id).first()
+    if movie is not None:
+        movie.views += 1
         db.commit()
-        return True
+        return {"success": "view registered successfully"}
     else:
-        db_view = models.MovieViews(movie_id=movie_id, day_of_view=day, month_of_view=month, year_of_view=year, view_count=1)
-        db.add(db_view)
-        db.commit()
-        db.refresh(db_view)
-        return True
+        return {"error": "movie not found"}
 
 async def edit_movie(db: Session, movie: schemas.MovieEdit, movie_id: int):
     """

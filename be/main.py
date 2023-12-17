@@ -31,16 +31,30 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 class Token(BaseModel):
+    """
+        Token model
+
+        Attributes:
+            access_token (str): The access token.
+            token_type (str): The token type.
+    """
     access_token: str
     token_type: str
 
 class CurrentUser(BaseModel):
+    """
+        CurrentUser model
+
+        Attributes:
+            username (str): The username of the user.
+            email (str): The email address of the user.
+            name (str): The name of the user.
+            date_of_birth (datetime): The date of birth of the user.
+    """
     username: str
     email: str
     name: str
-    year_of_birth: int
-    month_of_birth: int
-    day_of_birth: int
+    date_of_birth: datetime
 
 def get_db():
     db = SessionLocal()
@@ -103,15 +117,12 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        print(token)
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        print(payload)
         user_id: str = payload.get("sub")
         if user_id is None:
             raise credentials_exception
     except JWTError as e:
-        print(e)
-        raise credentials_exception
+        raise credentials_exception from e
     user = await crud.get_user(get_db(), user_id=user_id)
     if user is None:
         raise credentials_exception
@@ -119,6 +130,10 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
 
 async def is_admin(user: User = Depends(get_current_user)):
     if not user.is_admin:
+        return False
+
+async def is_content_admin(user: User = Depends(get_current_user)):
+    if not user.is_content_admin:
         return False
 
 @app.post("/signup", response_model=User, tags=["Users"])
@@ -243,16 +258,14 @@ async def register_view(movie_id: int, db: Session = Depends(get_db), current_us
     if current_user is None:
         raise HTTPException(status_code=403, detail="Unauthenticated")
     
-    await crud.register_view(db, movie_id=movie_id)
-    return {"message": "View registered successfully"}
+    return await crud.register_view(db, movie_id=movie_id)
 
 @app.post("/movies", tags=["Movies"])
-async def create_movie(movie: MovieCreate, 
-                       movie_list_id: int,
-                       db: Session = Depends(get_db)):
+async def create_movie(movie: MovieCreate, db: Session = Depends(get_db)):
     """
         Create a new movie in the database.
     """
-    if not is_admin():
+    if not is_content_admin():
         raise HTTPException(status_code=401, detail="Unauthorized")
-    return await crud.create_movie(db, movie=movie, movie_list_id=movie_list_id)
+    return await crud.create_movie(db, movie=movie)
+
