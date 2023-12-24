@@ -1,16 +1,17 @@
 from datetime import datetime, timedelta
 from typing import Annotated
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status, UploadFile, File
 from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import jwt, JWTError
 from pydantic import BaseModel
 from sql.database import SessionLocal, Base, engine
-from sql.schemas import User, UserCreate, MovieListCreate, MovieCreate
+from sql.schemas import User, UserCreate, UserEditPassword, MovieCreate, MovieEdit, MovieListCreate, MovieListEdit, UserEdit
 from sql import crud
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 import os
+import shutil
 import uuid
 
 Base.metadata.create_all(bind=engine)
@@ -78,15 +79,16 @@ async def read_image(image_id: str):
     
     return FileResponse(f"{IMAGES_PATH}/{image_id}")
 
-async def save_image(image):
+async def save_image(image:UploadFile):
     """
         Save an image to the server.
     """
-    image_id = str(uuid.uuid4())
+    image_id = str(uuid.uuid4()) + image.filename
     if os.path.exists(f"{IMAGES_PATH}/{image_id}"):
         raise HTTPException(status_code=500, detail="Image ID already exists")
     with open(f"{IMAGES_PATH}/{image_id}", "wb") as buffer:
-        buffer.write(image)
+        shutil.copyfileobj(image.file, buffer)
+    return image_id
 
 ### USERS ###
 
@@ -127,14 +129,6 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     if user is None:
         raise credentials_exception
     return user
-
-async def is_admin(user: User = Depends(get_current_user)):
-    if not user.is_admin:
-        return False
-
-async def is_content_admin(user: User = Depends(get_current_user)):
-    if not user.is_content_admin:
-        return False
 
 @app.post("/signup", response_model=User, tags=["Users"])
 async def create_user(user: UserCreate, db:Session = Depends(get_db)):
@@ -179,32 +173,47 @@ async def change_password(
     """
         Change the password of the current user.
     """
-    args = {
-        "old_password": old_password,
-        "new_password": new_password
-    }
+    args = UserEditPassword(old_password=old_password, new_password=new_password)
     await crud.change_password(db, args, current_user.id)
-    return {"message": "Password changed successfully"}
+    return {"detail": "PASSWORD_CHANGE_OK"}
+
+@app.patch("/users/me", tags=["Users"])
+async def update_user(
+    name: str = None,
+    date_of_birth: datetime = None,
+    avatar: UploadFile = File(None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+        Update the current user.
+    """
+    args = UserEdit(name=name, date_of_birth=date_of_birth)
+    if avatar is not None:
+        args.avatar_id = await save_image(avatar)
+    await crud.update_user(db, args, current_user.id)
+    return {"detail": "USER_UPDATE_OK"}
 
 @app.get("/users", tags=["Users"])
 async def read_users(skip: int = 0, 
                     limit: int = 100, 
-                    db: Session = Depends(get_db)):
+                    db: Session = Depends(get_db),
+                    current_user: User = Depends(get_current_user)):
     """
         Retrieve a list of users from the database.
     """
-    if not is_admin():
+    if not current_user.is_admin:
         raise HTTPException(status_code=401, detail="Unauthorized")
     users = await crud.get_users(db, skip=skip, limit=limit)
     return users
 
 ### MOVIE LISTS ###
 @app.get("/movie_lists", tags=["Movie Lists"])
-async def read_movie_lists(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+async def read_movie_lists(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: User = Depends(get_current_user), get_public: bool = False):
     """
         Retrieve a list of movie lists from the database.
     """
-    movie_lists = await crud.get_movie_lists(db, skip=skip, limit=limit)
+    movie_lists = await crud.get_movie_lists(db, skip=skip, limit=limit, current_user=current_user, get_public=get_public)
     return movie_lists
 
 @app.get("/movie_lists/{movie_list_id}", tags=["Movie Lists"])
@@ -222,9 +231,26 @@ async def create_movie_list(movie_list: MovieListCreate,
     """
         Create a new movie list in the database.
     """
-    if not is_admin():
+    if not current_user.is_admin:
         raise HTTPException(status_code=401, detail="Unauthorized")
     return await crud.create_movie_list(db, movie_list=movie_list, user_id=current_user.id)
+
+@app.post("/movie_lists/update_movie_list", tags=["Movie Lists"])
+async def update_movie_list(movie_list: MovieListEdit, 
+                            movie_ids: list[int],
+                            db: Session = Depends(get_db), 
+                            current_user: User = Depends(get_current_user)):
+    """
+        Update a movie list in the database.
+    """
+    return await crud.update_movie_list(db, owner_id=current_user.id, movie_list=movie_list, movie_ids=movie_ids)
+
+# @app.get("/movie_lists/delete_movie_list/{movie_list_id}", tags=["Movie Lists"])
+# async def delete_movie_list(movie_list_id: int):
+#     """
+#         Delete a movie from a movie list.
+#     """
+#     return await crud.delete_movie(movie_list_id=movie_list_id)
 
 ### MOVIES ###
 @app.get("/movies", tags=["Movies"])
@@ -261,11 +287,39 @@ async def register_view(movie_id: int, db: Session = Depends(get_db), current_us
     return await crud.register_view(db, movie_id=movie_id)
 
 @app.post("/movies", tags=["Movies"])
-async def create_movie(movie: MovieCreate, db: Session = Depends(get_db)):
+async def create_movie( title:str,
+                        description: str,
+                        date_of_release: datetime,
+                        url: str,
+                        genre: str,
+                        image: UploadFile = File(...), 
+                        db: Session = Depends(get_db),
+                        current_user: User = Depends(get_current_user)):
     """
         Create a new movie in the database.
     """
-    if not is_content_admin():
+    if not current_user.is_content_admin:
         raise HTTPException(status_code=401, detail="Unauthorized")
+    movie = MovieCreate(title=title, description=description, date_of_release=date_of_release, url=url, genre=genre)
+    movie.thumbnail_id = await save_image(image)
     return await crud.create_movie(db, movie=movie)
 
+@app.patch("/movies/{movie_id}", tags=["Movies"])
+async def update_movie(movie_id: int,
+                        title:str,
+                        description: str,
+                        date_of_release: datetime,
+                        url: str,
+                        genre: str,
+                        image: UploadFile = File(None), 
+                        db: Session = Depends(get_db),
+                        current_user: User = Depends(get_current_user)):
+    """
+        Update a movie in the database.
+    """
+    if not current_user.is_content_admin:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    movie = MovieEdit(title=title, description=description, date_of_release=date_of_release, url=url, genre=genre)
+    if image is not None:
+        movie.thumbnail_id = await save_image(image)
+    return await crud.update_movie(db, movie_id=movie_id, movie=movie)

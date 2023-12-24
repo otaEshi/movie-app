@@ -12,9 +12,7 @@ class User(Base):
         - email: str
         - name: str
         - avatar_url: str
-        - year_of_birth: int
-        - month_of_birth: int
-        - day_of_birth: int
+        - date_of_birth: datetime
         - is_active: bool
         - is_admin: bool
         - movielists: list
@@ -63,6 +61,16 @@ class MovieListMovie(Base):
 class Movie(Base):
     """
         Movie model
+
+        Attributes:
+            id (int): The ID of the movie.
+            title (str): The title of the movie.
+            description (str): The description of the movie.
+            date_of_release (datetime): The date of release of the movie.
+            url (str): The URL of the movie.
+            thumbnail_id (str): The thumbnail ID of the movie.
+            views (int): The number of views of the movie.
+            genre (str): The genre of the movie.
     """
     __tablename__ = "movies"
 

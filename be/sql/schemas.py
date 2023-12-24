@@ -23,6 +23,7 @@ class User(BaseModel):
     date_of_birth: datetime
     is_active: bool = True
     is_admin: bool = False
+    is_content_admin: bool = False
     movie_lists: list = []
     username: str = None
     password_hash: str = None
@@ -59,12 +60,9 @@ class UserEdit(BaseModel):
             is_active (bool): Whether the user is active or not.
             is_content_admin (bool): Whether the user is a content admin or not.
     """
-    email: str = None
     name: str = None
     date_of_birth: datetime = None
-    avatar_url: str = None
-    is_active: bool = None
-    is_content_admin: bool = None
+    avatar_id: str = None
 
 class UserEditPassword(BaseModel):
     """
@@ -130,19 +128,16 @@ class MovieCreate(BaseModel):
         Attributes:
             title (str): The title of the movie.
             description (str): The description of the movie.
-            day_of_release (int): The day of release of the movie.
-            month_of_release (int): The month of release of the movie.
-            year_of_release (int): The year of release of the movie.
+            date_of_release (int): The date of release of the movie.
             url (str): The URL of the movie.
-            thumbnail_url (str): The thumbnail URL of the movie.
+            thumbnail_id (str): The thumbnail id of the movie.
             genre (str): The genre of the movie.
     """
     title: str
     description: str = None
     date_of_release: datetime = None
     url: str = None
-    thumbnail_url: str = None
-    views: int = None
+    thumbnail_id: str = None
     genre: str = None
 
 class MovieEdit(BaseModel):
@@ -152,18 +147,16 @@ class MovieEdit(BaseModel):
         Attributes:
             title (str): The title of the movie.
             description (str): The description of the movie.
-            day_of_release (int): The day of release of the movie.
-            month_of_release (int): The month of release of the movie.
-            year_of_release (int): The year of release of the movie.
+            date_of_release (int): The date of release of the movie.
             url (str): The URL of the movie.
-            thumbnail_url (str): The thumbnail URL of the movie.
+            thumbnail_id (str): The thumbnail URL of the movie.
             genre (str): The genre of the movie.
     """
     title: str = None
     description: str = None
     date_of_release: datetime = None
     url: str = None
-    thumbnail_url: str = None
+    thumbnail_id: str = None
     views: int = None
     genre: str = None
 
@@ -228,3 +221,18 @@ class MovieListCreate(BaseModel):
     name: str
     description: str = None
     created_at: datetime
+
+class MovieListEdit(BaseModel):
+    """
+        MovieListCreate model
+
+        Attributes:
+            name (str): The name of the movie list.
+            description (str): The description of the movie list.
+            created_at (datetime): The date of creation of the movie list.
+            owner_id (int): The ID of the owner of the movie list.
+    """
+    id: int
+    name: str
+    description: str = None
+    
