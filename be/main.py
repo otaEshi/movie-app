@@ -30,6 +30,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 class Token(BaseModel):
     access_token: str
     token_type: str
+    fullname: str
 
 class TokenData(BaseModel):
     username: str | None = None
@@ -98,4 +99,6 @@ async def login_for_access_token(
     access_token = create_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    print("FRACKING TEST")
+    print(user.name)
+    return {"access_token": access_token, "token_type": "bearer", "fullname":user.username}

@@ -1,4 +1,4 @@
-import { SetStateAction, useState } from 'react';
+import { SetStateAction, useState, useEffect } from 'react';
 import { sport, music, travel } from '../../dummyData';
 import ListFilmCard from '../listFilm/ListFilmCard';
 import './viewAllPage.scss';
@@ -18,6 +18,10 @@ function ViewAllPageMusic() {
 
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [moviesPerPage, setMoviesPerPage] = useState<number>(10);
+
+    useEffect(() => {
+        window.scrollTo(0,0);
+    }, []);
 
     const indexOfLastItem = currentPage * moviesPerPage;
     const indexOfFirstItem = indexOfLastItem - moviesPerPage;

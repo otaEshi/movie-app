@@ -7,18 +7,18 @@ import { signUpRequest } from './authApi';
 
 function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
   const [fullname, setfullname] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
   const [username, setUsername] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [fullnameError, setfullnameError] = useState<string>('');
-  const [emailError, setEmailError] = useState<string>('');
+  const [usernameError, setUsernameError] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
   const [confirmPasswordError, setConfirmPasswordError] = useState<string>('');
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   // Checking
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,64}$/;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,64}$/;
+  // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -31,6 +31,7 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
     }
     if (id === 'username') {
       setUsername(value);
+      setUsernameError('');
     }
     if (id === 'password') {
       setPassword(value);
@@ -44,42 +45,46 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
 
   const handleSignUp = () => {
     if (fullname === '') {
-      setfullnameError('This field must not be blank.');
+      setfullnameError('Không được bỏ trống.');
       return;
     }
-    // if (email === '') {
-    //   setEmailError('This field must not be blank.');
-    //   return;
-    // }
-    // if (!emailRegex.test(email)) {
-    //   setEmailError('Please enter a valid email address.');
+    if (username === '') {
+      setUsernameError('Không được bỏ trống.');
+      return;
+    }
+    if (/\s/.test(username)) {
+      setUsernameError('Tài khoản không được chứa dấu cách.');
+      return;
+    }
+    // if (!usernameRegex.test(username)) {
+    //   setusernameError('Please enter a valid username address.');
     //   return;
     // }
     if (password === '') {
-      setPasswordError('This field must not be blank.');
+      setPasswordError('Không được bỏ trống.');
       return;
     }
-    if (!passwordRegex.test(password)) {
-      setPasswordError('Password must contain: 8-64 characters, 1 uppercase letter, 1 lowercase letter, 1 number.')
-      return;
-    }
+    // if (!passwordRegex.test(password)) {
+    //   setPasswordError('Password must contain: 8-64 characters, 1 uppercase letter, 1 lowercase letter, 1 number.')
+    //   return;
+    // }
     if (/\s/.test(password)) {
-      setPasswordError('Password cannot contain spaces in between.');
+      setPasswordError('Tài khoản không được chứa dấu cách.');
       return;
     }
     if (confirmPassword === '') {
-      setConfirmPasswordError('This field must not be blank.');
+      setConfirmPasswordError('Không được bỏ trống.');
       return;
     }
     if (confirmPassword !== password) {
-      setConfirmPasswordError('Password must be the same .');
+      setConfirmPasswordError('Mật khẩu phải giống nhau.');
       return;
     }
 
     // Dispatch sign up request
     const payload: ISignUpPayload = {
       name: fullname,
-      email: "",
+      email: '',
       username: username,
       password: password,
       day_of_birth: 0,
@@ -88,20 +93,14 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
     };
     dispatch<any>(signUpRequest(payload))
       .then((result: any) => {
-        if (result.payload?.response?.request?.response) {
-          const response = JSON.parse(result.payload.response.request.response);
-          console.log(response)
-          const errorMessage = response.detail;
+        if (result.type === 'api/sign-up/rejected') {
+            setUsernameError('Tài khoản đã tồn tại');
 
-          console.log(errorMessage);
-          if (errorMessage === "User is existed") {
-            setEmailError('User Exists');
-          }
-        } else {
-          // setShowSuccessMessage(!showSuccessMessage);
+        } else if (result.type  === 'api/sign-up/fulfilled') {
+          setOpenSignUpModal(false);
+
         }
       });
-    // console.log("test: ", showSuccessMessage)
   };
 
   return (
@@ -117,7 +116,7 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
       <div className="custom-container">
         <div className="custom-panel">
           <div className='position-relative'>
-            <h1 className="custom-signin-title mb-4">Create Account</h1>
+            <h1 className="custom-signin-title mb-4">Đăng ký</h1>
             <div>
               <input
                 type="text"
@@ -125,7 +124,8 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
                 className="custom-input"
                 value={fullname || ''}
                 onChange={(e) => handleInputChange(e)}
-                placeholder="Fullname"
+                placeholder="Họ Tên"
+                autoComplete='off'
               />
             </div>
             <div className='custom-error-text-wrapper'>{fullnameError && <div className="text-danger small custom-error-text">{fullnameError}</div>}</div>
@@ -136,10 +136,11 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
                 className="custom-input"
                 value={username || ''}
                 onChange={(e) => handleInputChange(e)}
-                placeholder="Username"
+                placeholder="Tài khoản"
+                autoComplete='off'
               />
             </div>
-            <div className='custom-error-text-wrapper'>{emailError && <div className="text-danger small custom-error-text">{emailError}</div>}</div>
+            <div className='custom-error-text-wrapper'>{usernameError && <div className="text-danger small custom-error-text">{usernameError}</div>}</div>
             <div>
               <input
                 className="custom-input"
@@ -147,7 +148,8 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
                 id="password"
                 value={password || ''}
                 onChange={(e) => handleInputChange(e)}
-                placeholder="Password"
+                placeholder="Mật khẩu"
+                autoComplete='off'
               />
             </div>
             <div className='custom-error-text-wrapper'>
@@ -161,6 +163,7 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
                 value={confirmPassword || ''}
                 onChange={(e) => handleInputChange(e)}
                 placeholder="Confirm Password"
+                autoComplete='off'
               />
             </div>
             <div className='custom-error-text-wrapper'>
@@ -168,7 +171,7 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
             </div>
             <div className="mb-2 mt-3">
               <button className="custom-btn" onClick={handleSignUp} tabIndex={-1}>
-                Sign Up
+                ĐĂNG KÝ
               </button>
             </div>
             <div>
@@ -176,11 +179,11 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
                 {/* Already have an account? <Link to='/sign_in' className='custom-nav-text' tabIndex={-1}>
                   Sign in
                 </Link> */}
-                Already have an account? <span className='custom-text-link' onClick={() => { 
+                Đã có tài khoản? <span className='custom-text-link' onClick={() => { 
                   setOpenSignInModal(true);
                   setOpenSignUpModal(false);
                  }} tabIndex={-1}>
-                  Sign in
+                  Đăng nhập
                 </span>
               </p>
             </div>

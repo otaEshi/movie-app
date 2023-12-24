@@ -12,6 +12,18 @@ const Header = () => {
   const [search, setSearch] = useState<string>('');
   const [openSignInModal, setOpenSignInModal] = useState<boolean>(false);
   const [openSignUpModal, setOpenSignUpModal] = useState<boolean>(false);
+  const [isLogin, setIsLogin] = useState<boolean>(false);
+  const [username, setUsername] = useState<string>('');
+
+  // const handleLogin = () => {
+  //   setIsLogin(true);
+  // }
+
+  const handleLogout = () => {
+    setIsLogin(false);
+    window.location.reload();
+    console.log('test logout')
+  }
 
   const navigate = useNavigate();
 
@@ -21,7 +33,6 @@ const Header = () => {
     const { id, value } = e.target;
     if (id === 'search') {
       setSearch(value);
-      // setEmailError('');
     }
 
     // search while typing
@@ -86,14 +97,15 @@ const Header = () => {
           </button> */}
         </nav>
         <div className='account flexSB'>
-          {isAuthenticated ? (
+          {isLogin ? (
             <Dropdown>
               <Dropdown.Toggle variant="dark" className='header-button'>
                 {/* user's avatar or default avatar */}
                 <i className='fas fa-user'></i>
+                <span>{username}</span>
               </Dropdown.Toggle>
               <Dropdown.Menu>
-                <Dropdown.Item className='dropdown-item' href="#">function 1</Dropdown.Item>
+                <Dropdown.Item className='dropdown-item' onClick={handleLogout}>Đăng xuất</Dropdown.Item>
                 <Dropdown.Item className='dropdown-item' href="#">function 2</Dropdown.Item>
                 <Dropdown.Item className='dropdown-item' href="#">function 3</Dropdown.Item>
                 <Dropdown.Item className='dropdown-item' href="#">function 4</Dropdown.Item>
@@ -116,7 +128,7 @@ const Header = () => {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <SignInPage setOpenSignUpModal={setOpenSignUpModal} setOpenSignInModal={setOpenSignInModal}/>
+        <SignInPage setOpenSignUpModal={setOpenSignUpModal} setOpenSignInModal={setOpenSignInModal} isLoginOk={setIsLogin} setUsernameHeader={setUsername}/>
       </Modal>
       
       <Modal

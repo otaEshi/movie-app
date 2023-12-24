@@ -1,4 +1,4 @@
-import { SetStateAction, useState } from 'react';
+import { SetStateAction, useEffect, useState } from 'react';
 import { sport, music, travel } from '../../dummyData';
 import ListFilmCard from '../listFilm/ListFilmCard';
 import './viewAllPage.scss';
@@ -17,6 +17,10 @@ function ViewAllPageSport() {
     const [sports, setSports] = useState(sport);
     const [musics, setSusics] = useState(music);
     const [travels, setTravels] = useState(travel);
+
+    useEffect(() => {
+        window.scrollTo(0,0);
+    }, []);
 
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [moviesPerPage, setMoviesPerPage] = useState<number>(10); // Default value

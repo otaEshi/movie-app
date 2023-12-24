@@ -4,7 +4,7 @@ import '@fortawesome/fontawesome-free/css/all.css';
 import ReactStars from '../../lib/reactStar/react-star';
 import Stars from '../../lib/reactStar/react-star';
 
-interface HomeCardProps {
+export interface HomeCardProps {
   item: {
     id: string;
     cover: string;
@@ -12,15 +12,13 @@ interface HomeCardProps {
     rating: number;
     time: string;
     desc: string;
-    starring: string;
-    genres: string;
     tags: string;
     video: string;
     date: string;
   };
 }
 
-const HomeCard: React.FC<HomeCardProps> = ({ item: { id, cover, name, rating, time, desc, starring, genres, tags, video, date } }) => {
+const HomeCard: React.FC<HomeCardProps> = ({ item: { id, cover, name, rating, time, desc, tags, video, date } }) => {
   const [ratingStar, setRatingStar] = useState(rating);
 
   const handleRatingChange = (newRating: number) => {
@@ -87,7 +85,7 @@ const HomeCard: React.FC<HomeCardProps> = ({ item: { id, cover, name, rating, ti
                   <img src='./images/play-button.png' alt='' />
                   <img src='./images/play.png' className='change' alt='' />
                 </div>
-                 
+                 CHƠI NGAY
               </button>
             </Link>
           </div>

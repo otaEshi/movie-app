@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import '@fortawesome/fontawesome-free/css/all.css';
 import './listFilm.css';
 import { homeData } from '../../dummyData';
+import { HomeCardProps } from '../homes/HomeCard';
 
 interface ListFilmCardProps {
   item: {
@@ -14,14 +15,16 @@ interface ListFilmCardProps {
 
 
 const ListFilm: React.FC<ListFilmCardProps> = ({ item: { id, cover, name } }) => {
-  // const [chosenVid, setChosenVid] = useState<>();
+  const [chosenVid, setChosenVid] = useState<any>();
   
   return (
     <>
       <div className='MovieBox' onClick={() => {
         console.log(name)
         let foundItem = homeData.find((item) => item.id === id);
-        // setChosenVid(foundItem);
+        setChosenVid(foundItem);
+        // render home card in a modal
+
       }}>
         <div className='img'>
           <img src={cover} alt='' />
