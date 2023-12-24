@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -12,9 +12,7 @@ class User(Base):
         - email: str
         - name: str
         - avatar_url: str
-        - year_of_birth: int
-        - month_of_birth: int
-        - day_of_birth: int
+        - date_of_birth: datetime
         - is_active: bool
         - is_admin: bool
         - movielists: list
@@ -26,12 +24,11 @@ class User(Base):
     password_hash = Column(String(72), nullable=False)
     email = Column(String(32), unique=False, index=True)
     name = Column(String(128), index=True)
-    avatar_url = Column(String(256), default="")
-    year_of_birth = Column(Integer, index=True)
-    month_of_birth = Column(Integer, index=True)
-    day_of_birth = Column(Integer, index=True)
+    avatar_id = Column(String(256), default="")
+    date_of_birth = Column(DateTime, index=True)
     is_active = Column(Boolean, index=True, default=True)
     is_admin = Column(Boolean, default=False)
+    is_content_admin = Column(Boolean, default=False)
 
     movielists = relationship("MovieList")
 
@@ -45,12 +42,8 @@ class MovieList(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(256), index=True)
     description = Column(String(1024))
-    year_of_creation = Column(Integer, index=True)
-    month_of_creation = Column(Integer, index=True)
-    day_of_creation = Column(Integer, index=True)
+    created_at = Column(DateTime, index=True)
     owner_id = Column(Integer, ForeignKey("users.id"))
-
-    owner = relationship("User")
 
 class MovieListMovie(Base):
     """
@@ -68,13 +61,48 @@ class MovieListMovie(Base):
 class Movie(Base):
     """
         Movie model
+
+        Attributes:
+            id (int): The ID of the movie.
+            title (str): The title of the movie.
+            description (str): The description of the movie.
+            date_of_release (datetime): The date of release of the movie.
+            url (str): The URL of the movie.
+            thumbnail_id (str): The thumbnail ID of the movie.
+            views (int): The number of views of the movie.
+            genre (str): The genre of the movie.
     """
     __tablename__ = "movies"
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(256), index=True)
     description = Column(String(1024))
-    year_of_release = Column(Integer, index=True)
+    date_of_release = Column(DateTime, index=True)
     url = Column(String(256))
-    thumbnail_url = Column(String(256))
+    thumbnail_id = Column(String(256))
     views = Column(Integer, index=True)
+    genre = Column(String(256), index=True)
+
+class MovieComments(Base):
+    """
+        MovieComments model
+    """
+    __tablename__ = "moviecomments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    movie_id = Column(Integer, ForeignKey("movies.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    comment = Column(String(1024))
+    created_at = Column(DateTime, index=True)
+
+class MovieRatings(Base):
+    """
+        MovieRatings model
+    """
+    __tablename__ = "movieratings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    movie_id = Column(Integer, ForeignKey("movies.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    rating = Column(Integer, index=True)
+    created_at = Column(DateTime, index=True)
