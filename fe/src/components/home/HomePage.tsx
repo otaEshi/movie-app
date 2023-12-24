@@ -14,7 +14,6 @@ const HomePage: React.FC = () => {
       <Homes />
       <ListFilm items={sports} title='Thể thao' itemName='sports' />
       <ListFilm items={musics} title='Âm nhạc' itemName='musics' />
-      {/* <Trending /> */}
       <ListFilm items={travels} title='Du lịch' itemName='travels' />
     </div>
   );
