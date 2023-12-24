@@ -1,13 +1,13 @@
 services:
-  # be:
-  #   container_name: movie-app-be
-  #   build: ./be
-  #   ports:
-  #     - 8000:8000
-  #   depends_on:
-  #     - db
-  #   networks:
-  #     - db_network
+  be:
+    container_name: movie-app-be
+    build: ./be
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+    networks:
+      - db_network
   db:
     container_name: movie-app-db
     image: mysql:8.2.0
