@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, date
 
 ### User ###
 class User(BaseModel):
@@ -16,20 +16,23 @@ class User(BaseModel):
             movie_lists (list): The movie lists owned by the user.
             username (str): The username of the user.
             password_hash (str): The password hash of the user.
+            avatar_id (str): The avatar ID of the user.
     """
     id: int
     email: str
     name: str
-    date_of_birth: datetime
+    date_of_birth: date
     is_active: bool = True
     is_admin: bool = False
     is_content_admin: bool = False
     movie_lists: list = []
     username: str = None
     password_hash: str = None
+    avatar_id: str|None = None
     
     class Config:
         from_attributes = True
+
 
 class UserCreate(BaseModel):
     """
@@ -42,9 +45,8 @@ class UserCreate(BaseModel):
             username (str): The username of the user.
             password (str): The password of the user.
     """
-    email: str
     name: str
-    date_of_birth: datetime
+    date_of_birth: date
     username: str
     password: str
 
@@ -61,7 +63,7 @@ class UserEdit(BaseModel):
             is_content_admin (bool): Whether the user is a content admin or not.
     """
     name: str = None
-    date_of_birth: datetime = None
+    date_of_birth: date = None
     avatar_id: str = None
 
 class UserEditPassword(BaseModel):
@@ -87,7 +89,7 @@ class MovieBase(BaseModel):
             description (str): The description of the movie.
             date_of_release (datetime): The day of release of the movie.
             url (str): The URL of the movie.
-            thumbnail_url (str): The thumbnail URL of the movie.
+            thumbnail_id (str): The thumbnail URL of the movie.
             views (int): The number of views of the movie.
             genre (str): The genre of the movie.
             movies (list): The movies in the movie list.
@@ -95,11 +97,11 @@ class MovieBase(BaseModel):
     id: int
     title: str
     description: str = None
-    date_of_release: datetime = None
+    date_of_release: date = None
     url: str = None
-    thumbnail_url: str = None
-    views: int = None
-    genre: str = None
+    thumbnail_id: str = None
+    views: int = 0
+    genre: str|None = None
     movies: list = []
 
     class Config:
@@ -135,7 +137,7 @@ class MovieCreate(BaseModel):
     """
     title: str
     description: str = None
-    date_of_release: datetime = None
+    date_of_release: date = None
     url: str = None
     thumbnail_id: str = None
     genre: str = None
@@ -154,7 +156,7 @@ class MovieEdit(BaseModel):
     """
     title: str = None
     description: str = None
-    date_of_release: datetime = None
+    date_of_release: date = None
     url: str = None
     thumbnail_id: str = None
     views: int = None
@@ -187,7 +189,6 @@ class MovieCommentsCreate(BaseModel):
     created_at: datetime
 
 ### Movie List ###
-
 class MovieListBase(BaseModel):
     """
         MovieListBase model
@@ -215,12 +216,11 @@ class MovieListCreate(BaseModel):
         Attributes:
             name (str): The name of the movie list.
             description (str): The description of the movie list.
-            created_at (datetime): The date of creation of the movie list.
             owner_id (int): The ID of the owner of the movie list.
     """
     name: str
     description: str = None
-    created_at: datetime
+    movie_ids: list = []
 
 class MovieListEdit(BaseModel):
     """
@@ -235,4 +235,22 @@ class MovieListEdit(BaseModel):
     id: int
     name: str
     description: str = None
-    
+
+class MovieListGet(BaseModel):
+    """
+        MovieListGet model
+
+        Attributes:
+            id (int): The ID of the movie list.
+            name (str): The name of the movie list.
+            description (str): The description of the movie list.
+            created_at (datetime): The date of creation of the movie list.
+            owner_id (int): The ID of the owner of the movie list.
+            movies (list): The movies in the movie list.
+    """
+    id: int
+    name: str
+    description: str = None
+    created_at: datetime
+    owner_id: int
+    movies: list = []
