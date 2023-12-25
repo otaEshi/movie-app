@@ -32,10 +32,16 @@ class User(Base):
 
     movielists = relationship("MovieList")
 
-
 class MovieList(Base):
     """
         MovieList model
+
+        Attributes:
+            id (int): The ID of the movie list.
+            name (str): The name of the movie list.
+            description (str): The description of the movie list.
+            created_at (datetime): The date of creation of the movie list.
+            owner_id (int): The ID of the owner of the movie list.
     """
     __tablename__ = "movielists"
 
@@ -44,6 +50,8 @@ class MovieList(Base):
     description = Column(String(1024))
     created_at = Column(DateTime, index=True)
     owner_id = Column(Integer, ForeignKey("users.id"))
+
+    movies = relationship("MovieListMovie", back_populates="movie_list")
 
 class MovieListMovie(Base):
     """
@@ -55,7 +63,7 @@ class MovieListMovie(Base):
     movie_list_id = Column(Integer, ForeignKey("movielists.id"))
     movie_id = Column(Integer, ForeignKey("movies.id"))
 
-    movie_list = relationship("MovieList")
+    movie_list = relationship("MovieList", back_populates="movies")
     movie = relationship("Movie")
 
 class Movie(Base):
