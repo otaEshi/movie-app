@@ -7,9 +7,7 @@ export interface ISignUpPayload {
     email: string;
     username: string;
     password: string;
-    day_of_birth: number;
-    month_of_birth: number;
-    year_of_birth: number;
+    date_of_birth: string;
 }
 export interface IActivateInfo {
     uid: number;
@@ -21,3 +19,16 @@ export interface ISignInResponse {
     refresh_token:string
     // temp
   }
+
+export interface ISignUpResponse {
+    id: number;
+    name: string;
+    email: string;
+    username: string;
+    password: string;
+    date_of_birth: string;
+    movie_lists: string[];
+    is_active: boolean;
+    is_admin: boolean;
+    is_content_admin: boolean;
+}

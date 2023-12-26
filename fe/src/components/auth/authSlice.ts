@@ -1,21 +1,18 @@
 import { createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
-import { signInRequest } from './authApi';
+import { signInRequest, signUpRequest } from './authApi';
 
 // Try to load user info from local storage
 let id_token = localStorage.getItem('id_token');
 let refresh_token = localStorage.getItem('refresh_token');
-let roleId = null;
 let userId = null;
 let isAuthenticated = Boolean(id_token && refresh_token);
 if (id_token) {
     try {
         let tokenDecode: any = jwtDecode(id_token);
         if (tokenDecode) {
-            roleId = tokenDecode['role_id'];
             userId = tokenDecode['user_id'];
-
         }
     } catch (error) {
         isAuthenticated = false;
@@ -31,17 +28,32 @@ interface AuthState {
     isAuthenticated: boolean,
     currentUser: {
         id: number,
-        roleId: number
+        name: string,
+        email: string,
+        username: string,
+        password: string,
+        date_of_birth: string,
+        movie_lists: string[],
+        is_active: boolean,
+        is_admin: boolean,
+        is_content_admin: boolean,
     }
 }
 
 
 const initialState: AuthState = {
-    // TODO: Change this to required login
     isAuthenticated: isAuthenticated,
     currentUser: {
         id: userId,
-        roleId: roleId,
+        name: "",
+        email: "",
+        username: "",
+        password: "",
+        date_of_birth: "",
+        movie_lists: [],
+        is_active: false,
+        is_admin: false,
+        is_content_admin: false,
     }
 };
 
@@ -56,19 +68,30 @@ const authSlice = createSlice({
             localStorage.removeItem('refresh_token');
             sessionStorage.removeItem('id_token');
             sessionStorage.removeItem('refresh_token');
+            window.location.reload();
         },
 
     },
     extraReducers: builder => {
-        builder.addCase(signInRequest.fulfilled, (state, action) => {
-            if (action.payload) {
-                state.isAuthenticated = true;
-                localStorage.setItem('id_token', action.payload.access_token);
-                localStorage.setItem('refresh_token', action.payload.refresh_token);
-                axios.defaults.headers.common['Authorization'] = "Bearer " + action.payload.access_token;
-            }
-        });
+        builder
+            .addCase(signInRequest.fulfilled, (state, action) => {
+                if (action.payload) {
+                    state.isAuthenticated = true;
+                    localStorage.setItem('id_token', action.payload.access_token);
+                    localStorage.setItem('refresh_token', action.payload.refresh_token);
+                    axios.defaults.headers.common['Authorization'] = "Bearer " + action.payload.access_token;
+                    window.location.reload();
+                }
+            })
+            .addCase(signUpRequest.fulfilled, (state, action) => {
+                if (action.payload) {
+                    state.isAuthenticated = true;
 
+                    // localStorage.setItem('id_token', action.payload.access_token);
+                    // localStorage.setItem('refresh_token', action.payload.refresh_token);
+                    // axios.defaults.headers.common['Authorization'] = "Bearer " + action.payload.access_token;
+                }
+            });
     }
 });
 

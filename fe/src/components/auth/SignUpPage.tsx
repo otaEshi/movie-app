@@ -59,10 +59,10 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
       setPasswordError('This field must not be blank.');
       return;
     }
-    if (!passwordRegex.test(password)) {
-      setPasswordError('Password must contain: 8-64 characters, 1 uppercase letter, 1 lowercase letter, 1 number.')
-      return;
-    }
+    // if (!passwordRegex.test(password)) {
+    //   setPasswordError('Password must contain: 8-64 characters, 1 uppercase letter, 1 lowercase letter, 1 number.')
+    //   return;
+    // }
     if (/\s/.test(password)) {
       setPasswordError('Password cannot contain spaces in between.');
       return;
@@ -82,9 +82,8 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
       email: "",
       username: username,
       password: password,
-      day_of_birth: 0,
-      month_of_birth: 0,
-      year_of_birth: 0,
+      // temp
+      date_of_birth: "2023-12-24 15:16",
     };
     dispatch<any>(signUpRequest(payload))
       .then((result: any) => {
@@ -126,6 +125,7 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
                 value={fullname || ''}
                 onChange={(e) => handleInputChange(e)}
                 placeholder="Fullname"
+                autoComplete='off'
               />
             </div>
             <div className='custom-error-text-wrapper'>{fullnameError && <div className="text-danger small custom-error-text">{fullnameError}</div>}</div>
@@ -137,6 +137,7 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
                 value={username || ''}
                 onChange={(e) => handleInputChange(e)}
                 placeholder="Username"
+                autoComplete='off'
               />
             </div>
             <div className='custom-error-text-wrapper'>{emailError && <div className="text-danger small custom-error-text">{emailError}</div>}</div>

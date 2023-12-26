@@ -1,10 +1,10 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { sendRequest } from "../../utils/sendRequest";
-import { ISignInPayload, ISignInResponse, ISignUpPayload } from "../../types/auth";
+import { ISignInPayload, ISignInResponse, ISignUpPayload, ISignUpResponse } from "../../types/auth";
 
 const BASE_URL = 'http://localhost:8000';
 
-export const signUpRequest = createAsyncThunk<void, ISignUpPayload>(
+export const signUpRequest = createAsyncThunk<ISignUpResponse, ISignUpPayload>(
     "api/sign-up",
     async (SignUpInfo, thunkApi) => {
         const res  = await sendRequest(`${BASE_URL}/signup/`, {
