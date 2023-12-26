@@ -21,7 +21,7 @@ class User(BaseModel):
     id: int
     email: str|None = None
     name: str
-    date_of_birth: date
+    date_of_birth: date|None = None
     is_active: bool = True
     is_admin: bool = False
     is_content_admin: bool = False
@@ -62,9 +62,9 @@ class UserEdit(BaseModel):
             is_active (bool): Whether the user is active or not.
             is_content_admin (bool): Whether the user is a content admin or not.
     """
-    name: str = None
-    date_of_birth: date = None
-    avatar_id: str = None
+    name: str|None = None
+    date_of_birth: date|None = None
+    avatar_id: str|None = None
 
 class UserEditPassword(BaseModel):
     """
@@ -154,13 +154,14 @@ class MovieEdit(BaseModel):
             thumbnail_id (str): The thumbnail URL of the movie.
             genre (str): The genre of the movie.
     """
-    title: str = None
-    description: str = None
-    date_of_release: date = None
-    url: str = None
-    thumbnail_id: str = None
-    views: int = None
-    genre: str = None
+    title: str|None = None
+    description: str|None = None
+    date_of_release: date|None = None
+    url: str|None = None
+    thumbnail_id: str|None = None
+    views: int|None = None
+    genre: str|None = None
+    is_deleted: bool|None = None
 
 class MovieRatingsCreate(BaseModel):
     """
@@ -232,9 +233,9 @@ class MovieListEdit(BaseModel):
             created_at (datetime): The date of creation of the movie list.
             owner_id (int): The ID of the owner of the movie list.
     """
-    id: int
-    name: str
-    description: str = None
+    name: str|None
+    description: str|None = None
+    is_deleted: bool|None = False
 
 class MovieListGet(BaseModel):
     """

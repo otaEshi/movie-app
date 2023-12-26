@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from typing import Annotated
 from fastapi import Depends, FastAPI, HTTPException, status, UploadFile, File
 from fastapi.responses import FileResponse
@@ -68,6 +68,7 @@ async def save_image(image:UploadFile):
     """
         Save an image to the server.
     """
+    image.filename = image.filename.replace(" ", "")
     image_id = str(uuid.uuid4()) + image.filename
     if os.path.exists(f"{IMAGES_PATH}/{image_id}"):
         raise HTTPException(status_code=500, detail="Image ID already exists")
@@ -142,11 +143,10 @@ async def login_for_access_token(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-@app.get("/users/me", response_model=User, tags=["Users"])
+@app.get("/users/me", tags=["Users"])
 async def read_users_me(
     current_user: User = Depends(get_current_user)
 ):
-    
     return current_user
 
 @app.post("/users/me/change_password", tags=["Users"])
@@ -166,7 +166,7 @@ async def change_password(
 @app.patch("/users/me", tags=["Users"])
 async def update_user(
     name: str = None,
-    date_of_birth: datetime = None,
+    date_of_birth: date = None,
     avatar: UploadFile = File(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -192,11 +192,11 @@ async def read_users(page: int = 0, page_size: int = 10, db: Session = Depends(g
 
 ### MOVIE LISTS ###
 @app.get("/movie_lists", tags=["Movie Lists"])
-async def read_movie_lists(page: int = 0, page_size: int = 10, db: Session = Depends(get_db), current_user: User = Depends(get_current_user), get_public: bool = False):
+async def read_movie_lists(page: int = 0, page_size: int = 10, include_deleted: bool = False, db: Session = Depends(get_db), current_user: User = Depends(get_current_user), get_public: bool = False):
     """
         Retrieve a list of movie lists from the database.
     """
-    movie_lists = await crud.get_movie_lists(db, page, page_size, current_user, get_public)
+    movie_lists = await crud.get_movie_lists(db, page, page_size, current_user, get_public, include_deleted)
     return movie_lists
 
 @app.get("/movie_lists/{movie_list_id}", tags=["Movie Lists"])
@@ -216,32 +216,34 @@ async def create_movie_list(movie_list: MovieListCreate,
     """
     return await crud.create_movie_list(db, movie_list=movie_list, user_id=current_user.id)
 
-@app.patch("/movie_lists/update_movie_list", tags=["Movie Lists"])
-async def update_movie_list(movie_list: MovieListEdit, 
-                            movie_ids: list[int],
+@app.patch("/movie_lists/{movie_list_id}", tags=["Movie Lists"])
+async def update_movie_list(movie_list_id: int,
+                            movie_list: MovieListEdit, 
+                            movie_ids: list[int] = None,
                             db: Session = Depends(get_db), 
                             current_user: User = Depends(get_current_user)):
     """
         Update a movie list in the database.
     """
-    return await crud.update_movie_list(db, owner_id=current_user.id, movie_list=movie_list, movie_ids=movie_ids)
+    return await crud.update_movie_list(db,movie_list_id, current_user.id, movie_list, movie_ids)
 
-# @app.get("/movie_lists/delete_movie_list/{movie_list_id}", tags=["Movie Lists"])
-# async def delete_movie_list(movie_list_id: int):
-#     """
-#         Delete a movie from a movie list.
-#     """
-#     return await crud.delete_movie(movie_list_id=movie_list_id)
+@app.delete("/movie_lists/{movie_list_id}", tags=["Movie Lists"])
+async def delete_movie_list(movie_list_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+        Delete a movie from a movie list.
+    """
+    return await crud.delete_movie_list(db, movie_list_id,current_user.id)
 
 ### MOVIES ###
 @app.get("/movies", tags=["Movies"])
-async def read_movies(skip: int = 0, 
-                      limit: int = 100, 
+async def read_movies(page: int = 0, 
+                      page_size: int = 100, 
                       title: str = None,
                       des: str = None,
                       d: int = None,
                       m: int = None,
                       y: int = None,
+                      include_deleted: bool = False,
                       db: Session = Depends(get_db)):
     """
         Retrieve a list of movies from the database.
@@ -251,11 +253,23 @@ async def read_movies(skip: int = 0,
         "des": des,
         "d": d,
         "m": m,
-        "y": y
+        "y": y,
     }
+
+    if not include_deleted:
+        search_params["is_deleted"] = False
+
     search_params = {k: v for k, v in search_params.items() if v is not None}
-    movies = await crud.get_movies(db, skip=skip, limit=limit, search_params=search_params)
+    movies = await crud.get_movies(db, page, page_size, search_params)
     return movies
+
+@app.get("/movies/{movie_id}", tags=["Movies"])
+async def read_movie(movie_id: int, db: Session = Depends(get_db)):
+    """
+        Retrieve a movie from the database by its ID.
+    """
+    movie = await crud.get_movie(db, movie_id=movie_id)
+    return movie
 
 @app.post("/register_view/{movie_id}", tags=["Movies"])
 async def register_view(movie_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -287,12 +301,13 @@ async def create_movie( title:str,
 
 @app.patch("/movies/{movie_id}", tags=["Movies"])
 async def update_movie(movie_id: int,
-                        title:str,
-                        description: str,
-                        date_of_release: datetime,
-                        url: str,
-                        genre: str,
-                        image: UploadFile = File(None), 
+                        title: str = None,
+                        description: str = None,
+                        date_of_release: date = None,
+                        url: str = None,
+                        genre: str = None,
+                        image: UploadFile = File(None),
+                        is_deleted: bool = None, 
                         db: Session = Depends(get_db),
                         current_user: User = Depends(get_current_user)):
     """
@@ -300,7 +315,16 @@ async def update_movie(movie_id: int,
     """
     if not current_user.is_content_admin:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    movie = MovieEdit(title=title, description=description, date_of_release=date_of_release, url=url, genre=genre)
+    movie = MovieEdit(title=title, description=description, date_of_release=date_of_release, url=url, genre=genre, is_deleted=is_deleted)
     if image is not None:
         movie.thumbnail_id = await save_image(image)
     return await crud.update_movie(db, movie_id=movie_id, movie=movie)
+
+@app.delete("/movies/{movie_id}", tags=["Movies"])
+async def delete_movie(movie_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+        Delete a movie from the database.
+    """
+    if not current_user.is_content_admin:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return await crud.delete_movie(db, movie_id=movie_id)
