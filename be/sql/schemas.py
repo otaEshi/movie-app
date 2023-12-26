@@ -19,7 +19,7 @@ class User(BaseModel):
             avatar_id (str): The avatar ID of the user.
     """
     id: int
-    email: str
+    email: str|None = None
     name: str
     date_of_birth: date
     is_active: bool = True
