@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import jwt, JWTError
 from pydantic import BaseModel
 from sql.database import SessionLocal, Base, engine
-from sql.schemas import User, UserCreate, UserEditPassword, MovieCreate, MovieEdit, MovieListCreate, MovieListEdit, UserEdit
+from sql.schemas import User, UserCreate, UserEditPassword, MovieCreate, MovieEdit, MovieListCreate, MovieListEdit, UserEdit, MovieListGet
 from sql import crud
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
@@ -41,21 +41,6 @@ class Token(BaseModel):
     """
     access_token: str
     token_type: str
-
-class CurrentUser(BaseModel):
-    """
-        CurrentUser model
-
-        Attributes:
-            username (str): The username of the user.
-            email (str): The email address of the user.
-            name (str): The name of the user.
-            date_of_birth (datetime): The date of birth of the user.
-    """
-    username: str
-    email: str
-    name: str
-    date_of_birth: datetime
 
 def get_db():
     db = SessionLocal()
@@ -157,10 +142,11 @@ async def login_for_access_token(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-@app.get("/users/me", response_model=CurrentUser, tags=["Users"])
+@app.get("/users/me", response_model=User, tags=["Users"])
 async def read_users_me(
     current_user: User = Depends(get_current_user)
 ):
+    
     return current_user
 
 @app.post("/users/me/change_password", tags=["Users"])
@@ -209,11 +195,11 @@ async def read_users(skip: int = 0,
 
 ### MOVIE LISTS ###
 @app.get("/movie_lists", tags=["Movie Lists"])
-async def read_movie_lists(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: User = Depends(get_current_user), get_public: bool = False):
+async def read_movie_lists(page: int = 0, page_size: int = 10, db: Session = Depends(get_db), current_user: User = Depends(get_current_user), get_public: bool = False):
     """
         Retrieve a list of movie lists from the database.
     """
-    movie_lists = await crud.get_movie_lists(db, skip=skip, limit=limit, current_user=current_user, get_public=get_public)
+    movie_lists = await crud.get_movie_lists(db, page, page_size, current_user, get_public)
     return movie_lists
 
 @app.get("/movie_lists/{movie_list_id}", tags=["Movie Lists"])
@@ -231,11 +217,9 @@ async def create_movie_list(movie_list: MovieListCreate,
     """
         Create a new movie list in the database.
     """
-    if not current_user.is_admin:
-        raise HTTPException(status_code=401, detail="Unauthorized")
     return await crud.create_movie_list(db, movie_list=movie_list, user_id=current_user.id)
 
-@app.post("/movie_lists/update_movie_list", tags=["Movie Lists"])
+@app.patch("/movie_lists/update_movie_list", tags=["Movie Lists"])
 async def update_movie_list(movie_list: MovieListEdit, 
                             movie_ids: list[int],
                             db: Session = Depends(get_db), 
