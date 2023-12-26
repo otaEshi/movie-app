@@ -50,6 +50,7 @@ class MovieList(Base):
     description = Column(String(1024))
     created_at = Column(DateTime, index=True)
     owner_id = Column(Integer, ForeignKey("users.id"))
+    is_deleted = Column(Boolean, default=False)
 
     movies = relationship("MovieListMovie", back_populates="movie_list")
 
@@ -90,6 +91,7 @@ class Movie(Base):
     thumbnail_id = Column(String(256))
     views = Column(Integer, index=True)
     genre = Column(String(256), index=True)
+    is_deleted = Column(Boolean, default=False)
 
 class MovieComments(Base):
     """
@@ -102,6 +104,7 @@ class MovieComments(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     comment = Column(String(1024))
     created_at = Column(DateTime, index=True)
+    is_deleted = Column(Boolean, default=False)
 
 class MovieRatings(Base):
     """
@@ -113,4 +116,5 @@ class MovieRatings(Base):
     movie_id = Column(Integer, ForeignKey("movies.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
     rating = Column(Integer, index=True)
+    is_deleted = Column(Boolean, default=False)
     created_at = Column(DateTime, index=True)
