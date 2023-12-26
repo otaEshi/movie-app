@@ -181,16 +181,13 @@ async def update_user(
     return {"detail": "USER_UPDATE_OK"}
 
 @app.get("/users", tags=["Users"])
-async def read_users(skip: int = 0, 
-                    limit: int = 100, 
-                    db: Session = Depends(get_db),
-                    current_user: User = Depends(get_current_user)):
+async def read_users(page: int = 0, page_size: int = 10, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
         Retrieve a list of users from the database.
     """
     if not current_user.is_admin:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    users = await crud.get_users(db, skip=skip, limit=limit)
+    users = await crud.get_users(db, page, page_size)
     return users
 
 ### MOVIE LISTS ###

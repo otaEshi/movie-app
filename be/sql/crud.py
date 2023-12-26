@@ -19,7 +19,7 @@ async def get_user(db: Session, user_id: str):
     """
     return db.query(User).filter(User.id == user_id).first()
 
-async def get_users(db: Session, skip: int = 0, limit: int = 100):
+async def get_users(db: Session, page:int = 0, page_size: int = 100):
     """
     Retrieve a list of users from the database.
 
@@ -31,6 +31,8 @@ async def get_users(db: Session, skip: int = 0, limit: int = 100):
     Returns:
         List[User]: A list of User objects.
     """
+    skip = page * page_size
+    limit = page_size
     return db.query(User).offset(skip).limit(limit).all()
 
 async def create_user(db: Session, user: UserCreate):
@@ -45,8 +47,11 @@ async def create_user(db: Session, user: UserCreate):
     - User: The created user object.
     """
     password_hash = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
+
+    # Check for duplicate username
+    if db.query(User).filter(User.username == user.username).first():
+        raise HTTPException(status_code=400, detail="ERR_USERNAME_ALREADY_EXISTS")
     db_user = User(
-        email=user.email, 
         username=user.username,
         password_hash=password_hash,
         name=user.name,
