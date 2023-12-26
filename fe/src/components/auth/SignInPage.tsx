@@ -42,26 +42,26 @@ function SignInPage({setOpenSignUpModal, setOpenSignInModal}:any) {
     };
 
     const handleSignIn = () => {
-        // if (email === '') {
-        //     setEmailError('This field must not be blank.');
-        //     return;
-        // }
+        if (username === '') {
+            setEmailError('This field must not be blank.');
+            return;
+        }
         // if (!emailRegex.test(email)) {
         //     setEmailError('Please enter a valid email address.');
         //     return;
         // }
-        if (password === '') {
-            setPasswordError('This field must not be blank.');
-            return;
-        }
-        if (/\s/.test(password)) {
-            setPasswordError('Password cannot contain spaces in between.');
-            return;
-        }
-        if (!passwordRegex.test(password)) {
-            setPasswordError('Password must contain: 8-64 characters, 1 uppercase letter, 1 lowercase letter, 1 number, 1 special character.')
-            return;
-        }
+        // if (password === '') {
+        //     setPasswordError('This field must not be blank.');
+        //     return;
+        // }
+        // if (/\s/.test(password)) {
+        //     setPasswordError('Password cannot contain spaces in between.');
+        //     return;
+        // }
+        // if (!passwordRegex.test(password)) {
+        //     setPasswordError('Password must contain: 8-64 characters, 1 uppercase letter, 1 lowercase letter, 1 number, 1 special character.')
+        //     return;
+        // }
 
         const payload: ISignInPayload = {
             username: username,
@@ -71,7 +71,8 @@ function SignInPage({setOpenSignUpModal, setOpenSignInModal}:any) {
         dispatch<any>(signInRequest(payload)).then((result: any) => {
             console.log(result);
             if (result.meta.requestStatus === "fulfilled") {
-                navigate('/');
+                // navigate('/');
+                setOpenSignInModal(false)
             } else {
                 setEmailError('Invalid email or password.');
             }
@@ -86,7 +87,7 @@ function SignInPage({setOpenSignUpModal, setOpenSignInModal}:any) {
                     <div className='position-relative'>
                         <h1 className="custom-signin-title mb-4">Sign In</h1>
                         <div>
-                            <input
+                        <input
                                 type="text"
                                 id="username"
                                 className="custom-input"
@@ -133,107 +134,5 @@ function SignInPage({setOpenSignUpModal, setOpenSignInModal}:any) {
         </div>
     );
 }
-//     const [username, setUsername] = useState<string>('');
-//     const [password, setPassword] = useState<string>('');
-//     const [isRemember, setIsRemember] = useState(false);
-
-//     const navigate = useNavigate();
-
-//     const handleRemember = () => {
-//         setIsRemember(!isRemember);
-//         console.log(isRemember)
-//     }
-
-//     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//         const { id, value } = e.target;
-//         if (id === 'username') {
-//             setUsername(value);
-
-//         }
-//         if (id === 'password') {
-//             setPassword(value);
-
-//         }
-
-//     }
-
-//     return (
-//         <div className='img'>
-//             <div className="container">
-//                 <div className="row justify-content-center ">
-//                     <div className="col-md-6 col-lg-4 login-container">
-//                         <div className='custom-login-panel'>
-//                             <h3 className="mb-4 text-center custom-login-header">Have an account?</h3>
-//                             <div className="">
-
-//                                 <input
-//                                     className="custom-login-input mb-2"
-//                                     type="text"
-//                                     id="username"
-//                                     value={username || ''}
-//                                     onChange={(e) => handleInputChange(e)}
-//                                     placeholder="Username"
-//                                     autoFocus
-//                                 />
-//                                 <input
-//                                     className="custom-login-input"
-//                                     type="password"
-//                                     id="password"
-//                                     value={password || ''}
-//                                     onChange={(e) => handleInputChange(e)}
-//                                     placeholder="Password"
-//                                 />
-//                                 <button tabIndex={-1} type="button" className="custom-sign-in-button">Sign In</button>
-//                             </div>
-//                         </div>
-//                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-//                             <div style={{ width: '50%' }}>
-//                                 <div style={{ display: 'flex', alignItems: 'center' }}>
-//                                     <input
-//                                         tabIndex={-1}
-//                                         className="remember-me-checkbox"
-//                                         type="checkbox"
-//                                         id="rememberMeCheckbox"
-//                                         checked={isRemember}
-//                                         onChange={handleRemember}
-//                                     />
-//                                     <label htmlFor="rememberMeCheckbox" className="form-check-label primary-color">
-//                                         Remember me
-//                                     </label>
-//                                 </div>
-//                             </div>
-//                             <div
-//                                 tabIndex={-1}
-//                                 style={{ width: '50%', textAlign: 'right', color: '#fff', textDecoration: 'none', cursor: 'pointer' }}
-//                                 onClick={() => navigate('/sign_up')}
-//                             >
-//                                 Forgot Password
-//                             </div>
-//                         </div>
-//                         {/* <div className="d-flex justify-content-around">
-//                             <div className="w-50">
-//                                 <div className="form-check form-check-inline">
-//                                     <input
-//                                         className="form-check-input"
-//                                         type="checkbox"
-//                                         id="rememberMeCheckbox"
-//                                         checked={isRemember}
-//                                         onChange={handleRemember}
-//                                     />
-//                                     <label className="form-check-label primary-color" htmlFor="rememberMeCheckbox">
-//                                         Remember me
-//                                     </label>
-//                                 </div>
-//                             </div>
-//                             <div className="w-50 custom-text-align-right">
-//                                 <a href="#" style={{ color: '#fff' }}>Forgot Password</a>
-//                             </div>
-//                         </div> */}
-//                     </div>
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// }
 
 export default SignInPage;
