@@ -102,7 +102,7 @@ class MovieBase(BaseModel):
     thumbnail_id: str = None
     views: int = 0
     genre: str|None = None
-    movies: list = []
+    source: str = None
 
     class Config:
         from_attributes = True
@@ -141,6 +141,7 @@ class MovieCreate(BaseModel):
     url: str = None
     thumbnail_id: str = None
     genre: str = None
+    source: str = None
 
 class MovieEdit(BaseModel):
     """
@@ -161,6 +162,7 @@ class MovieEdit(BaseModel):
     thumbnail_id: str|None = None
     views: int|None = None
     genre: str|None = None
+    source: str|None = None
     is_deleted: bool|None = None
 
 class MovieRatingsCreate(BaseModel):
