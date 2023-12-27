@@ -32,3 +32,16 @@ export interface ISignUpResponse {
     is_admin: boolean;
     is_content_admin: boolean;
 }
+export interface IUserInfoResponse {
+    id: number;
+    name: string;
+    email: string;
+    username: string;
+    password: string;
+    date_of_birth: string;
+    movie_lists: string[];
+    is_active: boolean;
+    is_admin: boolean;
+    is_content_admin: boolean;
+    avatar_id: string;
+}
