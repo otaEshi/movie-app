@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
-import { signInRequest, signUpRequest } from './authApi';
+import { signInRequest, signUpRequest, userInfoRequest } from './authApi';
 
 // Try to load user info from local storage
 let id_token = localStorage.getItem('id_token');
@@ -37,6 +37,7 @@ interface AuthState {
         is_active: boolean,
         is_admin: boolean,
         is_content_admin: boolean,
+        avatar_id: string,
     }
 }
 
@@ -54,6 +55,7 @@ const initialState: AuthState = {
         is_active: false,
         is_admin: false,
         is_content_admin: false,
+        avatar_id: "",
     }
 };
 
@@ -90,6 +92,14 @@ const authSlice = createSlice({
                     // localStorage.setItem('id_token', action.payload.access_token);
                     // localStorage.setItem('refresh_token', action.payload.refresh_token);
                     // axios.defaults.headers.common['Authorization'] = "Bearer " + action.payload.access_token;
+                }
+            })
+            .addCase(userInfoRequest.fulfilled, (state, action) => {
+                if (action.payload) {
+                    localStorage.setItem('avatar_id', action.payload.avatar_id);
+                    console.log("test1")
+                    console.log("check: " + action.payload.avatar_id)
+                    console.log("test2")
                 }
             });
     }

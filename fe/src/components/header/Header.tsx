@@ -15,9 +15,17 @@ const Header = () => {
   const [openSignInModal, setOpenSignInModal] = useState<boolean>(false);
   const [openSignUpModal, setOpenSignUpModal] = useState<boolean>(false);
   const [image_id, setImage_id] = useState<string>('');
+  const [isLoadedAvatar, setIsLoadedAvatar] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(useAppSelector(store => store.auth.isAuthenticated));
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  // const currentImage = useAppSelector(store => store.auth.currentUser.avatar_id);
+
+  // useEffect(() => {
+  //   setImage_id(currentImage);
+  //   console.log("currentImage: " + currentImage);
+  //   console.log("image_id: " + image_id);
+  // },[isLoadedAvatar]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -98,7 +106,8 @@ const Header = () => {
               <Dropdown.Toggle variant="dark" className='header-button'>
                 {/* user's avatar or default avatar */}
                 {/* <i className='fas fa-user'></i> */}
-                <img src={`http://127.0.0.1:8000/images/${useAppSelector(store => store.auth.currentUser.)}`} alt='avatar lmao'></img>
+                {/* <img src={`http://127.0.0.1:8000/images/${image_id}`} alt='avatar lmao'></img> */}
+                <img src={`http://127.0.0.1:8000/images/${localStorage.getItem('avatar_id')}`} alt='avatar lmao'></img>
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 <Dropdown.Item className='dropdown-item' onClick={() => handleSignOut()}>Đăng xuất</Dropdown.Item>

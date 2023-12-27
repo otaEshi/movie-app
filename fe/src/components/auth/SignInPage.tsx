@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { ISignInPayload } from "../../types/auth";
-import { signInRequest } from "./authApi";
+import { signInRequest, userInfoRequest } from "./authApi";
 import './auth.scss';
 
 function SignInPage({setOpenSignUpModal, setOpenSignInModal}:any) {
@@ -77,6 +77,7 @@ function SignInPage({setOpenSignUpModal, setOpenSignInModal}:any) {
                 setEmailError('Invalid email or password.');
             }
         })
+        dispatch(userInfoRequest())
 
     };
 
