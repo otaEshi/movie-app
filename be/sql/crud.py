@@ -169,7 +169,7 @@ async def get_movie_list(db: Session, movie_list_id: int):
     """
     return db.query(MovieList).filter(MovieList.id == movie_list_id).first()
 
-async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, current_user: User = None, get_public: bool = False)->MovieListGet:
+async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, current_user: User = None, get_public: bool = False, include_deleted: bool = False)->MovieListGet:
     """
     Retrieve a list of movie lists from the database.
 
@@ -184,10 +184,16 @@ async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, curr
     # Filter by owner if current_user is provided
     skip = page * page_size
     limit = page_size
+    filters = {}
+    if not include_deleted:
+        filters = {
+            "is_deleted": False 
+        }
     
     if get_public:
         return (
             db.query(MovieList)
+            .filter_by(**filters)
             .join(User)
             .options(joinedload(MovieList.movies))
             .filter(User.is_content_admin)
@@ -199,6 +205,7 @@ async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, curr
     if current_user:
         return (
             db.query(MovieList)
+            .filter_by(**filters)
             .join(User)
             .options(joinedload(MovieList.movies))
             .filter(User.id == current_user.id)
@@ -235,7 +242,7 @@ async def create_movie_list(db: Session, movie_list: MovieListCreate, user_id: i
     db.refresh(db_movie_list)
     return db_movie_list
 
-async def update_movie_list(db: Session, owner_id: int, movie_list: MovieListEdit, movie_ids: list[int]):
+async def update_movie_list(db: Session, movie_list_id, owner_id: int, movie_list: MovieListEdit, movie_ids: list[int]):
     """
     Update a movie list in the database.
 
@@ -247,7 +254,7 @@ async def update_movie_list(db: Session, owner_id: int, movie_list: MovieListEdi
     Returns:
         models.MovieList: The edited movie list object.
     """
-    db_movie_list = db.query(MovieList).filter(MovieList.id == movie_list.id).first()
+    db_movie_list = db.query(MovieList).filter(MovieList.id == movie_list_id).first()
     if not db_movie_list:
         return {"detail": "MOVIE_LIST_NOT_FOUND"}
     if owner_id != db_movie_list.owner_id:
@@ -256,23 +263,34 @@ async def update_movie_list(db: Session, owner_id: int, movie_list: MovieListEdi
         db_movie_list.name = movie_list.name
     if movie_list.description:
         db_movie_list.description = movie_list.description
-    if len(movie_ids)>0:
-        for movie_id in movie_ids:
-            # check if movie already exists in movie list
-            if db.query(MovieListMovie).filter(MovieListMovie.movie_list_id == db_movie_list.id, MovieListMovie.movie_id == movie_id).first():
-                continue
+    if movie_list.is_deleted is not None:
+        db_movie_list.is_deleted = movie_list.is_deleted
 
-            # Check if movie exists in database
-            if not db.query(Movie).filter(Movie.id == movie_id).first():
-                continue
+    if movie_ids is not None: 
+        db_movie_list_movies = db.query(MovieListMovie).filter(MovieListMovie.movie_list_id == db_movie_list.id).all()
+        db_movie_list_movie_ids = [movie.movie_id for movie in db_movie_list_movies]
+        movie_ids_to_delete = list(set(db_movie_list_movie_ids) - set(movie_ids))
+        movie_ids_to_add = list(set(movie_ids) - set(db_movie_list_movie_ids))
 
+        # Check if the movie_ids are valid
+        db_movies = db.query(Movie).filter(Movie.id.in_(movie_ids)).all()
+        db_movie_ids = [movie.id for movie in db_movies]
+        if len(db_movie_ids) != len(movie_ids):
+            return {"detail": "INVALID_MOVIE_IDS"}
+
+        for movie_id in movie_ids_to_delete:
+            db_movie_list_movie = db.query(MovieListMovie).filter(MovieListMovie.movie_list_id == db_movie_list.id, MovieListMovie.movie_id == movie_id).first()
+            db.delete(db_movie_list_movie)
+
+        for movie_id in movie_ids_to_add:
             db_movie_list_movie = MovieListMovie(movie_list_id=db_movie_list.id, movie_id=movie_id)
             db.add(db_movie_list_movie)
+
     db.commit()
     db.refresh(db_movie_list)
     return db_movie_list
 
-async def delete_movie_list(db: Session, movie_list_id: int):
+async def delete_movie_list(db: Session, movie_list_id: int, owner_id: int):
     """
     Delete a movie list from the database.
 
@@ -284,9 +302,13 @@ async def delete_movie_list(db: Session, movie_list_id: int):
         MovieList: The deleted movie list object.
     """
     db_movie_list = db.query(MovieList).filter(MovieList.id == movie_list_id).first()
-    db.delete(db_movie_list)
+    if db_movie_list is None:
+        return {"detail": "ERR_MOVIE_LIST_NOT_FOUND"}
+    if owner_id != db_movie_list.owner_id:
+        return {"detail": "unauthorized"}
+    db_movie_list.is_deleted = True
     db.commit()
-    return db_movie_list
+    return {"detail": "MOVIE_LIST_DELETE_OK"}
 
 ### Movie CRUD ###
 
@@ -303,7 +325,7 @@ async def get_movie(db: Session, movie_id: int):
     """
     return db.query(Movie).filter(Movie.id == movie_id).first()
 
-async def get_movies(db: Session, skip: int = 0, limit: int = 100, search_params: dict = None):
+async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_params: dict = None):
     """
     Retrieve a list of movies from the database.
 
@@ -315,7 +337,10 @@ async def get_movies(db: Session, skip: int = 0, limit: int = 100, search_params
     Returns:
         List[models.Movie]: A list of movie objects.
     """
+    skip = page * page_size
+    limit = page_size
     if search_params:
+        print(search_params)
         return db.query(Movie).filter_by(**search_params).offset(skip).limit(limit).all()
     return db.query(Movie).offset(skip).limit(limit).all()
 
@@ -377,11 +402,11 @@ async def update_movie(db: Session, movie: MovieEdit, movie_id: int):
         models.Movie: The edited movie object.
     """
     db_movie = db.query(Movie).filter(Movie.id == movie_id).first()
-    attributes = ['title', 'description', 'date_of_release', 'url', 'thumbnail_id', 'views', 'genre']
+    attributes = ['title', 'description', 'date_of_release', 'url', 'thumbnail_id', 'views', 'genre', 'is_deleted']
     for attr in attributes:
-        if getattr(movie, attr):
+        if getattr(movie, attr) is not None:
             setattr(db_movie, attr, getattr(movie, attr))
-
+    
     db.commit()
     db.refresh(db_movie)
     return db_movie
@@ -398,9 +423,11 @@ async def delete_movie(db: Session, movie_id: int):
         Movie: The deleted movie object.
     """
     db_movie = db.query(Movie).filter(Movie.id == movie_id).first()
-    db.delete(db_movie)
+    if db_movie is None:
+        return {"detail": "ERR_MOVIE_NOT_FOUND"}
+    db_movie.is_deleted = True
     db.commit()
-    return db_movie
+    return {"detail": "MOVIE_DELETE_OK"}
 
 async def create_movie_ratings(db: Session, movie_rating: MovieRatingsCreate):
     """
