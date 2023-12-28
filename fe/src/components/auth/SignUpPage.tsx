@@ -116,7 +116,7 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
       <div className="custom-container">
         <div className="custom-panel">
           <div className='position-relative'>
-            <h1 className="custom-signin-title mb-4">Create Account</h1>
+            <h1 className="custom-signin-title mb-4">Đăng Ký</h1>
             <div>
               <input
                 type="text"
@@ -124,7 +124,7 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
                 className="custom-input"
                 value={fullname || ''}
                 onChange={(e) => handleInputChange(e)}
-                placeholder="Fullname"
+                placeholder="Họ và tên"
                 autoComplete='off'
               />
             </div>
@@ -136,7 +136,7 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
                 className="custom-input"
                 value={username || ''}
                 onChange={(e) => handleInputChange(e)}
-                placeholder="Username"
+                placeholder="Tên tài khoản"
                 autoComplete='off'
               />
             </div>
@@ -148,7 +148,7 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
                 id="password"
                 value={password || ''}
                 onChange={(e) => handleInputChange(e)}
-                placeholder="Password"
+                placeholder="Mật khẩu"
               />
             </div>
             <div className='custom-error-text-wrapper'>
@@ -161,7 +161,7 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
                 id="confirmPassword"
                 value={confirmPassword || ''}
                 onChange={(e) => handleInputChange(e)}
-                placeholder="Confirm Password"
+                placeholder="Xác nhận mật khẩu"
               />
             </div>
             <div className='custom-error-text-wrapper'>
@@ -169,7 +169,7 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
             </div>
             <div className="mb-2 mt-3">
               <button className="custom-btn" onClick={handleSignUp} tabIndex={-1}>
-                Sign Up
+                ĐĂNG KÝ
               </button>
             </div>
             <div>
@@ -177,11 +177,11 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
                 {/* Already have an account? <Link to='/sign_in' className='custom-nav-text' tabIndex={-1}>
                   Sign in
                 </Link> */}
-                Already have an account? <span className='custom-text-link' onClick={() => { 
+                Đã có tài khoản? <span className='custom-text-link' onClick={() => { 
                   setOpenSignInModal(true);
                   setOpenSignUpModal(false);
                  }} tabIndex={-1}>
-                  Sign in
+                  Đăng nhập
                 </span>
               </p>
             </div>

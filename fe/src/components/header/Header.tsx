@@ -14,9 +14,10 @@ const Header = () => {
   const [search, setSearch] = useState<string>('');
   const [openSignInModal, setOpenSignInModal] = useState<boolean>(false);
   const [openSignUpModal, setOpenSignUpModal] = useState<boolean>(false);
-  const [image_id, setImage_id] = useState<string>('');
+  const [imageId, setImageId] = useState<string | null>('');
   const [isLoadedAvatar, setIsLoadedAvatar] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(useAppSelector(store => store.auth.isAuthenticated));
+  const [isFirstLogin, setIsFirstLogin] = useState<boolean>(false);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   // const currentImage = useAppSelector(store => store.auth.currentUser.avatar_id);
@@ -41,6 +42,17 @@ const Header = () => {
 
   const handleSignOut = () => {
     dispatch(logout());
+  }
+  
+  useEffect(()=>{
+    const imageURL = localStorage.getItem('avatar_id');
+    setImageId(imageURL);
+  },[])
+
+  const handleLoginSuccess = () => {
+    const imageURL = localStorage.getItem('avatar_id');
+    setImageId(imageURL);
+    setIsAuthenticated(true);
   }
 
   // useEffect(() => {
@@ -104,10 +116,7 @@ const Header = () => {
           {isAuthenticated ? (
             <Dropdown>
               <Dropdown.Toggle variant="dark" className='header-button'>
-                {/* user's avatar or default avatar */}
-                {/* <i className='fas fa-user'></i> */}
-                {/* <img src={`http://127.0.0.1:8000/images/${image_id}`} alt='avatar lmao'></img> */}
-                <img src={`http://127.0.0.1:8000/images/${localStorage.getItem('avatar_id')}`} alt='avatar lmao'></img>
+                <img src={`http://127.0.0.1:8000/images/${imageId}`} alt='avatar lmao' style={{ width: '40px', height: '40px', objectFit: 'cover' }}></img>
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 <Dropdown.Item className='dropdown-item' onClick={() => handleSignOut()}>Đăng xuất</Dropdown.Item>
@@ -133,7 +142,11 @@ const Header = () => {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <SignInPage setOpenSignUpModal={setOpenSignUpModal} setOpenSignInModal={setOpenSignInModal} />
+        <SignInPage
+          setOpenSignUpModal={setOpenSignUpModal}
+          setOpenSignInModal={setOpenSignInModal}
+          handleLoginSuccess={handleLoginSuccess}
+        />
       </Modal>
 
       <Modal
@@ -141,7 +154,10 @@ const Header = () => {
         onClose={() => setOpenSignUpModal(false)}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description">
-        <SignUpPage setOpenSignUpModal={setOpenSignUpModal} setOpenSignInModal={setOpenSignInModal} />
+        <SignUpPage
+          setOpenSignUpModal={setOpenSignUpModal}
+          setOpenSignInModal={setOpenSignInModal}
+        />
       </Modal>
     </header>
   );

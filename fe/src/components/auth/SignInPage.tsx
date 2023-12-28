@@ -1,11 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { ISignInPayload } from "../../types/auth";
 import { signInRequest, userInfoRequest } from "./authApi";
 import './auth.scss';
 
-function SignInPage({setOpenSignUpModal, setOpenSignInModal}:any) {
+interface ISignInFormatProps {
+    setOpenSignUpModal: React.Dispatch<React.SetStateAction<boolean>>;
+    setOpenSignInModal: React.Dispatch<React.SetStateAction<boolean>>;
+    handleLoginSuccess: () => void;
+}
+
+// function SignInPage({ setOpenSignUpModal, setOpenSignInModal, setIsLogin }: ISignInFormatProps) {
+function SignInPage(props: ISignInFormatProps) {
     const [email, setEmail] = useState<string>('');
     const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
@@ -25,6 +32,8 @@ function SignInPage({setOpenSignUpModal, setOpenSignInModal}:any) {
             handleSignIn();
         }
     };
+
+   
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
@@ -72,7 +81,8 @@ function SignInPage({setOpenSignUpModal, setOpenSignInModal}:any) {
             console.log(result);
             if (result.meta.requestStatus === "fulfilled") {
                 // navigate('/');
-                setOpenSignInModal(false)
+                props.setOpenSignInModal(false);
+                props.handleLoginSuccess();
             } else {
                 setEmailError('Invalid email or password.');
             }
@@ -86,15 +96,15 @@ function SignInPage({setOpenSignUpModal, setOpenSignInModal}:any) {
             <div className="custom-container">
                 <div className="custom-panel">
                     <div className='position-relative'>
-                        <h1 className="custom-signin-title mb-4">Sign In</h1>
+                        <h1 className="custom-signin-title mb-4">Đăng Nhập</h1>
                         <div>
-                        <input
+                            <input
                                 type="text"
                                 id="username"
                                 className="custom-input"
                                 value={username || ''}
                                 onChange={(e) => handleInputChange(e)}
-                                placeholder="username"
+                                placeholder="Tên tài khoản"
                                 onKeyDown={handleKeyDown}
                             />
                         </div>
@@ -106,7 +116,7 @@ function SignInPage({setOpenSignUpModal, setOpenSignInModal}:any) {
                                 id="password"
                                 value={password || ''}
                                 onChange={(e) => handleInputChange(e)}
-                                placeholder="Password"
+                                placeholder="Mật khẩu"
                                 onKeyDown={handleKeyDown}
                             />
                         </div>
@@ -117,16 +127,16 @@ function SignInPage({setOpenSignUpModal, setOpenSignInModal}:any) {
                         </div>
                         <div className="mb-2 mt-3">
                             <button className="custom-btn" onClick={handleSignIn} tabIndex={-1}>
-                                Sign In
+                                ĐĂNG NHẬP
                             </button>
                         </div>
                         <div>
                             <p>
                                 {/* Don't have an account? <Link className='custom-nav-text' to='/sign_up' tabIndex={-1}>Sign up</Link> */}
-                                Don't have an account? <span className='custom-nav-text' onClick={() => {
-                                    setOpenSignInModal(false);
-                                    setOpenSignUpModal(true);
-                                }} tabIndex={-1}>Sign up</span>
+                                Chưa có tài khoản? <span className='custom-nav-text' onClick={() => {
+                                    props.setOpenSignInModal(false);
+                                    props.setOpenSignUpModal(true);
+                                }} tabIndex={-1}>Đăng ký</span>
                             </p>
                         </div>
                     </div>

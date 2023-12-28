@@ -82,7 +82,8 @@ const authSlice = createSlice({
                     localStorage.setItem('id_token', action.payload.access_token);
                     localStorage.setItem('refresh_token', action.payload.refresh_token);
                     axios.defaults.headers.common['Authorization'] = "Bearer " + action.payload.access_token;
-                    window.location.reload();
+                    // window.location.reload();
+                    console.log("test7")
                 }
             })
             .addCase(signUpRequest.fulfilled, (state, action) => {
