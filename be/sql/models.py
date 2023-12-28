@@ -91,6 +91,7 @@ class Movie(Base):
     thumbnail_id = Column(String(256))
     views = Column(Integer, index=True)
     genre = Column(String(256), index=True)
+    source = Column(String(256), index=True)
     is_deleted = Column(Boolean, default=False)
 
 class MovieComments(Base):

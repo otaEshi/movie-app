@@ -240,6 +240,7 @@ async def read_movies(page: int = 0,
                       page_size: int = 100, 
                       title: str = None,
                       des: str = None,
+                      source: str = None,
                       d: int = None,
                       m: int = None,
                       y: int = None,
@@ -251,6 +252,7 @@ async def read_movies(page: int = 0,
     search_params = {
         "title": title,
         "des": des,
+        "source": source,
         "d": d,
         "m": m,
         "y": y,
@@ -261,6 +263,14 @@ async def read_movies(page: int = 0,
 
     search_params = {k: v for k, v in search_params.items() if v is not None}
     movies = await crud.get_movies(db, page, page_size, search_params)
+    return movies
+
+@app.get("/movies/top_trending", tags=["Movies"])
+async def read_top_trending_movies(db: Session = Depends(get_db), top_k: int = 10):
+    """
+        Retrieve a list of top trending movies from the database.
+    """
+    movies = await crud.get_top_trending_movies(db, top_k)
     return movies
 
 @app.get("/movies/{movie_id}", tags=["Movies"])
@@ -306,6 +316,7 @@ async def update_movie(movie_id: int,
                         date_of_release: date = None,
                         url: str = None,
                         genre: str = None,
+                        source: str = None,
                         image: UploadFile = File(None),
                         is_deleted: bool = None, 
                         db: Session = Depends(get_db),
@@ -315,7 +326,7 @@ async def update_movie(movie_id: int,
     """
     if not current_user.is_content_admin:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    movie = MovieEdit(title=title, description=description, date_of_release=date_of_release, url=url, genre=genre, is_deleted=is_deleted)
+    movie = MovieEdit(title=title, description=description, date_of_release=date_of_release, url=url, genre=genre, source=source, is_deleted=is_deleted)
     if image is not None:
         movie.thumbnail_id = await save_image(image)
     return await crud.update_movie(db, movie_id=movie_id, movie=movie)

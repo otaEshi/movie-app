@@ -33,7 +33,10 @@ async def get_users(db: Session, page:int = 0, page_size: int = 100):
     """
     skip = page * page_size
     limit = page_size
-    return db.query(User).offset(skip).limit(limit).all()
+
+    max_page = db.query(User).count() // page_size + 1
+    result = db.query(User).offset(skip).limit(limit).all()
+    return result, {"max_page": max_page}
 
 async def create_user(db: Session, user: UserCreate):
     """
@@ -184,6 +187,7 @@ async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, curr
     # Filter by owner if current_user is provided
     skip = page * page_size
     limit = page_size
+    max_page = db.query(MovieList).count() // page_size + 1
     filters = {}
     if not include_deleted:
         filters = {
@@ -191,7 +195,7 @@ async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, curr
         }
     
     if get_public:
-        return (
+        result =  (
             db.query(MovieList)
             .filter_by(**filters)
             .join(User)
@@ -201,9 +205,10 @@ async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, curr
             .limit(limit)
             .all()
         )
+        return result, {"max_page": max_page}
 
     if current_user:
-        return (
+        result = (
             db.query(MovieList)
             .filter_by(**filters)
             .join(User)
@@ -213,6 +218,7 @@ async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, curr
             .limit(limit)
             .all()
         )
+        return result, {"max_page": max_page}
     
 
 async def create_movie_list(db: Session, movie_list: MovieListCreate, user_id: int):
@@ -339,10 +345,29 @@ async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_par
     """
     skip = page * page_size
     limit = page_size
+
+    max_page = db.query(Movie).count() // page_size + 1
+
     if search_params:
-        print(search_params)
-        return db.query(Movie).filter_by(**search_params).offset(skip).limit(limit).all()
-    return db.query(Movie).offset(skip).limit(limit).all()
+        result = db.query(Movie).filter_by(**search_params).offset(skip).limit(limit).all()
+        return result, {"max_page" : max_page}
+    
+    result = db.query(Movie).offset(skip).limit(limit).all()
+    return result, {"max_page": max_page}
+
+async def get_top_trending_movies(db: Session, top_k: int):
+    """
+    Retrieve a list of top trending movies from the database.
+
+    Args:
+        db (Session): The database session.
+
+    Returns:
+        List[models.Movie]: A list of movie objects.
+    """
+    result = db.query(Movie).order_by(Movie.views.desc()).limit(top_k).all()
+    return result
+    
 
 async def create_movie(db: Session, movie: MovieCreate):
     """
@@ -402,7 +427,7 @@ async def update_movie(db: Session, movie: MovieEdit, movie_id: int):
         models.Movie: The edited movie object.
     """
     db_movie = db.query(Movie).filter(Movie.id == movie_id).first()
-    attributes = ['title', 'description', 'date_of_release', 'url', 'thumbnail_id', 'views', 'genre', 'is_deleted']
+    attributes = ['title', 'description', 'date_of_release', 'url', 'thumbnail_id', 'views', 'genre','source', 'is_deleted']
     for attr in attributes:
         if getattr(movie, attr) is not None:
             setattr(db_movie, attr, getattr(movie, attr))
