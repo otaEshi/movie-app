@@ -165,7 +165,7 @@ class MovieEdit(BaseModel):
     source: str|None = None
     is_deleted: bool|None = None
 
-class MovieRatingsCreate(BaseModel):
+class MovieRatingCreate(BaseModel):
     """
         MovieRatingsCreate model
 
@@ -178,7 +178,17 @@ class MovieRatingsCreate(BaseModel):
     rating: int
     created_at: datetime
 
-class MovieCommentsCreate(BaseModel):
+class MovieRatingEdit(BaseModel):
+    """
+        MovieRatingsEdit model
+
+        Attributes:
+            rating (int): The rating of the movie.
+    """
+    rating: int|None = None
+    is_deleted: bool|None = None
+
+class MovieCommentCreate(BaseModel):
     """
         MovieCommentsCreate model
 
@@ -190,6 +200,16 @@ class MovieCommentsCreate(BaseModel):
     user_id: int
     comment: str
     created_at: datetime
+
+class MovieCommentEdit(BaseModel):
+    """
+        MovieCommentsEdit model
+
+        Attributes:
+            comment (str): The comment of the movie.
+    """
+    comment: str|None = None
+    is_deleted: bool|None = None
 
 ### Movie List ###
 class MovieListBase(BaseModel):

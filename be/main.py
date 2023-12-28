@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import jwt, JWTError
 from pydantic import BaseModel
 from sql.database import SessionLocal, Base, engine
-from sql.schemas import User, UserCreate, UserEditPassword, MovieCreate, MovieEdit, MovieListCreate, MovieListEdit, UserEdit, MovieListGet
+from sql.schemas import *
 from sql import crud
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
@@ -266,11 +266,14 @@ async def read_movies(page: int = 0,
     return movies
 
 @app.get("/movies/top_trending", tags=["Movies"])
-async def read_top_trending_movies(db: Session = Depends(get_db), top_k: int = 10):
+async def read_top_trending_movies(db: Session = Depends(get_db), top_k: int = 10, genre: str = None):
     """
         Retrieve a list of top trending movies from the database.
     """
-    movies = await crud.get_top_trending_movies(db, top_k)
+    search_params = {}
+    if genre is not None:
+        search_params["genre"] = genre
+    movies = await crud.get_top_trending_movies(db, top_k, search_params)
     return movies
 
 @app.get("/movies/{movie_id}", tags=["Movies"])
@@ -339,3 +342,72 @@ async def delete_movie(movie_id: int, db: Session = Depends(get_db), current_use
     if not current_user.is_content_admin:
         raise HTTPException(status_code=401, detail="Unauthorized")
     return await crud.delete_movie(db, movie_id=movie_id)
+
+### MOVIE RATINGS ###
+@app.get("/movies/{movie_id}/ratings/average", tags=["Movies Rating"])
+async def read_movie_ratings_average(movie_id: int, db: Session = Depends(get_db)):
+    """
+        Retrieve the average rating of a movie from the database.
+    """
+    return await crud.get_movie_ratings_average(db, movie_id=movie_id)
+
+@app.get("/movies/{movie_id}/ratings", tags=["Movies Rating"])
+async def read_movie_ratings(movie_id: int, page:int, page_size:int, db: Session = Depends(get_db)):
+    """
+        Retrieve a list of ratings of a movie from the database.
+    """
+    return await crud.get_movie_ratings(db, movie_id=movie_id, page=page, page_size=page_size)
+
+@app.post("/movies/{movie_id}/ratings", tags=["Movies Rating"])
+async def create_movie_rating(movie_id: int, rating: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+        Create a new rating of a movie in the database.
+    """
+    movie_rating_create = MovieRatingCreate(movie_id=movie_id, rating=rating, user_id=current_user.id, created_at=datetime.now())
+    return await crud.create_movie_rating(db, movie_rating_create)
+
+@app.patch("/movies/{movie_id}/ratings", tags=["Movies Rating"])
+async def update_movie_rating(movie_rating_id: int, rating: int, is_deleted: bool, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+        Update a rating of a movie in the database.
+    """
+    movie_rating_edit = MovieRatingEdit(rating=rating, is_deleted=is_deleted)
+    return await crud.update_movie_rating(db, movie_rating_id, movie_rating_edit, current_user.id)
+
+@app.delete("/movies/{movie_id}/ratings", tags=["Movies Rating"])
+async def delete_movie_rating(movie_rating_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+        Delete a rating of a movie from the database.
+    """
+    return await crud.delete_movie_rating(db, movie_rating_id, current_user.id)
+
+### MOVIE COMMENTS ###
+@app.get("/movies/{movie_id}/comments", tags=["Movies Comments"])
+async def read_movie_comments(movie_id: int, page:int, page_size:int, db: Session = Depends(get_db)):
+    """
+        Retrieve a list of comments of a movie from the database.
+    """
+    return await crud.get_movie_comments(db, movie_id=movie_id, page=page, page_size=page_size)
+
+@app.post("/movies/{movie_id}/comments", tags=["Movies Comments"])
+async def create_movie_comment(movie_id: int, comment: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+        Create a new comment of a movie in the database.
+    """
+    movie_comment_create = MovieCommentCreate(movie_id=movie_id, comment=comment, user_id=current_user.id, created_at=datetime.now())
+    return await crud.create_movie_comment(db, movie_comment_create)
+
+@app.patch("/movies/{movie_id}/comments", tags=["Movies Comments"])
+async def update_movie_comment(movie_comment_id: int, comment: str, is_deleted: bool, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+        Update a comment of a movie in the database.
+    """
+    movie_comment_edit = MovieCommentEdit(comment=comment, is_deleted=is_deleted)
+    return await crud.update_movie_comment(db, movie_comment_id, movie_comment_edit, current_user.id)
+
+@app.delete("/movies/{movie_id}/comments", tags=["Movies Comments"])
+async def delete_movie_comment(movie_comment_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+        Delete a comment of a movie from the database.
+    """
+    return await crud.delete_movie_comment(db, movie_comment_id, current_user.id)

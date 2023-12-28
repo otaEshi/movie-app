@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session, joinedload
 import bcrypt
-from .schemas import UserCreate, UserEdit, UserEditPassword, MovieListCreate, MovieListEdit, MovieCreate, MovieEdit, MovieListGet, MovieRatingsCreate
-from .models import User, MovieList, Movie, MovieListMovie, MovieRatings
+from .schemas import *
+from .models import *
 from fastapi import HTTPException
 import datetime
 
@@ -265,9 +265,9 @@ async def update_movie_list(db: Session, movie_list_id, owner_id: int, movie_lis
         return {"detail": "MOVIE_LIST_NOT_FOUND"}
     if owner_id != db_movie_list.owner_id:
         return {"detail": "unauthorized"}
-    if movie_list.name:
+    if movie_list.name is not None:
         db_movie_list.name = movie_list.name
-    if movie_list.description:
+    if movie_list.description is not None:
         db_movie_list.description = movie_list.description
     if movie_list.is_deleted is not None:
         db_movie_list.is_deleted = movie_list.is_deleted
@@ -355,7 +355,7 @@ async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_par
     result = db.query(Movie).offset(skip).limit(limit).all()
     return result, {"max_page": max_page}
 
-async def get_top_trending_movies(db: Session, top_k: int):
+async def get_top_trending_movies(db: Session, top_k: int, search_params: dict ):
     """
     Retrieve a list of top trending movies from the database.
 
@@ -365,8 +365,7 @@ async def get_top_trending_movies(db: Session, top_k: int):
     Returns:
         List[models.Movie]: A list of movie objects.
     """
-    result = db.query(Movie).order_by(Movie.views.desc()).limit(top_k).all()
-    return result
+    return db.query(Movie).filter_by(**search_params).order_by(Movie.views.desc()).limit(top_k).all()
     
 
 async def create_movie(db: Session, movie: MovieCreate):
@@ -454,7 +453,27 @@ async def delete_movie(db: Session, movie_id: int):
     db.commit()
     return {"detail": "MOVIE_DELETE_OK"}
 
-async def create_movie_ratings(db: Session, movie_rating: MovieRatingsCreate):
+# Movie Ratings CRUD
+async def get_movie_ratings_average(db: Session, movie_id: int):
+    """
+    Retrieve a list of movie ratings from the database.
+
+    Args:
+        db (Session): The database session.
+        movie_id (int): The ID of the movie to retrieve the ratings for.
+
+    Returns:
+        List[models.MovieRating]: A list of movie rating objects.
+    """
+    result = db.query(MovieRatings).filter(MovieRatings.movie_id == movie_id).all()
+    average = 0
+    for rating in result:
+        average += rating.rating
+    if len(result) > 0:
+        average /= len(result)
+    return {"average": average}
+
+async def create_movie_rating(db: Session, movie_rating: MovieRatingCreate):
     """
     Create a new movie rating in the database.
 
@@ -465,11 +484,171 @@ async def create_movie_ratings(db: Session, movie_rating: MovieRatingsCreate):
     Returns:
         models.MovieRating: The created movie rating object.
     """
+    # Check if the movie_id already exist
+    db_movie_rating = db.query(MovieRatings).filter(MovieRatings.movie_id == movie_rating.movie_id, MovieRatings.user_id == movie_rating.user_id).first()
+    if db_movie_rating is not None:
+        raise HTTPException(status_code=400, detail="ERR_MOVIE_RATING_ALREADY_EXISTS")
     db_movie_rating = MovieRatings(**movie_rating.model_dump())
     db.add(db_movie_rating)
     db.commit()
     db.refresh(db_movie_rating)
     return db_movie_rating
+
+async def get_movie_ratings(db: Session, movie_id: int, user_id: int = None, page: int = 0, page_size: int = 100):
+    """
+    Retrieve a list of movie ratings from the database.
+
+    Args:
+        db (Session): The database session.
+        movie_id (int): The ID of the movie to retrieve the ratings for.
+
+    Returns:
+        List[models.MovieRating]: A list of movie rating objects.
+    """
+    skip = page * page_size
+    limit = page_size
+    max_page = db.query(MovieRatings).count() // page_size + 1
+    search_params = {}
+    if movie_id is not None:
+        search_params["movie_id"] = movie_id
+    if user_id is not None:
+        search_params["user_id"] = user_id
+    result = db.query(MovieRatings).filter_by(**search_params).offset(skip).limit(limit).all()
+    return result, {"max_page": max_page}
+
+async def update_movie_rating(db: Session, movie_rating_id: int, movie_rating_edit: MovieRatingEdit, user_id: int):
+    """
+    Edit a movie rating in the database.
+
+    Args:
+        db (Session): The database session.
+        movie_rating (MovieRatingsCreate): The updated movie rating data.
+        movie_rating_id (int): The ID of the movie rating to edit.
+
+    Returns:
+        models.MovieRating: The edited movie rating object.
+    """
+    db_movie_rating = db.query(MovieRatings).filter(MovieRatings.id == movie_rating_id).first()
+    if db_movie_rating is None:
+        raise HTTPException(status_code=404, detail="ERR_MOVIE_RATING_NOT_FOUND")
+    if user_id != db_movie_rating.user_id:
+        raise HTTPException(status_code=401, detail="ERR_UNAUTHORIZED")
+    
+    attributes = ['rating']
+    for attr in attributes:
+        if getattr(movie_rating_edit, attr) is not None:
+            setattr(db_movie_rating, attr, getattr(movie_rating_edit, attr))
+    
+    db.commit()
+    db.refresh(db_movie_rating)
+    return db_movie_rating
+
+async def delete_movie_rating(db: Session, movie_rating_id: int, user_id: int):
+    """
+    Delete a movie rating from the database.
+
+    Args:
+        db (Session): The database session.
+        movie_rating_id (int): The ID of the movie rating to be deleted.
+
+    Returns:
+        MovieRating: The deleted movie rating object.
+    """
+    db_movie_rating = db.query(MovieRatings).filter(MovieRatings.id == movie_rating_id).first()
+    if db_movie_rating is None:
+        raise HTTPException(status_code=404, detail="ERR_MOVIE_RATING_NOT_FOUND")
+    if user_id != db_movie_rating.user_id:
+        raise HTTPException(status_code=401, detail="ERR_UNAUTHORIZED")
+    db_movie_rating.is_deleted = True
+    db.commit()
+    return db_movie_rating
+
+# Movie Comments CRUD
+async def create_movie_comment(db: Session, movie_comment: MovieCommentCreate):
+    """
+    Create a new movie comment in the database.
+
+    Args:
+        db (Session): The database session.
+        movie_comment (schemas.MovieCommentCreate): The movie comment data to be created.
+
+    Returns:
+        models.MovieComment: The created movie comment object.
+    """
+    db_movie_comment = MovieComments(**movie_comment.model_dump())
+    db.add(db_movie_comment)
+    db.commit()
+    db.refresh(db_movie_comment)
+    return db_movie_comment
+
+async def get_movie_comments(db: Session, movie_id: int, user_id: int = None, page: int = 0, page_size: int = 100):
+    """
+    Retrieve a list of movie comments from the database.
+
+    Args:
+        db (Session): The database session.
+        movie_id (int): The ID of the movie to retrieve the comments for.
+
+    Returns:
+        List[models.MovieComment]: A list of movie comment objects.
+    """
+    skip = page * page_size
+    limit = page_size
+    max_page = db.query(MovieComments).count() // page_size + 1
+    search_params = {}
+    if movie_id:
+        search_params["movie_id"] = movie_id
+    if user_id:
+        search_params["user_id"] = user_id
+    result = db.query(MovieComments).filter_by(**search_params).offset(skip).limit(limit).all()
+    return result, {"max_page": max_page}
+
+async def update_movie_comment(db: Session, movie_comment_id: int, movie_comment_edit: MovieCommentEdit, user_id: int):
+    """
+    Edit a movie comment in the database.
+
+    Args:
+        db (Session): The database session.
+        movie_comment (MovieCommentsCreate): The updated movie comment data.
+        movie_comment_id (int): The ID of the movie comment to edit.
+
+    Returns:
+        models.MovieComment: The edited movie comment object.
+    """
+    db_movie_comment = db.query(MovieComments).filter(MovieComments.id == movie_comment_id).first()
+    if db_movie_comment is None:
+        raise HTTPException(status_code=404, detail="ERR_MOVIE_COMMENT_NOT_FOUND")
+    if user_id != db_movie_comment.user_id:
+        raise HTTPException(status_code=401, detail="ERR_UNAUTHORIZED")
+    
+    attributes = ['comment']
+    for attr in attributes:
+        if getattr(movie_comment_edit, attr) is not None:
+            setattr(db_movie_comment, attr, getattr(movie_comment_edit, attr))
+    
+    db.commit()
+    db.refresh(db_movie_comment)
+    return db_movie_comment
+
+async def delete_movie_comment(db: Session, movie_comment_id: int, user_id: int):
+    """
+    Delete a movie comment from the database.
+
+    Args:
+        db (Session): The database session.
+        movie_comment_id (int): The ID of the movie comment to be deleted.
+
+    Returns:
+        MovieComment: The deleted movie comment object.
+    """
+    db_movie_comment = db.query(MovieComments).filter(MovieComments.id == movie_comment_id).first()
+    if db_movie_comment is None:
+        raise HTTPException(status_code=404, detail="ERR_MOVIE_COMMENT_NOT_FOUND")
+    if user_id != db_movie_comment.user_id:
+        raise HTTPException(status_code=401, detail="ERR_UNAUTHORIZED")
+    db_movie_comment.is_deleted = True
+    db.commit()
+    return db_movie_comment
 
 ### Movie List Movie CRUD ###
 async def get_movies_from_movie_list(db: Session, movie_list_id: int, movie_id: int):
