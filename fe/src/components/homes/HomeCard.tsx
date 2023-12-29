@@ -6,20 +6,22 @@ import Stars from '../../lib/reactStar/react-star';
 
 interface HomeCardProps {
   item: {
-    id: string;
-    cover: string;
-    name: string;
-    rating: number;
-    time: string;
-    desc: string;
-    starring: string;
-    genres: string;
-    tags: string;
-    video: string;
+    id: string; // id
+    cover: string; // thumbnail_id
+    name: string; // title
+    userRating: number; 
+    time: string; //date of release
+    desc: string; // description
+    globalRating: string;
+    genres: string; //  genre
+    subGenre: string;
+    videoURL: string; // url
+    source: string // source?
+    views: string; // views
   };
 }
 
-const HomeCard: React.FC<HomeCardProps> = ({ item: { id, cover, name, rating, time, desc, starring, genres, tags, video } }) => {
+const HomeCard: React.FC<HomeCardProps> = ({ item: { id, cover, name, userRating, globalRating, time, desc, genres, subGenre, videoURL } }) => {
   const [ratingStar, setRatingStar] = useState(0);
 
   const handleRatingChange = (newRating: number) => {
@@ -63,14 +65,14 @@ const HomeCard: React.FC<HomeCardProps> = ({ item: { id, cover, name, rating, ti
                 
                 ></ReactStars>
               </div>
-              <label>{ratingStar} (đánh giá)</label>
+              <label>{globalRating} (đánh giá)</label>
               <label>{time} (thời gian)</label>
             </div>
             <p>{desc}</p>
             <div className='cast'>
               <h4>
                 <span>Thể loại: </span>
-                {tags}
+                {genres}
               </h4>
             </div>
             

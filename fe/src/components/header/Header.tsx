@@ -157,6 +157,7 @@ const Header = () => {
         <SignUpPage
           setOpenSignUpModal={setOpenSignUpModal}
           setOpenSignInModal={setOpenSignInModal}
+          handleLoginSuccess={handleLoginSuccess}
         />
       </Modal>
     </header>
