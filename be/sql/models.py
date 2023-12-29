@@ -117,5 +117,5 @@ class MovieRatings(Base):
     movie_id = Column(Integer, ForeignKey("movies.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
     rating = Column(Integer, index=True)
-    is_deleted = Column(Boolean, default=False)
     created_at = Column(DateTime, index=True)
+    is_deleted = Column(Boolean, default=False)
