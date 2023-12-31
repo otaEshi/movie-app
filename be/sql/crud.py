@@ -79,7 +79,7 @@ async def update_user(db: Session, user: UserEdit, user_id: int):
         models.User: The edited user object.
     """
     db_user = db.query(User).filter(User.id == user_id).first()
-    attributes = ['name', 'date_of_birth', 'avatar_id']
+    attributes = ['name', 'date_of_birth', 'avatar_url']
     for attr in attributes:
         if getattr(user, attr):
             setattr(db_user, attr, getattr(user, attr))
@@ -426,7 +426,7 @@ async def update_movie(db: Session, movie: MovieEdit, movie_id: int):
         models.Movie: The edited movie object.
     """
     db_movie = db.query(Movie).filter(Movie.id == movie_id).first()
-    attributes = ['title', 'description', 'date_of_release', 'url', 'thumbnail_id', 'views', 'genre','source', 'is_deleted']
+    attributes = ['title', 'description', 'date_of_release', 'url', 'thumbnail_url', 'views', 'genre','source', 'is_deleted']
     for attr in attributes:
         if getattr(movie, attr) is not None:
             setattr(db_movie, attr, getattr(movie, attr))

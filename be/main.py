@@ -13,6 +13,10 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 import shutil
 import uuid
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+from dotenv import load_dotenv
 
 Base.metadata.create_all(bind=engine)
 app = FastAPI()
@@ -30,6 +34,13 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 SECRET_KEY = "03428be03e2e0504ab5591f83273f8ef7d559acc8bb672db51df35b4c7db259c"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+load_dotenv()
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET")
+)
 
 class Token(BaseModel):
     """
@@ -64,17 +75,30 @@ async def read_image(image_id: str):
     
     return FileResponse(f"{IMAGES_PATH}/{image_id}")
 
-async def save_image(image:UploadFile):
+async def upload_image_cloudinary(image:UploadFile) -> str:
     """
-        Save an image to the server.
+        Upload an image to cloudinary.
     """
-    image.filename = image.filename.replace(" ", "")
-    image_id = str(uuid.uuid4()) + image.filename
-    if os.path.exists(f"{IMAGES_PATH}/{image_id}"):
-        raise HTTPException(status_code=500, detail="Image ID already exists")
-    with open(f"{IMAGES_PATH}/{image_id}", "wb") as buffer:
-        shutil.copyfileobj(image.file, buffer)
-    return image_id
+    return cloudinary.uploader.upload(image.file)
+
+async def delete_image_cloudinary(image_url:str ):
+    """
+        Delete an image from cloudinary.
+    """
+    image_id = image_url.split("/")[-1].split(".")[0]
+    return cloudinary.uploader.destroy(image_id)
+
+# async def save_image(image:UploadFile):
+#     """
+#         Save an image to the server.
+#     """
+#     image.filename = image.filename.replace(" ", "")
+#     image_id = str(uuid.uuid4()) + image.filename
+#     if os.path.exists(f"{IMAGES_PATH}/{image_id}"):
+#         raise HTTPException(status_code=500, detail="Image ID already exists")
+#     with open(f"{IMAGES_PATH}/{image_id}", "wb") as buffer:
+#         shutil.copyfileobj(image.file, buffer)
+#     return image_id
 
 ### USERS ###
 
@@ -175,8 +199,13 @@ async def update_user(
         Update the current user.
     """
     args = UserEdit(name=name, date_of_birth=date_of_birth)
+
     if avatar is not None:
-        args.avatar_id = await save_image(avatar)
+        # If current user has an avatar, delete it
+        if current_user.avatar_url is not None:
+            await delete_image_cloudinary(current_user.avatar_url)
+        cloudinary_response = await upload_image_cloudinary(avatar)
+        args.avatar_url = cloudinary_response["secure_url"]
     await crud.update_user(db, args, current_user.id)
     return {"detail": "USER_UPDATE_OK"}
 
@@ -192,12 +221,21 @@ async def read_users(page: int = 0, page_size: int = 10, db: Session = Depends(g
 
 ### MOVIE LISTS ###
 @app.get("/movie_lists", tags=["Movie Lists"])
-async def read_movie_lists(page: int = 0, page_size: int = 10, include_deleted: bool = False, db: Session = Depends(get_db), current_user: User = Depends(get_current_user), get_public: bool = False):
+async def read_movie_lists(page: int = 0, page_size: int = 10, include_deleted: bool = False, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
         Retrieve a list of movie lists from the database.
     """
-    movie_lists = await crud.get_movie_lists(db, page, page_size, current_user, get_public, include_deleted)
+    movie_lists = await crud.get_movie_lists(db, page, page_size, current_user, False, include_deleted)
     return movie_lists
+
+@app.get("/movie_lists/public", tags=["Movie Lists"])
+async def read_movie_lists_public(page: int = 0, page_size: int = 10, include_deleted: bool = False, db: Session = Depends(get_db)):
+    """
+        Retrieve a list of movie lists from the database.
+    """
+    movie_lists = await crud.get_movie_lists(db, page, page_size, None, True, include_deleted)
+    return movie_lists
+
 
 @app.get("/movie_lists/{movie_list_id}", tags=["Movie Lists"])
 async def read_movie_list(movie_list_id: int, db: Session = Depends(get_db)):
@@ -297,9 +335,11 @@ async def register_view(movie_id: int, db: Session = Depends(get_db), current_us
 @app.post("/movies", tags=["Movies"])
 async def create_movie( title:str,
                         description: str,
-                        date_of_release: datetime,
+                        date_of_release: date,
                         url: str,
                         genre: str,
+                        subgenre: str,
+                        source: str,
                         image: UploadFile = File(...), 
                         db: Session = Depends(get_db),
                         current_user: User = Depends(get_current_user)):
@@ -308,8 +348,10 @@ async def create_movie( title:str,
     """
     if not current_user.is_content_admin:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    movie = MovieCreate(title=title, description=description, date_of_release=date_of_release, url=url, genre=genre)
-    movie.thumbnail_id = await save_image(image)
+    movie = MovieCreate(title=title, description=description, date_of_release=date_of_release, url=url, genre=genre, subgenre=subgenre, source=source)
+    
+    movie.thumbnail_url = await upload_image_cloudinary(image)['secure_url']
+    movie.views = 0
     return await crud.create_movie(db, movie=movie)
 
 @app.patch("/movies/{movie_id}", tags=["Movies"])
@@ -319,6 +361,7 @@ async def update_movie(movie_id: int,
                         date_of_release: date = None,
                         url: str = None,
                         genre: str = None,
+                        subgenre: str = None,
                         source: str = None,
                         image: UploadFile = File(None),
                         is_deleted: bool = None, 
@@ -329,9 +372,16 @@ async def update_movie(movie_id: int,
     """
     if not current_user.is_content_admin:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    movie = MovieEdit(title=title, description=description, date_of_release=date_of_release, url=url, genre=genre, source=source, is_deleted=is_deleted)
+    movie = MovieEdit(title=title, description=description, date_of_release=date_of_release, url=url, genre=genre, subgenre=subgenre, source=source, is_deleted=is_deleted)
+
     if image is not None:
-        movie.thumbnail_id = await save_image(image)
+        # If current movie already has an image, delete it
+        current_movie = await crud.get_movie(db, movie_id=movie_id)
+        if current_movie.thumbnail_url is not None:
+            await delete_image_cloudinary(current_movie.thumbnail_url)
+        
+        cloudinary_response = await upload_image_cloudinary(image)
+        movie.thumbnail_url = cloudinary_response['secure_url']
     return await crud.update_movie(db, movie_id=movie_id, movie=movie)
 
 @app.delete("/movies/{movie_id}", tags=["Movies"])

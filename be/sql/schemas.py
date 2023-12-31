@@ -16,7 +16,7 @@ class User(BaseModel):
             movie_lists (list): The movie lists owned by the user.
             username (str): The username of the user.
             password_hash (str): The password hash of the user.
-            avatar_id (str): The avatar ID of the user.
+            avatar_url (str): The avatar ID of the user.
     """
     id: int
     email: str|None = None
@@ -28,7 +28,7 @@ class User(BaseModel):
     movie_lists: list = []
     username: str = None
     password_hash: str = None
-    avatar_id: str|None = None
+    avatar_url: str|None = None
     
     class Config:
         from_attributes = True
@@ -64,7 +64,7 @@ class UserEdit(BaseModel):
     """
     name: str|None = None
     date_of_birth: date|None = None
-    avatar_id: str|None = None
+    avatar_url: str|None = None
 
 class UserEditPassword(BaseModel):
     """
@@ -89,7 +89,7 @@ class MovieBase(BaseModel):
             description (str): The description of the movie.
             date_of_release (datetime): The day of release of the movie.
             url (str): The URL of the movie.
-            thumbnail_id (str): The thumbnail URL of the movie.
+            thumbnail_url (str): The thumbnail URL of the movie.
             views (int): The number of views of the movie.
             genre (str): The genre of the movie.
             movies (list): The movies in the movie list.
@@ -99,7 +99,7 @@ class MovieBase(BaseModel):
     description: str = None
     date_of_release: date = None
     url: str = None
-    thumbnail_id: str = None
+    thumbnail_url: str = None
     views: int = 0
     genre: str|None = None
     source: str = None
@@ -132,15 +132,16 @@ class MovieCreate(BaseModel):
             description (str): The description of the movie.
             date_of_release (int): The date of release of the movie.
             url (str): The URL of the movie.
-            thumbnail_id (str): The thumbnail id of the movie.
+            thumbnail_url (str): The thumbnail id of the movie.
             genre (str): The genre of the movie.
     """
     title: str
     description: str = None
     date_of_release: date = None
     url: str = None
-    thumbnail_id: str = None
+    thumbnail_url: str = None
     genre: str = None
+    subgenre: str = None
     source: str = None
 
 class MovieEdit(BaseModel):
@@ -152,16 +153,17 @@ class MovieEdit(BaseModel):
             description (str): The description of the movie.
             date_of_release (int): The date of release of the movie.
             url (str): The URL of the movie.
-            thumbnail_id (str): The thumbnail URL of the movie.
+            thumbnail_url (str): The thumbnail URL of the movie.
             genre (str): The genre of the movie.
     """
     title: str|None = None
     description: str|None = None
     date_of_release: date|None = None
     url: str|None = None
-    thumbnail_id: str|None = None
+    thumbnail_url: str|None = None
     views: int|None = None
     genre: str|None = None
+    subgenre: str|None = None
     source: str|None = None
     is_deleted: bool|None = None
 
