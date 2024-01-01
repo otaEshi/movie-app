@@ -11,8 +11,6 @@ from sql import crud
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 import os
-import shutil
-import uuid
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
@@ -32,8 +30,10 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 # to get a string like this run:
 # openssl rand -hex 32
 SECRET_KEY = "03428be03e2e0504ab5591f83273f8ef7d559acc8bb672db51df35b4c7db259c"
+ACCESS_TOKEN_EXPIRE_MINUTES = 1
+SECRET_KEY_REFRESH = ""
+REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 load_dotenv()
 cloudinary.config(
@@ -51,6 +51,7 @@ class Token(BaseModel):
             token_type (str): The token type.
     """
     access_token: str
+    refresh_token: str
     token_type: str
 
 def get_db():
@@ -88,21 +89,9 @@ async def delete_image_cloudinary(image_url:str ):
     image_id = image_url.split("/")[-1].split(".")[0]
     return cloudinary.uploader.destroy(image_id)
 
-# async def save_image(image:UploadFile):
-#     """
-#         Save an image to the server.
-#     """
-#     image.filename = image.filename.replace(" ", "")
-#     image_id = str(uuid.uuid4()) + image.filename
-#     if os.path.exists(f"{IMAGES_PATH}/{image_id}"):
-#         raise HTTPException(status_code=500, detail="Image ID already exists")
-#     with open(f"{IMAGES_PATH}/{image_id}", "wb") as buffer:
-#         shutil.copyfileobj(image.file, buffer)
-#     return image_id
-
 ### USERS ###
 
-def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=15)):
+def create_jwt(data: dict, expires_delta: timedelta = timedelta(minutes=15)):
     """
         Create an access token
     """
@@ -123,21 +112,16 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
         Args:
             token (str): The token of the user.
     """
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get("sub")
-        if user_id is None:
-            raise credentials_exception
-    except JWTError as e:
-        raise credentials_exception from e
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials", headers={"WWW-Authenticate": "Bearer"})
+    user_id: str = payload.get("sub")
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials, user_id is None", headers={"WWW-Authenticate": "Bearer"})
     user = await crud.get_user(get_db(), user_id=user_id)
     if user is None:
-        raise credentials_exception
+        raise HTTPException(status_code=404, detail="User not found")
     return user
 
 @app.post("/signup", response_model=User, tags=["Users"])
@@ -162,10 +146,36 @@ async def login_for_access_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
+    access_token = create_jwt(
         data={"sub": str(user.id)}, expires_delta=access_token_expires
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    refresh_token_expires = timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
+    refresh_token = create_jwt(data={"sub": str(user.id)}, expires_delta=refresh_token_expires)
+    return {"access_token": access_token, "refresh_token":refresh_token, "token_type": "bearer"}
+
+@app.post("/refresh_token", response_model=Token, tags=["Users"])
+# Get a new access token using a refresh token
+async def refresh_token(
+    refresh_token: str,
+    db: Session = Depends(get_db)
+):
+    try:
+        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid authentication credentials, user_id is None", headers={"WWW-Authenticate": "Bearer"})
+        user = await crud.get_user(db, user_id=user_id)
+        if user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+        access_token_expires = timedelta(seconds=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_jwt(
+            data={"sub": str(user.id)}, expires_delta=access_token_expires
+        )
+        new_refresh_token_expires = timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
+        new_refresh_token = create_jwt(data={"sub": str(user.id)}, expires_delta=new_refresh_token_expires)
+        return {"access_token": access_token, "token_type": "bearer", "refresh_token": new_refresh_token}
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials, JWTError", headers={"WWW-Authenticate": "Bearer"})
 
 @app.get("/users/me", tags=["Users"])
 async def read_users_me(
