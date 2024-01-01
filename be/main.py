@@ -200,9 +200,13 @@ async def update_user(
     """
     args = UserEdit(name=name, date_of_birth=date_of_birth)
 
+    # if date_of_birth is later than today, raise an error
+    if date_of_birth is not None and date_of_birth > date.today():
+        raise HTTPException(status_code=400, detail="Invalid date of birth")
+
     if avatar is not None:
         # If current user has an avatar, delete it
-        if current_user.avatar_url is not None:
+        if current_user.avatar_url is not None and current_user.avatar_url != "":
             await delete_image_cloudinary(current_user.avatar_url)
         cloudinary_response = await upload_image_cloudinary(avatar)
         args.avatar_url = cloudinary_response["secure_url"]
@@ -377,7 +381,7 @@ async def update_movie(movie_id: int,
     if image is not None:
         # If current movie already has an image, delete it
         current_movie = await crud.get_movie(db, movie_id=movie_id)
-        if current_movie.thumbnail_url is not None:
+        if current_movie.thumbnail_url is not None and current_movie.thumbnail_url != "":
             await delete_image_cloudinary(current_movie.thumbnail_url)
         
         cloudinary_response = await upload_image_cloudinary(image)
