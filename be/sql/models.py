@@ -11,7 +11,7 @@ class User(Base):
         - password_hash: str
         - email: str
         - name: str
-        - avatar_url: str
+        - avatar_id: str
         - date_of_birth: datetime
         - is_active: bool
         - is_admin: bool
@@ -24,7 +24,7 @@ class User(Base):
     password_hash = Column(String(72), nullable=False)
     email = Column(String(32), unique=False, index=True)
     name = Column(String(128), index=True)
-    avatar_id = Column(String(256), default="")
+    avatar_url = Column(String(512), default="")
     date_of_birth = Column(DateTime, index=True)
     is_active = Column(Boolean, index=True, default=True)
     is_admin = Column(Boolean, default=False)
@@ -88,9 +88,10 @@ class Movie(Base):
     description = Column(String(1024))
     date_of_release = Column(DateTime, index=True)
     url = Column(String(256))
-    thumbnail_id = Column(String(256))
+    thumbnail_url = Column(String(512))
     views = Column(Integer, index=True)
     genre = Column(String(256), index=True)
+    subgenre = Column(String(256), index=True)
     source = Column(String(256), index=True)
     is_deleted = Column(Boolean, default=False)
 

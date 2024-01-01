@@ -2,13 +2,14 @@
 FROM python:3.10
 WORKDIR /app
 RUN apt-get clean && apt-get update && apt-get install -y gcc 
-# Copy the requirements file
+
 COPY ./requirements.txt .
+RUN pip install -r requirements.txt
+
 COPY ./main.py .
 COPY ./images ./images
 COPY ./sql ./sql
+COPY ./.env .
 
-# Install python dependencies
-RUN pip install -r requirements.txt
 # Add the command to run the application
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
