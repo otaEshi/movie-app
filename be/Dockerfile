@@ -1,5 +1,5 @@
 # Stage 1: Building the application
-FROM python:3.10
+FROM python:3.10-slim-buster 
 WORKDIR /app
 RUN apt-get clean && apt-get update && apt-get install -y gcc 
 
