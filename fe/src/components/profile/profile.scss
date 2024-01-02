@@ -1,0 +1,13 @@
+.custom-profile-nav {
+    border: 1px solid #ccc ; 
+    padding: 10px ; /* Optional: Add padding to improve aesthetics */
+    margin: 10px;
+  
+    /* Define transition for a smooth hover effect */
+    transition: border-color 0.3s ease-in-out;
+  }
+  
+  .custom-profile-nav:hover {
+    border-color: #007bff;
+    cursor: pointer ;
+  }

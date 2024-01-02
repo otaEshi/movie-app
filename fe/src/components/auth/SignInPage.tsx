@@ -33,8 +33,6 @@ function SignInPage(props: ISignInFormatProps) {
         }
     };
 
-   
-
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
         // if (id === 'email') {
@@ -50,7 +48,7 @@ function SignInPage(props: ISignInFormatProps) {
         }
     };
 
-    const handleSignIn = () => {
+    const handleSignIn = async () => {
         if (username === '') {
             setEmailError('This field must not be blank.');
             return;
@@ -77,18 +75,22 @@ function SignInPage(props: ISignInFormatProps) {
             password: password
         };
 
-        dispatch<any>(signInRequest(payload)).then((result: any) => {
-            console.log(result);
-            if (result.meta.requestStatus === "fulfilled") {
-                // navigate('/');
-                props.setOpenSignInModal(false);
-                props.handleLoginSuccess();
-            } else {
-                setEmailError('Invalid email or password.');
-            }
-        })
-        dispatch(userInfoRequest())
+        const result = await dispatch<any>(signInRequest(payload));
 
+        // dispatch<any>(signInRequest(payload))
+        // .then((result: any) => {
+        // console.log(result);
+        if (result.meta.requestStatus === "fulfilled") {
+            // navigate('/');
+            props.setOpenSignInModal(false);
+            // await dispatch(userInfoRequest());
+            
+            props.handleLoginSuccess();
+        } else {
+            setEmailError('Invalid email or password.');
+        }
+        // }
+        // )
     };
 
     return (

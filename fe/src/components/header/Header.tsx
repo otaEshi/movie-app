@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './header.css';
 import '@fortawesome/fontawesome-free/css/all.css';
@@ -7,17 +7,23 @@ import Modal from '@mui/material/Modal';
 import SignInPage from '../auth/SignInPage';
 import SignUpPage from '../auth/SignUpPage';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { logout } from '../auth/authSlice';
+import { logout, setAvatarURL } from '../auth/authSlice';
+import axios from 'axios';
+import { userInfoRequest } from '../auth/authApi';
 
 const Header = () => {
   const [Mobile, setMobile] = useState(false);
   const [search, setSearch] = useState<string>('');
   const [openSignInModal, setOpenSignInModal] = useState<boolean>(false);
   const [openSignUpModal, setOpenSignUpModal] = useState<boolean>(false);
-  const [imageId, setImageId] = useState<string | null>('');
-  const [isLoadedAvatar, setIsLoadedAvatar] = useState<boolean>(false);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(useAppSelector(store => store.auth.isAuthenticated));
-  const [isFirstLogin, setIsFirstLogin] = useState<boolean>(false);
+  const [isFirstLogin, setIsFirstLogin] = useState<boolean>(true);
+
+  const isAuthenticatedString = localStorage.getItem('isAuthenticated');
+  const isAuthenticated = isAuthenticatedString ? JSON.parse(isAuthenticatedString) : false;
+  const username = useAppSelector(store => store.auth.currentUser.username);
+  const avatar_url = useAppSelector(store => store.auth.currentUser.avatar_url);
+  const used_avatar_url = avatar_url !== "" ? avatar_url : 'https://res.cloudinary.com/dnjw76gxi/image/upload/v1704099732/w6u7d2sonsdwoupk5k1c.png'; 
+
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   // const currentImage = useAppSelector(store => store.auth.currentUser.avatar_id);
@@ -43,16 +49,24 @@ const Header = () => {
   const handleSignOut = () => {
     dispatch(logout());
   }
-  
-  useEffect(()=>{
-    const imageURL = localStorage.getItem('avatar_id');
-    setImageId(imageURL);
-  },[])
+
+  useLayoutEffect(() => {
+    const isAuthenticatedString = localStorage.getItem('isAuthenticated');
+    const isAuthenticated = isAuthenticatedString ? JSON.parse(isAuthenticatedString) : false;
+    if (avatar_url==='' && localStorage.getItem('id_token') && isAuthenticated ) {
+        axios.defaults.headers.common['Authorization'] = localStorage.getItem('token_type') + ' ' + localStorage.getItem('id_token');
+        console.log('dispatch at header')
+        dispatch(userInfoRequest());
+    }
+}, [])
 
   const handleLoginSuccess = () => {
-    const imageURL = localStorage.getItem('avatar_id');
-    setImageId(imageURL);
-    setIsAuthenticated(true);
+    // const imageURL = localStorage.getItem('avatar_url');
+    // dispatch(setAvatarURL(imageURL));
+    setIsFirstLogin(false);
+    // setImageURL(imageURL);
+    // setIsAuthenticated(true);
+    // console.log('avatar update');
   }
 
   // useEffect(() => {
@@ -116,13 +130,16 @@ const Header = () => {
           {isAuthenticated ? (
             <Dropdown>
               <Dropdown.Toggle variant="dark" className='header-button'>
-                <img src={`http://127.0.0.1:8000/images/${imageId}`} alt='avatar lmao' style={{ width: '40px', height: '40px', objectFit: 'cover' }}></img>
+                <div >
+                  <img src={`${used_avatar_url}`} alt='' style={{ width: '40px', height: '40px', objectFit: 'cover' }}></img>
+                  <div>{username}</div>
+                </div>
               </Dropdown.Toggle>
               <Dropdown.Menu>
-                <Dropdown.Item className='dropdown-item' onClick={() => handleSignOut()}>Đăng xuất</Dropdown.Item>
-                <Dropdown.Item className='dropdown-item' href="#">function 2</Dropdown.Item>
+                <Dropdown.Item className='dropdown-item' href="/profile">Trang cá nhân</Dropdown.Item>
                 <Dropdown.Item className='dropdown-item' href="#">function 3</Dropdown.Item>
                 <Dropdown.Item className='dropdown-item' href="#">function 4</Dropdown.Item>
+                <Dropdown.Item className='dropdown-item' onClick={() => handleSignOut()}>Đăng xuất</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
           ) : (

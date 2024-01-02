@@ -11,6 +11,7 @@ import ViewAllPage from './components/viewAllPage/ViewAllPageSport';
 import ViewAllPageSport from './components/viewAllPage/ViewAllPageSport';
 import ViewAllPageMusic from './components/viewAllPage/ViewAllPageMusic';
 import ViewAllPageTravel from './components/viewAllPage/ViewAllPageTravel';
+import ProfileContainer from './components/profile/ProfileContainer';
 
 function App() {
   return (
@@ -25,6 +26,9 @@ function App() {
               <Header />
               <Routes>
                 <Route index element={<HomePage />} />
+                <Route element={<PrivateRoute />}>
+                  <Route path='/profile' element={<ProfileContainer />} />
+                </Route>
                 <Route path='/tags/*'
                   element={
                     <Routes>

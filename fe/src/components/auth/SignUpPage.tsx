@@ -65,6 +65,7 @@ function SignUpPage(props: ISignUpFormatProps) {
         setDay(value);
         setDateOfBirthError('');
         setIsDeleteCharacter(false);
+        console.log('set day')
       }
     }
 
@@ -73,6 +74,7 @@ function SignUpPage(props: ISignUpFormatProps) {
         setMonth(value);
         setDateOfBirthError('');
         setIsDeleteCharacter(false);
+        console.log('set month')
       }
     }
 
@@ -81,6 +83,7 @@ function SignUpPage(props: ISignUpFormatProps) {
         setYear(value);
         setDateOfBirthError('');
         setIsDeleteCharacter(false);
+        console.log('set year')
       }
     }
 
@@ -96,14 +99,15 @@ function SignUpPage(props: ISignUpFormatProps) {
       setConfirmPassword(value);
       setConfirmPasswordError('');
     }
+    setDateOfBirth(year + '-' + month + '-' + day);
   };
 
   const handleSignUp = () => {
-    if (isValidDate(day, month, year)) {
-      setDateOfBirth(year + '-' + month + '-' + day);
-    } else {
-      setDateOfBirthError('Ngày sinh không hợp lệ')
-    }
+    // if (isValidDate(day, month, year)) {
+    setDateOfBirth(year + '-' + month + '-' + day);
+    // } else {
+    // setDateOfBirthError('Ngày sinh không hợp lệ')
+    // }
 
     if (fullname === '') {
       setfullnameError('Không được để trống');
@@ -139,30 +143,26 @@ function SignUpPage(props: ISignUpFormatProps) {
       email: "",
       username: username,
       password: password,
-      // temp
       date_of_birth: dateOfBirth,
     };
+
     dispatch<any>(signUpRequest(payload))
-      .then((result: any) => {
+      .then(async (result: any) => {
         if (result.payload?.response?.request?.response) {
           const response = JSON.parse(result.payload.response.request.response);
-          // console.log(response)
           const errorMessage = response.detail;
-
-          // change into show alert
-          // console.log(errorMessage);
           if (errorMessage === "User is existed") {
             setUsernameError('User Exists');
           }
         } else {
-          // setShowSuccessMessage(!showSuccessMessage);
-          dispatch<any>(signInRequest(payload)).then((result: any) => {
-            console.log(result);
-                props.setOpenSignUpModal(false);
-                props.handleLoginSuccess();
-            
-        })
-        dispatch(userInfoRequest())
+          const result = await dispatch<any>(signInRequest(payload));
+          if (result.meta.requestStatus === "fulfilled") {
+            props.setOpenSignUpModal(false);
+            props.handleLoginSuccess();
+            return dispatch(userInfoRequest());
+          } else {
+
+          }
         }
       });
   };

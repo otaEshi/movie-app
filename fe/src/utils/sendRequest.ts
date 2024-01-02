@@ -51,6 +51,5 @@ export const sendRequest = async (url: string, options?: Partial<RequestOptions>
             }
             return options?.thunkApi && options.thunkApi.rejectWithValue(error);
         });
-
     return trackPromise(request);
 };
