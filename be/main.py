@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, date
 from typing import Annotated
-from fastapi import Depends, FastAPI, HTTPException, status, UploadFile, File
+from fastapi import Depends, FastAPI, HTTPException, status, UploadFile, File, Header
 from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import jwt, JWTError
@@ -156,7 +156,7 @@ async def login_for_access_token(
 @app.post("/refresh_token", response_model=Token, tags=["Users"])
 # Get a new access token using a refresh token
 async def refresh_token(
-    refresh_token: str,
+    refresh_token: Annotated[str, Header(...)],
     db: Session = Depends(get_db)
 ):
     try:
@@ -181,6 +181,8 @@ async def refresh_token(
 async def read_users_me(
     current_user: User = Depends(get_current_user)
 ):
+    # Remove the time from the date of birth
+    current_user.date_of_birth = current_user.date_of_birth.date()
     return current_user
 
 @app.post("/users/me/change_password", tags=["Users"])
@@ -297,6 +299,7 @@ async def read_movies(page: int = 0,
                       m: int = None,
                       y: int = None,
                       include_deleted: bool = False,
+                      user_id: int = None,
                       db: Session = Depends(get_db)):
     """
         Retrieve a list of movies from the database.
@@ -314,7 +317,9 @@ async def read_movies(page: int = 0,
         search_params["is_deleted"] = False
 
     search_params = {k: v for k, v in search_params.items() if v is not None}
-    movies = await crud.get_movies(db, page, page_size, search_params)
+    movies = await crud.get_movies(db, page, page_size, search_params, user_id)
+    for movie in movies:
+        movie["date_of_release"] = movie["date_of_release"].date()
     return movies
 
 @app.get("/movies/top_trending", tags=["Movies"])
@@ -325,7 +330,9 @@ async def read_top_trending_movies(db: Session = Depends(get_db), top_k: int = 1
     search_params = {}
     if genre is not None:
         search_params["genre"] = genre
-    movies = await crud.get_top_trending_movies(db, top_k, search_params)
+    movies = await crud.get_top_trending_movies(db, top_k, search_params, user_id=None)
+    for movie in movies:
+        movie["date_of_release"] = movie["date_of_release"].date()
     return movies
 
 @app.get("/movies/{movie_id}", tags=["Movies"])
@@ -333,7 +340,8 @@ async def read_movie(movie_id: int, db: Session = Depends(get_db)):
     """
         Retrieve a movie from the database by its ID.
     """
-    movie = await crud.get_movie(db, movie_id=movie_id)
+    movie = await crud.get_movie(db, movie_id=movie_id, user_id=None)
+    movie["date_of_release"] = movie["date_of_release"].date()
     return movie
 
 @app.post("/register_view/{movie_id}", tags=["Movies"])

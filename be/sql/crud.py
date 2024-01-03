@@ -318,7 +318,7 @@ async def delete_movie_list(db: Session, movie_list_id: int, owner_id: int):
 
 ### Movie CRUD ###
 
-async def get_movie(db: Session, movie_id: int):
+async def get_movie(db: Session, movie_id: int, user_id: int = None):
     """
     Retrieve a movie from the database by its ID.
 
@@ -329,8 +329,15 @@ async def get_movie(db: Session, movie_id: int):
     Returns:
         Movie: The movie object if found, None otherwise.
     """
-    return db.query(Movie).filter(Movie.id == movie_id).first()
-
+    movie = db.query(Movie).filter(Movie.id == movie_id).first()
+    result = movie.__dict__
+    average_rating = await get_movie_ratings_average(db, movie_id)
+    result["average_rating"] = average_rating["average"]
+    
+    if user_id is not None:
+        result["current_user_rating"] = db.query(MovieRatings).filter(MovieRatings.movie_id == movie_id, MovieRatings.user_id == user_id).first()
+    
+    return result
 async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_params: dict = None):
     """
     Retrieve a list of movies from the database.
@@ -353,6 +360,7 @@ async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_par
         return result, {"max_page" : max_page}
     
     result = db.query(Movie).offset(skip).limit(limit).all()
+    result = [movie.__dict__ for movie in result]
     return result, {"max_page": max_page}
 
 async def get_top_trending_movies(db: Session, top_k: int, search_params: dict ):
