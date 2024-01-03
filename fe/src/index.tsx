@@ -10,9 +10,22 @@ import { store } from './app/store';
 import axios from 'axios';
 import { handleAxiosReponseError, handleAxiosRequest } from './axiosConfig';
 
+// Axios request interceptor
+axios.interceptors.request.use(
+  async (config) => await handleAxiosRequest(config),
+  (error) => Promise.reject(error)
+);
+
+// Axios response interceptor
+axios.interceptors.response.use(
+  (response) => response,
+  async (error) => await handleAxiosReponseError(error)
+);
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
+
 root.render(
   <Provider store={store}>
     <App />

@@ -3,25 +3,55 @@ import { useDispatch } from 'react-redux';
 
 import { Link, useNavigate } from 'react-router-dom';
 import { ISignUpPayload } from '../../types/auth';
-import { signUpRequest } from './authApi';
+import { signInRequest, signUpRequest, userInfoRequest } from './authApi';
 
-function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
+interface ISignUpFormatProps {
+  setOpenSignUpModal: React.Dispatch<React.SetStateAction<boolean>>;
+  setOpenSignInModal: React.Dispatch<React.SetStateAction<boolean>>;
+  handleLoginSuccess: () => void;
+}
+
+function SignUpPage(props: ISignUpFormatProps) {
   const [fullname, setfullname] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [fullnameError, setfullnameError] = useState<string>('');
-  const [emailError, setEmailError] = useState<string>('');
+  const [usernameError, setUsernameError] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string>('');
   const [confirmPasswordError, setConfirmPasswordError] = useState<string>('');
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [dateOfBirth, setDateOfBirth] = useState<string>('');
+  const [dateOfBirthError, setDateOfBirthError] = useState<string>('');
+  const [isDeleteCharacter, setIsDeleteCharacter] = useState<boolean>(false);
+  const [year, setYear] = useState<string>('')
+  const [month, setMonth] = useState<string>('')
+  const [day, setDay] = useState<string>('')
+
   // Checking
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,64}$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+  function isValidDate(day: string, month: string, year: string) {
+    // Create a new Date object using the components
+    const dateObject = new Date(`${year}-${month}-${day}`);
+
+    // Check if the components match the original input and are valid
+    return (
+      dateObject.getFullYear() === parseInt(year, 10) &&
+      dateObject.getMonth() === parseInt(month, 10) - 1 &&
+      dateObject.getDate() === parseInt(day, 10)
+    );
+  }
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' || e.key === 'Delete') {
+      setIsDeleteCharacter(true);
+    }
+  }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -29,8 +59,37 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
       setfullname(value);
       setfullnameError('');
     }
+
+    if (id === 'day') {
+      if (day.length < 2 || isDeleteCharacter) {
+        setDay(value);
+        setDateOfBirthError('');
+        setIsDeleteCharacter(false);
+        console.log('set day')
+      }
+    }
+
+    if (id === 'month') {
+      if (month.length < 2 || isDeleteCharacter) {
+        setMonth(value);
+        setDateOfBirthError('');
+        setIsDeleteCharacter(false);
+        console.log('set month')
+      }
+    }
+
+    if (id === 'year') {
+      if (year.length < 4 || isDeleteCharacter) {
+        setYear(value);
+        setDateOfBirthError('');
+        setIsDeleteCharacter(false);
+        console.log('set year')
+      }
+    }
+
     if (id === 'username') {
       setUsername(value);
+      setUsernameError('');
     }
     if (id === 'password') {
       setPassword(value);
@@ -40,39 +99,41 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
       setConfirmPassword(value);
       setConfirmPasswordError('');
     }
+    setDateOfBirth(year + '-' + month + '-' + day);
   };
 
   const handleSignUp = () => {
+    // if (isValidDate(day, month, year)) {
+    setDateOfBirth(year + '-' + month + '-' + day);
+    // } else {
+    // setDateOfBirthError('Ngày sinh không hợp lệ')
+    // }
+
     if (fullname === '') {
-      setfullnameError('This field must not be blank.');
+      setfullnameError('Không được để trống');
       return;
     }
-    // if (email === '') {
-    //   setEmailError('This field must not be blank.');
-    //   return;
-    // }
-    // if (!emailRegex.test(email)) {
-    //   setEmailError('Please enter a valid email address.');
-    //   return;
-    // }
+
+    if (day === '' || month === '' || year === '') {
+      setDateOfBirthError('Không được để trống');
+      return;
+    }
+
     if (password === '') {
-      setPasswordError('This field must not be blank.');
+      setPasswordError('Không được để trống');
       return;
     }
-    // if (!passwordRegex.test(password)) {
-    //   setPasswordError('Password must contain: 8-64 characters, 1 uppercase letter, 1 lowercase letter, 1 number.')
-    //   return;
-    // }
+
     if (/\s/.test(password)) {
-      setPasswordError('Password cannot contain spaces in between.');
+      setPasswordError('Mật khẩu không được chứa dấu cách');
       return;
     }
     if (confirmPassword === '') {
-      setConfirmPasswordError('This field must not be blank.');
+      setConfirmPasswordError('Không được để trống');
       return;
     }
     if (confirmPassword !== password) {
-      setConfirmPasswordError('Password must be the same .');
+      setConfirmPasswordError('Mật khẩu phải giống nhau');
       return;
     }
 
@@ -82,25 +143,28 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
       email: "",
       username: username,
       password: password,
-      // temp
-      date_of_birth: "2023-12-24 15:16",
+      date_of_birth: dateOfBirth,
     };
+
     dispatch<any>(signUpRequest(payload))
-      .then((result: any) => {
+      .then(async (result: any) => {
         if (result.payload?.response?.request?.response) {
           const response = JSON.parse(result.payload.response.request.response);
-          console.log(response)
           const errorMessage = response.detail;
-
-          console.log(errorMessage);
           if (errorMessage === "User is existed") {
-            setEmailError('User Exists');
+            setUsernameError('User Exists');
           }
         } else {
-          // setShowSuccessMessage(!showSuccessMessage);
+          const result = await dispatch<any>(signInRequest(payload));
+          if (result.meta.requestStatus === "fulfilled") {
+            props.setOpenSignUpModal(false);
+            props.handleLoginSuccess();
+            return dispatch(userInfoRequest());
+          } else {
+
+          }
         }
       });
-    // console.log("test: ", showSuccessMessage)
   };
 
   return (
@@ -116,7 +180,7 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
       <div className="custom-container">
         <div className="custom-panel">
           <div className='position-relative'>
-            <h1 className="custom-signin-title mb-4">Create Account</h1>
+            <h1 className="custom-signin-title mb-4">Đăng Ký</h1>
             <div>
               <input
                 type="text"
@@ -124,11 +188,47 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
                 className="custom-input"
                 value={fullname || ''}
                 onChange={(e) => handleInputChange(e)}
-                placeholder="Fullname"
+                placeholder="Họ và tên"
                 autoComplete='off'
               />
             </div>
             <div className='custom-error-text-wrapper'>{fullnameError && <div className="text-danger small custom-error-text">{fullnameError}</div>}</div>
+            <div className='d-flex justify-content-between'>
+              <input
+                type="text"
+                id="day"
+                className="custom-DoB-input"
+                value={day || ''}
+                onChange={(e) => handleInputChange(e)}
+                onKeyDown={handleKeyDown}
+                placeholder="Ngày"
+                autoComplete='off'
+                inputMode='numeric'
+              />
+              <input
+                type="text"
+                id="month"
+                className="custom-DoB-input"
+                value={month || ''}
+                onChange={(e) => handleInputChange(e)}
+                onKeyDown={handleKeyDown}
+                placeholder="Tháng"
+                autoComplete='off'
+                inputMode='numeric'
+              />
+              <input
+                type="text"
+                id="year"
+                className="custom-DoB-input"
+                value={year || ''}
+                onChange={(e) => handleInputChange(e)}
+                onKeyDown={handleKeyDown}
+                placeholder="Năm"
+                autoComplete='off'
+                inputMode='numeric'
+              />
+            </div>
+            <div className='custom-error-text-wrapper'>{dateOfBirthError && <div className="text-danger small custom-error-text">{dateOfBirthError}</div>}</div>
             <div>
               <input
                 type="text"
@@ -136,11 +236,11 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
                 className="custom-input"
                 value={username || ''}
                 onChange={(e) => handleInputChange(e)}
-                placeholder="Username"
+                placeholder="Tên tài khoản"
                 autoComplete='off'
               />
             </div>
-            <div className='custom-error-text-wrapper'>{emailError && <div className="text-danger small custom-error-text">{emailError}</div>}</div>
+            <div className='custom-error-text-wrapper'>{usernameError && <div className="text-danger small custom-error-text">{usernameError}</div>}</div>
             <div>
               <input
                 className="custom-input"
@@ -148,7 +248,7 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
                 id="password"
                 value={password || ''}
                 onChange={(e) => handleInputChange(e)}
-                placeholder="Password"
+                placeholder="Mật khẩu"
               />
             </div>
             <div className='custom-error-text-wrapper'>
@@ -161,7 +261,7 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
                 id="confirmPassword"
                 value={confirmPassword || ''}
                 onChange={(e) => handleInputChange(e)}
-                placeholder="Confirm Password"
+                placeholder="Xác nhận mật khẩu"
               />
             </div>
             <div className='custom-error-text-wrapper'>
@@ -169,19 +269,16 @@ function SignUpPage({setOpenSignInModal, setOpenSignUpModal}:any) {
             </div>
             <div className="mb-2 mt-3">
               <button className="custom-btn" onClick={handleSignUp} tabIndex={-1}>
-                Sign Up
+                ĐĂNG KÝ
               </button>
             </div>
             <div>
               <p>
-                {/* Already have an account? <Link to='/sign_in' className='custom-nav-text' tabIndex={-1}>
-                  Sign in
-                </Link> */}
-                Already have an account? <span className='custom-text-link' onClick={() => { 
-                  setOpenSignInModal(true);
-                  setOpenSignUpModal(false);
-                 }} tabIndex={-1}>
-                  Sign in
+                Đã có tài khoản? <span className='custom-nav-text' onClick={() => {
+                  props.setOpenSignInModal(true);
+                  props.setOpenSignUpModal(false);
+                }} tabIndex={-1}>
+                  Đăng nhập
                 </span>
               </p>
             </div>

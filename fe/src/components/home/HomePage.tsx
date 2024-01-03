@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
 import Homes from '../homes/Homes';
 // import Trending from '../trending/Trending';
-import ListFilm from '../listFilm/ListFilm';
+// import ListFilm from '../listFilm/ListFilm';
 import { sport, music, travel } from '../../dummyData';
+import { useAppDispatch } from '../../app/hooks';
 
 const HomePage: React.FC = () => {
   const [sports, setSports] = useState(sport);
   const [musics, setSusics] = useState(music);
   const [travels, setTravels] = useState(travel);
+  // const dispatch = useAppDispatch();
 
   return (
     <div className='m-4'>
       <Homes />
-      <ListFilm items={sports} title='Thể thao' itemName='sports' />
+      {/* <ListFilm items={sports} title='Thể thao' itemName='sports' />
       <ListFilm items={musics} title='Âm nhạc' itemName='musics' />
-      <ListFilm items={travels} title='Du lịch' itemName='travels' />
+      <ListFilm items={travels} title='Du lịch' itemName='travels' /> */}
     </div>
   );
 };

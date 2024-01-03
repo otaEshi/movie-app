@@ -16,8 +16,8 @@ export interface IActivateInfo {
 
 export interface ISignInResponse {
     access_token:string,
-    refresh_token:string
-    // temp
+    refresh_token:string,
+    token_type:string
   }
 
 export interface ISignUpResponse {
@@ -39,9 +39,8 @@ export interface IUserInfoResponse {
     username: string;
     password: string;
     date_of_birth: string;
-    movie_lists: string[];
     is_active: boolean;
     is_admin: boolean;
     is_content_admin: boolean;
-    avatar_id: string;
+    avatar_url: string;
 }
