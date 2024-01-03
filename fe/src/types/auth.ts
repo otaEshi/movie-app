@@ -16,8 +16,8 @@ export interface IActivateInfo {
 
 export interface ISignInResponse {
     access_token:string,
+    refresh_token:string,
     token_type:string
-    // temp
   }
 
 export interface ISignUpResponse {

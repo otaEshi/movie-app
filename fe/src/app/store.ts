@@ -1,10 +1,12 @@
 import { Action, ThunkAction, configureStore } from '@reduxjs/toolkit';
 
 import authSlice from '../components/auth/authSlice';
+import homeSlice from '../components/homes/homeSlice';
 
 export const store = configureStore({
   reducer: {
-    auth:authSlice
+    auth:authSlice,
+    home:homeSlice,
   },
 
   middleware: (getDefaultMiddleware) =>

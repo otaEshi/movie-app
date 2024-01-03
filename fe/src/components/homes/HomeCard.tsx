@@ -3,25 +3,28 @@ import { Link } from 'react-router-dom';
 import '@fortawesome/fontawesome-free/css/all.css';
 import ReactStars from '../../lib/reactStar/react-star';
 import Stars from '../../lib/reactStar/react-star';
+import { IMovie } from '../../types/movies';
 
 interface HomeCardProps {
-  item: {
-    id: string; // id
-    cover: string; // thumbnail_id
-    name: string; // title
-    userRating: number; 
-    time: string; //date of release
-    desc: string; // description
-    globalRating: string;
-    genres: string; //  genre
-    subGenre: string;
-    videoURL: string; // url
-    source: string // source?
-    views: string; // views
-  };
+  item: IMovie
 }
 
-const HomeCard: React.FC<HomeCardProps> = ({ item: { id, cover, name, userRating, globalRating, time, desc, genres, subGenre, videoURL } }) => {
+// id: number;
+// title: string;
+// description: string;
+// thumbnail_url: string;
+// url: string;
+// genre: string;
+// subgenre: string;
+// source: string;
+// views: number;
+// date_of_release: string;
+// is_deleted: boolean;
+// userRating?: number;
+// globalRaing: number;
+
+function HomeCard(props: HomeCardProps) {
+// const HomeCard: React.FC<HomeCardProps> = ({ item: { id, cover, name, userRating, globalRating, time, desc, genres, subGenre, videoURL } }) => {
   const [ratingStar, setRatingStar] = useState(0);
 
   const handleRatingChange = (newRating: number) => {
@@ -33,11 +36,11 @@ const HomeCard: React.FC<HomeCardProps> = ({ item: { id, cover, name, userRating
     <>
       <div className='box'>
         <div className='coverImage'>
-          <img src={cover} alt='' />
+          <img src={props.item.thumbnail_url} alt='' />
         </div>
         <div className='content flex'>
           <div className='row'>
-            <h1>{name}</h1>
+            <h1>{props.item.title}</h1>
             <div className='rating flex'>
               {/* Modidy rating here */}
               {/* <div className='rate'>
@@ -58,27 +61,28 @@ const HomeCard: React.FC<HomeCardProps> = ({ item: { id, cover, name, userRating
                 size={24}
                 half={true}
                 color2={'#e50813'}
-                value={ratingStar}
+                value={props.item.userRating ? props.item.userRating : props.item.globalRating}
                 // edit={false}
                 onChange={handleRatingChange}
                 // color2={'#ffd700'}
                 
                 ></ReactStars>
               </div>
-              <label>{globalRating} (đánh giá)</label>
-              <label>{time} (thời gian)</label>
+              <label>{props.item.globalRating} (đánh giá)</label>
+              <label>{props.item.date_of_release} (thời gian)</label>
             </div>
-            <p>{desc}</p>
+            <p>{props.item.description}</p>
             <div className='cast'>
               <h4>
                 <span>Thể loại: </span>
-                {genres}
+                {props.item.genre}
+                {props.item.subgenre}
               </h4>
             </div>
             
           </div>
           <div className='palyButton row'>
-            <Link to={`/watch/${id}`} className='custom-text-deco'>
+            <Link to={`/watch/${props.item.id}`} className='custom-text-deco'>
               <button>
                 <div className='img'>
                   <img src='./images/play-button.png' alt='' />

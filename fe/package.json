@@ -26,7 +26,6 @@
     "node-sass": "^9.0.0",
     "react": "^18.2.0",
     "react-bootstrap": "^2.9.1",
-    "react-date-picker": "^10.6.0",
     "react-dom": "^18.2.0",
     "react-notification-component": "^1.1.4",
     "react-notifications-component": "^4.0.1",

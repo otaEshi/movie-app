@@ -67,10 +67,7 @@ const authSlice = createSlice({
             localStorage.removeItem('avatar_url');
             localStorage.removeItem('token_type');
             localStorage.removeItem('isAuthenticated');
-            sessionStorage.removeItem('id_token');
-            sessionStorage.removeItem('avatar_url');
-            sessionStorage.removeItem('isAuthenticated');
-            sessionStorage.removeItem('token_type');
+            localStorage.removeItem('refresh_token');
             window.location.reload();
         },
 
@@ -84,8 +81,9 @@ const authSlice = createSlice({
             .addCase(signInRequest.fulfilled, (state, action) => {
                 if (action.payload) {
                     localStorage.setItem('id_token', action.payload.access_token);
+                    localStorage.setItem('refresh_token', action.payload.refresh_token);
                     localStorage.setItem('token_type', action.payload.token_type);
-                    axios.defaults.headers.common['Authorization'] = action.payload.token_type + ' ' + action.payload.access_token;
+                    // axios.defaults.headers.common['Authorization'] = action.payload.token_type + ' ' + action.payload.access_token;
                     localStorage.setItem('isAuthenticated', JSON.stringify(true));
                     window.location.reload();
                 }
@@ -97,7 +95,7 @@ const authSlice = createSlice({
             })
             .addCase(userInfoRequest.fulfilled, (state, action) => {
                 if (action.payload) {
-                    localStorage.setItem('avatar_url', action.payload.avatar_url);
+                    // localStorage.setItem('avatar_url', action.payload.avatar_url);
                     // localStorage.setItem('currentUser',) 
                     
                     state.currentUser = action.payload

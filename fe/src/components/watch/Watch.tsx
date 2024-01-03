@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './style.css';
 import { useParams } from 'react-router-dom';
 import { homeData, recommended } from '../../dummyData';
-import Upcomming from '../listFilm/ListFilm';
+// import Upcomming from '../listFilm/ListFilm';
 
 interface Item {
   id: number;

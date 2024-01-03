@@ -7,6 +7,13 @@ header {
   z-index: 999;
 }
 
+.custom-header-btn{
+  
+  &:hover{
+    cursor: pointer;
+  }
+}
+
 /* .logo img {
   width: 150px;
   margin-top: 20px;

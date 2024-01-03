@@ -18,11 +18,11 @@ const Header = () => {
   const [openSignUpModal, setOpenSignUpModal] = useState<boolean>(false);
   const [isFirstLogin, setIsFirstLogin] = useState<boolean>(true);
 
+  const currentUser = useAppSelector(store => store.auth.currentUser)
   const isAuthenticatedString = localStorage.getItem('isAuthenticated');
   const isAuthenticated = isAuthenticatedString ? JSON.parse(isAuthenticatedString) : false;
-  const username = useAppSelector(store => store.auth.currentUser.username);
-  const avatar_url = useAppSelector(store => store.auth.currentUser.avatar_url);
-  const used_avatar_url = avatar_url !== "" ? avatar_url : 'https://res.cloudinary.com/dnjw76gxi/image/upload/v1704099732/w6u7d2sonsdwoupk5k1c.png'; 
+  const [username, setUsername] = useState<string>(currentUser.username);
+  const [avatar_url, setAvatar_url] = useState<string>(currentUser.avatar_url);
 
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -50,24 +50,27 @@ const Header = () => {
     dispatch(logout());
   }
 
-  useLayoutEffect(() => {
+  const fetchData = async () => {
     const isAuthenticatedString = localStorage.getItem('isAuthenticated');
     const isAuthenticated = isAuthenticatedString ? JSON.parse(isAuthenticatedString) : false;
-    if (avatar_url==='' && localStorage.getItem('id_token') && isAuthenticated ) {
-        axios.defaults.headers.common['Authorization'] = localStorage.getItem('token_type') + ' ' + localStorage.getItem('id_token');
-        console.log('dispatch at header')
-        dispatch(userInfoRequest());
+    if (isAuthenticated) {
+      console.log('dispatch at header');
+      await dispatch(userInfoRequest());
     }
-}, [])
+  };
+  
+  useLayoutEffect(() => {
+    fetchData();
+  }, [isAuthenticated]);
+  
+  useLayoutEffect(() => {
+    setUsername(currentUser.username);
+    setAvatar_url(currentUser.avatar_url);
+  })
 
   const handleLoginSuccess = () => {
-    // const imageURL = localStorage.getItem('avatar_url');
-    // dispatch(setAvatarURL(imageURL));
     setIsFirstLogin(false);
-    // setImageURL(imageURL);
-    // setIsAuthenticated(true);
-    // console.log('avatar update');
-  }
+  };
 
   // useEffect(() => {
   //   setIsAuthenticated( useAppSelector(store => store.auth.isAuthenticated) );
@@ -79,7 +82,7 @@ const Header = () => {
         <nav className='flexSB custom-height mt-3'>
           <ul className={Mobile ? 'navMenu-list' : 'flexSB'} onClick={() => setMobile(false)}>
             <li>
-              <a href='/'><i className="fa fa-home" aria-hidden="true"></i></a>
+              <div className='custom-header-btn' onClick={() => navigate('/')}><i className="fa fa-home" aria-hidden="true"></i></div>
             </li>
             <li>
               <div className="dropdown">
@@ -131,14 +134,14 @@ const Header = () => {
             <Dropdown>
               <Dropdown.Toggle variant="dark" className='header-button'>
                 <div >
-                  <img src={`${used_avatar_url}`} alt='' style={{ width: '40px', height: '40px', objectFit: 'cover' }}></img>
+                  <img src={`${avatar_url}`} alt='' style={{ width: '40px', height: '40px', objectFit: 'cover' }}></img>
                   <div>{username}</div>
                 </div>
               </Dropdown.Toggle>
               <Dropdown.Menu>
-                <Dropdown.Item className='dropdown-item' href="/profile">Trang cá nhân</Dropdown.Item>
-                <Dropdown.Item className='dropdown-item' href="#">function 3</Dropdown.Item>
-                <Dropdown.Item className='dropdown-item' href="#">function 4</Dropdown.Item>
+                <Dropdown.Item className='dropdown-item' onClick={() => navigate('/profile')} >Trang cá nhân</Dropdown.Item>
+                <Dropdown.Item className='dropdown-item' onClick={() => navigate('/profile')}>function 3</Dropdown.Item>
+                <Dropdown.Item className='dropdown-item' onClick={() => navigate('/profile')}>function 4</Dropdown.Item>
                 <Dropdown.Item className='dropdown-item' onClick={() => handleSignOut()}>Đăng xuất</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
