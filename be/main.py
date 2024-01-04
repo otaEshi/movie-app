@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, date
-from typing import Annotated
+from typing import Annotated, Optional
 from fastapi import Depends, FastAPI, HTTPException, status, UploadFile, File, Header
 from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -122,6 +122,20 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     user = await crud.get_user(get_db(), user_id=user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+async def get_current_user_suppress_error(token: Annotated[str, Depends(oauth2_scheme)] = None):
+    """
+        Get the current user
+
+        Args:
+            token (str): The token of the user.
+    """
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user = await crud.get_user(get_db(), user_id=payload.get("sub"))
+    except: 
+        return None
     return user
 
 @app.post("/signup", response_model=User, tags=["Users"])
@@ -299,7 +313,6 @@ async def read_movies(page: int = 0,
                       m: int = None,
                       y: int = None,
                       include_deleted: bool = False,
-                      user_id: int = None,
                       db: Session = Depends(get_db)):
     """
         Retrieve a list of movies from the database.
@@ -317,10 +330,11 @@ async def read_movies(page: int = 0,
         search_params["is_deleted"] = False
 
     search_params = {k: v for k, v in search_params.items() if v is not None}
-    movies = await crud.get_movies(db, page, page_size, search_params, user_id)
+    # TODO Implement user_id
+    movies, max_page = await crud.get_movies(db, page, page_size, search_params, user_id = None)
     for movie in movies:
-        movie["date_of_release"] = movie["date_of_release"].date()
-    return movies
+        movie.date_of_release = movie.date_of_release.date()
+    return movies, max_page
 
 @app.get("/movies/top_trending", tags=["Movies"])
 async def read_top_trending_movies(db: Session = Depends(get_db), top_k: int = 10, genre: str = None):
@@ -332,7 +346,7 @@ async def read_top_trending_movies(db: Session = Depends(get_db), top_k: int = 1
         search_params["genre"] = genre
     movies = await crud.get_top_trending_movies(db, top_k, search_params, user_id=None)
     for movie in movies:
-        movie["date_of_release"] = movie["date_of_release"].date()
+        movie.date_of_release = movie.date_of_release.date()
     return movies
 
 @app.get("/movies/{movie_id}", tags=["Movies"])
@@ -371,9 +385,8 @@ async def create_movie( title:str,
     if not current_user.is_content_admin:
         raise HTTPException(status_code=401, detail="Unauthorized")
     movie = MovieCreate(title=title, description=description, date_of_release=date_of_release, url=url, genre=genre, subgenre=subgenre, source=source)
-    
-    movie.thumbnail_url = await upload_image_cloudinary(image)['secure_url']
-    movie.views = 0
+    cloudinary_response = await upload_image_cloudinary(image)
+    movie.thumbnail_url = cloudinary_response['secure_url']
     return await crud.create_movie(db, movie=movie)
 
 @app.patch("/movies/{movie_id}", tags=["Movies"])
