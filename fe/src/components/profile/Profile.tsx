@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { IUserInfoResponse } from "../../types/auth";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import './profile.scss'
-import { _refreshToken } from "../../axiosConfig";
+import { _refresh_token } from "../../axiosConfig";
 
 interface IProfileProps {
     // setOpenSignUpModal: React.Dispatch<React.SetStateAction<boolean>>;
@@ -26,6 +26,7 @@ function Profile(props: IProfileProps) {
     const [avatar, setAvatar] = useState<File | null>(null);
     const [oldPassword, setOldPassword] = useState<string>('');
     const [newPassword, setNewPassword] = useState<string>('');
+    const [avatar_url, setAvatar_url] = useState<string>(props.currentUser.avatar_url);
 
     const handleChangePassword = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
@@ -46,22 +47,22 @@ function Profile(props: IProfileProps) {
         });
     };
 
-    console.log(props.currentUser)
+    console.log('yolo?: ',props.currentUser)
 
-    const formatDateToSendApi = (inputDate: string): string => {
-        const date = new Date(inputDate);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Adding 1 to month because it's zero-indexed
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    };
+    // const formatDateToSendApi = (inputDate: string): string => {
+    //     const date = new Date(inputDate);
+    //     const year = date.getFullYear();
+    //     const month = String(date.getMonth() + 1).padStart(2, '0'); // Adding 1 to month because it's zero-indexed
+    //     const day = String(date.getDate()).padStart(2, '0');
+    //     return `${year}-${month}-${day}`;
+    // };
 
-    const formatDateFromApi = (inputDate: string): string => {
-        const [year, month, day] = inputDate.split('-');
-        const formattedDate = `${month}/${day}/${year}`;
-        console.log(formattedDate)
-        return formattedDate;
-    }
+    // const formatDateFromApi = (inputDate: string): string => {
+    //     const [year, month, day] = inputDate.split('-');
+    //     const formattedDate = `${month}/${day}/${year}`;
+    //     console.log(formattedDate)
+    //     return formattedDate;
+    // }
 
     // useEffect(() => {
     //     const formattedDate = formatDateFromApi(dateOfBirth);
@@ -82,6 +83,11 @@ function Profile(props: IProfileProps) {
         }
     };
 
+    useLayoutEffect(() => {
+        setAvatar_url(props.currentUser.avatar_url);
+        console.log('render avatar in profile: ', props.currentUser.avatar_url)
+    },[props.currentUser])
+
     const handleFullnameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         props.setCurrentUser({
             ...props.currentUser,
@@ -90,14 +96,14 @@ function Profile(props: IProfileProps) {
     };
 
     const handleUpdate = () => {
-        _refreshToken()
+        console.log(props.currentUser)
     }
 
     return (
         <div className="container">
             <div className="row w-100 ">
                 <div className="col-3 bg-primary-subtle border-right d-flex flex-column align-items-center">
-                    <img src={`${props.currentUser.avatar_url}`} alt='' style={{ width: '120px', height: '120px', objectFit: 'cover' }} className="mt-2"></img>
+                    <img src={`${avatar_url}`} alt='' style={{ width: '120px', height: '120px', objectFit: 'cover' }} className="mt-2"></img>
                     <div>{props.currentUser.username}</div>
                     <div
                         className="custom-profile-nav"

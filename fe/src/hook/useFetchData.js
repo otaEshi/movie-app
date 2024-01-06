@@ -23,7 +23,7 @@ function useFetchData(value) {
 
     useEffect(() => {
         if (!isAuthenticated) return
-        let idToken = localStorage.getItem("id_token")
+        let access_token = localStorage.getItem("access_token")
 
         const newSocket = new WebSocket(`ws://192.168.0.156/join`);
 

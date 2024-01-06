@@ -24,6 +24,13 @@ const Header = () => {
   const [username, setUsername] = useState<string>(currentUser.username);
   const [avatar_url, setAvatar_url] = useState<string>(currentUser.avatar_url);
 
+  const isAdmin = useAppSelector(store => store.auth.currentUser.is_admin)
+  const isContentAdmin = useAppSelector(store => store.auth.currentUser.is_content_admin)
+
+  // console.log('hehe before ', useAppSelector(store => store.auth.currentUser.is_content_admin))
+  // console.log('hehe',isAdmin)
+  // console.log(isContentAdmin)
+
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   // const currentImage = useAppSelector(store => store.auth.currentUser.avatar_id);
@@ -58,11 +65,11 @@ const Header = () => {
       await dispatch(userInfoRequest());
     }
   };
-  
+
   useLayoutEffect(() => {
     fetchData();
   }, [isAuthenticated]);
-  
+
   useLayoutEffect(() => {
     setUsername(currentUser.username);
     setAvatar_url(currentUser.avatar_url);
@@ -140,8 +147,12 @@ const Header = () => {
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 <Dropdown.Item className='dropdown-item' onClick={() => navigate('/profile')} >Trang cá nhân</Dropdown.Item>
-                <Dropdown.Item className='dropdown-item' onClick={() => navigate('/profile')}>function 3</Dropdown.Item>
-                <Dropdown.Item className='dropdown-item' onClick={() => navigate('/profile')}>function 4</Dropdown.Item>
+                <Dropdown.Item className='dropdown-item' onClick={() => navigate('/profile')}>Danh sách cá nhân</Dropdown.Item>
+                {(isAdmin || isContentAdmin) && (
+                  <Dropdown.Item className='dropdown-item' onClick={() => navigate('/profile')}>
+                    Quản lý
+                  </Dropdown.Item>
+                )}
                 <Dropdown.Item className='dropdown-item' onClick={() => handleSignOut()}>Đăng xuất</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
