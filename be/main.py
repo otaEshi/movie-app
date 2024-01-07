@@ -195,8 +195,6 @@ async def refresh_token(
 async def read_users_me(
     current_user: User = Depends(get_current_user)
 ):
-    # Remove the time from the date of birth
-    current_user.date_of_birth = current_user.date_of_birth.date()
     return current_user
 
 @app.post("/users/me/change_password", tags=["Users"])
@@ -251,19 +249,19 @@ async def read_users(page: int = 0, page_size: int = 10, db: Session = Depends(g
 
 ### MOVIE LISTS ###
 @app.get("/movie_lists", tags=["Movie Lists"])
-async def read_movie_lists(page: int = 0, page_size: int = 10, include_deleted: bool = False, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def read_movie_lists(page: int = 0, page_size: int = 10, is_deleted: bool = None, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
         Retrieve a list of movie lists from the database.
     """
-    movie_lists = await crud.get_movie_lists(db, page, page_size, current_user, False, include_deleted)
+    movie_lists = await crud.get_movie_lists(db, page, page_size, current_user, False, is_deleted)
     return movie_lists
 
 @app.get("/movie_lists/public", tags=["Movie Lists"])
-async def read_movie_lists_public(page: int = 0, page_size: int = 10, include_deleted: bool = False, db: Session = Depends(get_db)):
+async def read_movie_lists_public(page: int = 0, page_size: int = 10, is_deleted: bool = None, db: Session = Depends(get_db)):
     """
         Retrieve a list of movie lists from the database.
     """
-    movie_lists = await crud.get_movie_lists(db, page, page_size, None, True, include_deleted)
+    movie_lists = await crud.get_movie_lists(db, page, page_size, None, True, is_deleted)
     return movie_lists
 
 
@@ -312,7 +310,7 @@ async def read_movies(page: int = 0,
                       d: int = None,
                       m: int = None,
                       y: int = None,
-                      include_deleted: bool = False,
+                      is_deleted: bool = None,
                       db: Session = Depends(get_db)):
     """
         Retrieve a list of movies from the database.
@@ -324,29 +322,25 @@ async def read_movies(page: int = 0,
         "d": d,
         "m": m,
         "y": y,
+        "is_deleted": is_deleted
     }
-
-    if not include_deleted:
-        search_params["is_deleted"] = False
 
     search_params = {k: v for k, v in search_params.items() if v is not None}
     # TODO Implement user_id
     movies, max_page = await crud.get_movies(db, page, page_size, search_params, user_id = None)
-    for movie in movies:
-        movie.date_of_release = movie.date_of_release.date()
     return movies, max_page
 
 @app.get("/movies/top_trending", tags=["Movies"])
-async def read_top_trending_movies(db: Session = Depends(get_db), top_k: int = 10, genre: str = None):
+async def read_top_trending_movies(db: Session = Depends(get_db), top_k: int = 10, genre: str = None, is_deleted: bool = None):
     """
         Retrieve a list of top trending movies from the database.
     """
     search_params = {}
     if genre is not None:
         search_params["genre"] = genre
+    if is_deleted is not None:
+        search_params["is_deleted"] = is_deleted
     movies = await crud.get_top_trending_movies(db, top_k, search_params, user_id=None)
-    for movie in movies:
-        movie.date_of_release = movie.date_of_release.date()
     return movies
 
 @app.get("/movies/{movie_id}", tags=["Movies"])
@@ -355,7 +349,6 @@ async def read_movie(movie_id: int, db: Session = Depends(get_db)):
         Retrieve a movie from the database by its ID.
     """
     movie = await crud.get_movie(db, movie_id=movie_id, user_id=None)
-    movie["date_of_release"] = movie["date_of_release"].date()
     return movie
 
 @app.post("/register_view/{movie_id}", tags=["Movies"])
