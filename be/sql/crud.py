@@ -36,7 +36,7 @@ async def get_users(db: Session, page:int = 0, page_size: int = 100):
 
     max_page = db.query(User).count() // page_size + 1
     result = db.query(User).offset(skip).limit(limit).all()
-    return result, {"max_page": max_page}
+    return {"list": result, "max_page": max_page}
 
 async def create_user(db: Session, user: UserCreate):
     """
@@ -251,7 +251,7 @@ async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, curr
             movie_list["movies"] = []
         movie_list['movies'].append(movie)
         collated_result.append(movie_list)
-    return collated_result, {"max_page": max_page}
+    return {"list": collated_result, "max_page": max_page}
     
 
 async def create_movie_list(db: Session, movie_list: MovieListCreate, user_id: int):
@@ -403,7 +403,7 @@ async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_par
         for movie in result:
             movie.current_user_rating = db.query(MovieRatings).filter(MovieRatings.movie_id == movie.id, MovieRatings.user_id == user_id).first()
 
-    return result, {"max_page": max_page}
+    return {"list": result, "max_page": max_page}
 
 async def get_top_trending_movies(db: Session, top_k: int, search_params: dict, user_id: int = None):
     """
@@ -571,7 +571,7 @@ async def get_movie_ratings(db: Session, movie_id: int, user_id: int = None, pag
     if user_id is not None:
         search_params["user_id"] = user_id
     result = db.query(MovieRatings).filter_by(**search_params).offset(skip).limit(limit).all()
-    return result, {"max_page": max_page}
+    return {"list": result, "max_page": max_page}
 
 async def get_num_rating_by_movie_id(db: Session, movie_id: int):
     """
@@ -671,7 +671,7 @@ async def get_movie_comments(db: Session, movie_id: int, user_id: int = None, pa
     if user_id:
         search_params["user_id"] = user_id
     result = db.query(MovieComments).filter_by(**search_params).offset(skip).limit(limit).all()
-    return result, {"max_page": max_page}
+    return {"list": result, "max_page": max_page}
 
 async def update_movie_comment(db: Session, movie_comment_id: int, movie_comment_edit: MovieCommentEdit, user_id: int):
     """
@@ -704,7 +704,7 @@ async def delete_movie_comment(db: Session, movie_comment_id: int, user_id: int)
     """
     Delete a movie comment from the database.
 
-    Args:
+    Args:F
         db (Session): The database session.
         movie_comment_id (int): The ID of the movie comment to be deleted.
 
