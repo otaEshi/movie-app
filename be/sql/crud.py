@@ -196,29 +196,41 @@ async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, curr
     
     if get_public:
         result =  (
-            db.query(MovieList)
+            db.query(MovieList, Movie)
             .filter_by(**filters)
             .join(User)
-            .options(joinedload(MovieList.movies))
             .filter(User.is_content_admin)
+            .join(MovieListMovie)
+            .join(Movie)
             .offset(skip)
             .limit(limit)
             .all()
         )
-        return result, {"max_page": max_page}
 
-    if current_user:
-        result = (
-            db.query(MovieList)
+    elif current_user:
+        result =  (
+            db.query(MovieList, Movie)
             .filter_by(**filters)
             .join(User)
-            .options(joinedload(MovieList.movies))
             .filter(User.id == current_user.id)
+            .join(MovieListMovie)
+            .join(Movie)
             .offset(skip)
             .limit(limit)
             .all()
         )
-        return result, {"max_page": max_page}
+
+    collated_result = []
+    for tup in result:
+        movie_list = tup[0].__dict__
+        movie = tup[1].__dict__
+        average_rating = await get_movie_ratings_average(db, movie["id"])
+        movie["average_rating"] = average_rating["average"]
+        if "movies" not in movie_list.keys():
+            movie_list["movies"] = []
+        movie_list['movies'].append(movie)
+        collated_result.append(movie_list)
+    return collated_result, {"max_page": max_page}
     
 
 async def create_movie_list(db: Session, movie_list: MovieListCreate, user_id: int):
