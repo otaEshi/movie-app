@@ -141,7 +141,7 @@ class MovieCreate(BaseModel):
     url: str = None
     thumbnail_url: str = None
     genre: str = None
-    subgenre: str = None
+    subgenre: list[str] = []
     source: str = None
 
 class MovieEdit(BaseModel):
@@ -163,7 +163,7 @@ class MovieEdit(BaseModel):
     thumbnail_url: str|None = None
     views: int|None = None
     genre: str|None = None
-    subgenre: str|None = None
+    subgenre: list[str] = []
     source: str|None = None
     is_deleted: bool|None = None
 
