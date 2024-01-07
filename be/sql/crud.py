@@ -281,7 +281,10 @@ async def create_movie_list(db: Session, movie_list: MovieListCreate, user_id: i
                                     description=movie_list.description, 
                                     created_at=datetime.datetime.now(),
                                     owner_id=user_id)
-    
+    # If there exists a movie list with the same name from the same user, return an error
+    if db.query(MovieList).filter(MovieList.name == movie_list.name, MovieList.owner_id == user_id).first():
+        raise HTTPException(status_code=400, detail="ERR_MOVIE_LIST_NAME_ALREADY_EXISTS")
+
     db.add(db_movie_list)
 
     for movie_id in movie_list.movie_ids:
@@ -310,6 +313,9 @@ async def update_movie_list(db: Session, movie_list_id, owner_id: int, movie_lis
     if owner_id != db_movie_list.owner_id:
         return {"detail": "unauthorized"}
     if movie_list.name is not None:
+        _movie_lists = db.query(MovieList).filter(MovieList.name == movie_list.name, MovieList.owner_id == owner_id).first()
+        if _movie_lists is not None:
+            return {"detail": "ERR_MOVIE_LIST_NAME_ALREADY_EXISTS"}
         db_movie_list.name = movie_list.name
     if movie_list.description is not None:
         db_movie_list.description = movie_list.description
@@ -446,11 +452,12 @@ async def create_movie(db: Session, movie: MovieCreate):
     Args:
         db (Session): The database session.
         movie (schemas.MovieCreate): The movie data to be created.
-        movie_list_id (int): The ID of the movie list to which the movie belongs.
-
     Returns:
         models.Movie: The created movie object.
     """
+    db_movie = db.query(Movie).filter(Movie.title == movie.title).first()
+    if db_movie is not None:
+        raise HTTPException(status_code=400, detail="ERR_MOVIE_ALREADY_EXISTS")
     db_movie = Movie(**movie.model_dump())
     db_movie.views = 0
     db.add(db_movie)
@@ -499,6 +506,12 @@ async def update_movie(db: Session, movie: MovieEdit, movie_id: int):
     """
     db_movie = db.query(Movie).filter(Movie.id == movie_id).first()
     attributes = ['title', 'description', 'date_of_release', 'url', 'thumbnail_url', 'views', 'genre', 'subgenre', 'source', 'is_deleted']
+
+    if getattr(movie, "title") is not None:
+        db_movie = db.query(Movie).filter(Movie.title == movie.title).first()
+        if db_movie is not None:
+            raise HTTPException(status_code=400, detail="ERR_MOVIE_NAME_ALREADY_EXISTS")
+
     for attr in attributes:
         if getattr(movie, attr) is not None:
             setattr(db_movie, attr, getattr(movie, attr))
