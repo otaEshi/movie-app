@@ -80,6 +80,7 @@ class Movie(Base):
             thumbnail_id (str): The thumbnail ID of the movie.
             views (int): The number of views of the movie.
             genre (str): The genre of the movie.
+            subgenre (str): The list of subgenres of the movie.
     """
     __tablename__ = "movies"
 

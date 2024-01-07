@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, date
 from typing import Annotated, Optional
-from fastapi import Depends, FastAPI, HTTPException, status, UploadFile, File, Header
+from fastapi import Depends, FastAPI, HTTPException, status, UploadFile, File, Header, Form
 from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import jwt, JWTError
@@ -310,6 +310,7 @@ async def read_movies(page: int = 0,
                       d: int = None,
                       m: int = None,
                       y: int = None,
+                      search_string: str = None,
                       is_deleted: bool = None,
                       db: Session = Depends(get_db)):
     """
@@ -327,8 +328,7 @@ async def read_movies(page: int = 0,
 
     search_params = {k: v for k, v in search_params.items() if v is not None}
     # TODO Implement user_id
-    movies, max_page = await crud.get_movies(db, page, page_size, search_params, user_id = None)
-    return movies, max_page
+    return await crud.get_movies(db, page, page_size, search_params, search_string, user_id = None)
 
 @app.get("/movies/top_trending", tags=["Movies"])
 async def read_top_trending_movies(db: Session = Depends(get_db), top_k: int = 10, genre: str = None, is_deleted: bool = None):
@@ -352,13 +352,10 @@ async def read_movie(movie_id: int, db: Session = Depends(get_db)):
     return movie
 
 @app.post("/register_view/{movie_id}", tags=["Movies"])
-async def register_view(movie_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def register_view(movie_id: int, db: Session = Depends(get_db)):
     """
         Register a view of a movie.
     """
-    if current_user is None:
-        raise HTTPException(status_code=403, detail="Unauthenticated")
-    
     return await crud.register_view(db, movie_id=movie_id)
 
 @app.post("/movies", tags=["Movies"])
@@ -367,8 +364,8 @@ async def create_movie( title:str,
                         date_of_release: date,
                         url: str,
                         genre: str,
-                        subgenre: str,
                         source: str,
+                        subgenre: list[str] = Form(...),
                         image: UploadFile = File(...), 
                         db: Session = Depends(get_db),
                         current_user: User = Depends(get_current_user)):
@@ -382,6 +379,33 @@ async def create_movie( title:str,
     movie.thumbnail_url = cloudinary_response['secure_url']
     return await crud.create_movie(db, movie=movie)
 
+@app.post("/movies/thumbnail_url", tags=["Movies"])
+async def create_movie_thumbnail_url( 
+                        title:str,
+                        description: str,
+                        date_of_release: date,
+                        url: str,
+                        genre: str,
+                        source: str,
+                        image_url: str, 
+                        subgenre: list[str] = Form(...),
+                        db: Session = Depends(get_db),
+                        current_user: User = Depends(get_current_user)):
+    """
+        Create a new movie in the database using thumbnail url instead of files
+    """
+    if not current_user.is_content_admin:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    movie = MovieCreate(title=title, 
+                        description=description, 
+                        date_of_release=date_of_release, 
+                        url=url, 
+                        thumbnail_url=image_url,
+                        genre=genre, 
+                        subgenre=subgenre, 
+                        source=source)
+    return await crud.create_movie(db, movie=movie)
+
 @app.patch("/movies/{movie_id}", tags=["Movies"])
 async def update_movie(movie_id: int,
                         title: str = None,
@@ -389,7 +413,7 @@ async def update_movie(movie_id: int,
                         date_of_release: date = None,
                         url: str = None,
                         genre: str = None,
-                        subgenre: str = None,
+                        subgenre: list[str] = None,
                         source: str = None,
                         image: UploadFile = File(None),
                         is_deleted: bool = None, 
@@ -445,12 +469,12 @@ async def create_movie_rating(movie_id: int, rating: int, db: Session = Depends(
     return await crud.create_movie_rating(db, movie_rating_create)
 
 @app.patch("/movies/{movie_id}/ratings", tags=["Movies Rating"])
-async def update_movie_rating(movie_rating_id: int, rating: int, is_deleted: bool, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def update_movie_rating(movie_id: int, rating: int, is_deleted: bool = None, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
         Update a rating of a movie in the database.
     """
     movie_rating_edit = MovieRatingEdit(rating=rating, is_deleted=is_deleted)
-    return await crud.update_movie_rating(db, movie_rating_id, movie_rating_edit, current_user.id)
+    return await crud.update_movie_rating(db, movie_id, movie_rating_edit, current_user.id)
 
 @app.delete("/movies/{movie_id}/ratings", tags=["Movies Rating"])
 async def delete_movie_rating(movie_rating_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

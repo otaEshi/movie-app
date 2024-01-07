@@ -1,4 +1,5 @@
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
+from sqlalchemy import or_ 
 import bcrypt
 from .schemas import *
 from .models import *
@@ -372,7 +373,7 @@ async def get_movie(db: Session, movie_id: int, user_id: int = None):
     
     return result
 
-async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_params: dict = None, user_id: int = None):
+async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_params: dict = None, search_string: str = None, user_id: int = None):
     """
     Retrieve a list of movies from the database.
 
@@ -389,11 +390,15 @@ async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_par
 
     max_page = db.query(Movie).count() // page_size + 1
 
-    if search_params:
-        result = db.query(Movie).filter_by(**search_params).offset(skip).limit(limit).all()
-    else: 
-        result = db.query(Movie).offset(skip).limit(limit).all()
-    
+    result = db.query(Movie) \
+                .filter(or_(
+                    Movie.title.contains(search_string), 
+                    Movie.genre.contains(search_string), 
+                    Movie.subgenre.contains(search_string)
+                )) \
+                .filter_by(**search_params) \
+                .offset(skip).limit(limit).all()
+
     for movie in result:
         average_rating = await get_movie_ratings_average(db, movie.id)
         movie.average_rating = average_rating["average"]
@@ -483,7 +488,7 @@ async def update_movie(db: Session, movie: MovieEdit, movie_id: int):
         models.Movie: The edited movie object.
     """
     db_movie = db.query(Movie).filter(Movie.id == movie_id).first()
-    attributes = ['title', 'description', 'date_of_release', 'url', 'thumbnail_url', 'views', 'genre','source', 'is_deleted']
+    attributes = ['title', 'description', 'date_of_release', 'url', 'thumbnail_url', 'views', 'genre', 'subgenre', 'source', 'is_deleted']
     for attr in attributes:
         if getattr(movie, attr) is not None:
             setattr(db_movie, attr, getattr(movie, attr))
@@ -586,7 +591,7 @@ async def get_num_rating_by_movie_id(db: Session, movie_id: int):
     """
     return db.query(MovieRatings).filter(MovieRatings.movie_id == movie_id).count()
 
-async def update_movie_rating(db: Session, movie_rating_id: int, movie_rating_edit: MovieRatingEdit, user_id: int):
+async def update_movie_rating(db: Session, movie_id: int, movie_rating_edit: MovieRatingEdit, user_id: int):
     """
     Edit a movie rating in the database.
 
@@ -598,7 +603,13 @@ async def update_movie_rating(db: Session, movie_rating_id: int, movie_rating_ed
     Returns:
         models.MovieRating: The edited movie rating object.
     """
-    db_movie_rating = db.query(MovieRatings).filter(MovieRatings.id == movie_rating_id).first()
+    filters = {}
+    if movie_id is not None:
+        filters["movie_id"] = movie_id
+    if user_id is not None:
+        filters["user_id"] = user_id
+
+    db_movie_rating = db.query(MovieRatings).filter_by(**filters).first()
     if db_movie_rating is None:
         raise HTTPException(status_code=404, detail="ERR_MOVIE_RATING_NOT_FOUND")
     if user_id != db_movie_rating.user_id:
