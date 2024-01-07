@@ -170,9 +170,31 @@ async def get_movie_list(db: Session, movie_list_id: int):
     Returns:
         MovieList: The movie list object if found, None otherwise.
     """
-    return db.query(MovieList).filter(MovieList.id == movie_list_id).first()
+    result =  (
+            db.query(MovieList, Movie)
+            .select_from(MovieList)
+            .filter(MovieList.id == movie_list_id)
+            .join(MovieListMovie)
+            .join(Movie)
+            .all()
+        )
+    
+    collated_result = []
+    for tup in result:
+        movie_list = tup[0].__dict__
+        movie = tup[1].__dict__
+        average_rating = await get_movie_ratings_average(db, movie["id"])
+        movie["average_rating"] = average_rating["average"]
+        movie["num_ratings"] = await get_num_rating_by_movie_id(db, movie["id"])
+        if "movies" not in movie_list.keys():
+            movie_list["movies"] = []
+        movie_list['movies'].append(movie)
+        collated_result.append(movie_list)
+    
+    return collated_result
 
-async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, current_user: User = None, get_public: bool = False, include_deleted: bool = False)->MovieListGet:
+
+async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, current_user: User = None, get_public: bool = False, is_deleted: bool = None)->MovieListGet:
     """
     Retrieve a list of movie lists from the database.
 
@@ -189,10 +211,8 @@ async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, curr
     limit = page_size
     max_page = db.query(MovieList).count() // page_size + 1
     filters = {}
-    if not include_deleted:
-        filters = {
-            "is_deleted": False 
-        }
+    if is_deleted is not None:
+        filters["is_deleted"] = is_deleted
     
     if get_public:
         result =  (
@@ -226,6 +246,7 @@ async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, curr
         movie = tup[1].__dict__
         average_rating = await get_movie_ratings_average(db, movie["id"])
         movie["average_rating"] = average_rating["average"]
+        movie["num_ratings"] = await get_num_rating_by_movie_id(db, movie["id"])
         if "movies" not in movie_list.keys():
             movie_list["movies"] = []
         movie_list['movies'].append(movie)
@@ -329,7 +350,6 @@ async def delete_movie_list(db: Session, movie_list_id: int, owner_id: int):
     return {"detail": "MOVIE_LIST_DELETE_OK"}
 
 ### Movie CRUD ###
-
 async def get_movie(db: Session, movie_id: int, user_id: int = None):
     """
     Retrieve a movie from the database by its ID.
@@ -345,7 +365,8 @@ async def get_movie(db: Session, movie_id: int, user_id: int = None):
     result = movie.__dict__
     average_rating = await get_movie_ratings_average(db, movie_id)
     result["average_rating"] = average_rating["average"]
-    
+    result["num_ratings"] = await get_num_rating_by_movie_id(db, movie_id)
+
     if user_id is not None:
         result["current_user_rating"] = db.query(MovieRatings).filter(MovieRatings.movie_id == movie_id, MovieRatings.user_id == user_id).first()
     
@@ -376,6 +397,7 @@ async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_par
     for movie in result:
         average_rating = await get_movie_ratings_average(db, movie.id)
         movie.average_rating = average_rating["average"]
+        movie.num_ratings = await get_num_rating_by_movie_id(db, movie.id)
     
     if user_id is not None:
         for movie in result:
@@ -393,8 +415,14 @@ async def get_top_trending_movies(db: Session, top_k: int, search_params: dict, 
     Returns:
         List[models.Movie]: A list of movie objects.
     """
-    return db.query(Movie).filter_by(**search_params).order_by(Movie.views.desc()).limit(top_k).all()
+    movies = db.query(Movie).filter_by(**search_params).order_by(Movie.views.desc()).limit(top_k).all()
+    # Get average rating for each movie
+    for movie in movies:
+        average_rating = await get_movie_ratings_average(db, movie.id)
+        movie.average_rating = average_rating["average"]
+        movie.num_ratings = await get_num_rating_by_movie_id(db, movie.id)
     
+    return movies
 
 async def create_movie(db: Session, movie: MovieCreate):
     """
@@ -544,6 +572,19 @@ async def get_movie_ratings(db: Session, movie_id: int, user_id: int = None, pag
         search_params["user_id"] = user_id
     result = db.query(MovieRatings).filter_by(**search_params).offset(skip).limit(limit).all()
     return result, {"max_page": max_page}
+
+async def get_num_rating_by_movie_id(db: Session, movie_id: int):
+    """
+    Retrieve a list of movie ratings from the database.
+
+    Args:
+        db (Session): The database session.
+        movie_id (int): The ID of the movie to retrieve the ratings for.
+
+    Returns:
+        List[models.MovieRating]: A list of movie rating objects.
+    """
+    return db.query(MovieRatings).filter(MovieRatings.movie_id == movie_id).count()
 
 async def update_movie_rating(db: Session, movie_rating_id: int, movie_rating_edit: MovieRatingEdit, user_id: int):
     """
