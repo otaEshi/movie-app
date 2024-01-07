@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Date
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -25,7 +25,7 @@ class User(Base):
     email = Column(String(32), unique=False, index=True)
     name = Column(String(128), index=True)
     avatar_url = Column(String(512), default="")
-    date_of_birth = Column(DateTime, index=True)
+    date_of_birth = Column(Date, index=True)
     is_active = Column(Boolean, index=True, default=True)
     is_admin = Column(Boolean, default=False)
     is_content_admin = Column(Boolean, default=False)
@@ -86,7 +86,7 @@ class Movie(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(256), index=True)
     description = Column(String(1024))
-    date_of_release = Column(DateTime, index=True)
+    date_of_release = Column(Date, index=True)
     url = Column(String(256))
     thumbnail_url = Column(String(512))
     views = Column(Integer, index=True)
