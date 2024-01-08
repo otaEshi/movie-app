@@ -310,7 +310,7 @@ async def read_movies(page: int = 0,
                       d: int = None,
                       m: int = None,
                       y: int = None,
-                      search_string: str = None,
+                      search_string: str = "",
                       is_deleted: bool = None,
                       db: Session = Depends(get_db)):
     """
