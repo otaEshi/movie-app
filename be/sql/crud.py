@@ -391,7 +391,7 @@ async def get_movie(db: Session, movie_id: int, user_id: int = None):
     
     return result
 
-async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_params: dict = None, search_string: str = None, user_id: int = None):
+async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_params: dict = None, search_string: str = "", user_id: int = None):
     """
     Retrieve a list of movies from the database.
 
