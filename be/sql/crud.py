@@ -171,10 +171,6 @@ async def get_movie_list(db: Session, movie_list_id: int):
     Returns:
         MovieList: The movie list object if found, None otherwise.
     """
-    # debug_result = db.query(MovieList).all()
-    # for debug_result_item in debug_result:
-    #     print(debug_result_item.__dict__)
-
     result = (
             db.query(MovieList, Movie)
             .select_from(MovieList)
@@ -186,10 +182,14 @@ async def get_movie_list(db: Session, movie_list_id: int):
 
     collated_result = []
     for tup in result:
-        movie_list = tup[0].__dict__
+        if len(collated_result) == 0 or collated_result[-1]["id"] != tup[0].__dict__["id"]:
+            collated_result.append(tup[0].__dict__)
+        
+        movie_list = collated_result[-1]
+        
         if tup[1] is None:
-            collated_result.append(movie_list)
             continue
+
         movie = tup[1].__dict__
         average_rating = await get_movie_ratings_average(db, movie["id"])
         movie["average_rating"] = average_rating["average"]
@@ -197,9 +197,8 @@ async def get_movie_list(db: Session, movie_list_id: int):
         if "movies" not in movie_list.keys():
             movie_list["movies"] = []
         movie_list['movies'].append(movie)
-        collated_result.append(movie_list)
     
-    return collated_result
+    return collated_result[0]
 
 
 async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, current_user: User = None, get_public: bool = False, is_deleted: bool = None)->MovieListGet:
@@ -250,10 +249,14 @@ async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, curr
 
     collated_result = []
     for tup in result:
-        movie_list = tup[0].__dict__
+        if len(collated_result) == 0 or collated_result[-1]["id"] != tup[0].__dict__["id"]:
+            collated_result.append(tup[0].__dict__)
+        
+        movie_list = collated_result[-1]
+        
         if tup[1] is None:
-            collated_result.append(movie_list)
             continue
+
         movie = tup[1].__dict__
         average_rating = await get_movie_ratings_average(db, movie["id"])
         movie["average_rating"] = average_rating["average"]
@@ -261,7 +264,6 @@ async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, curr
         if "movies" not in movie_list.keys():
             movie_list["movies"] = []
         movie_list['movies'].append(movie)
-        collated_result.append(movie_list)
     return {"list": collated_result, "max_page": max_page}
     
 
