@@ -171,10 +171,6 @@ async def get_movie_list(db: Session, movie_list_id: int):
     Returns:
         MovieList: The movie list object if found, None otherwise.
     """
-    # debug_result = db.query(MovieList).all()
-    # for debug_result_item in debug_result:
-    #     print(debug_result_item.__dict__)
-
     result = (
             db.query(MovieList, Movie)
             .select_from(MovieList)
@@ -186,10 +182,14 @@ async def get_movie_list(db: Session, movie_list_id: int):
 
     collated_result = []
     for tup in result:
-        movie_list = tup[0].__dict__
+        if len(collated_result) == 0 or collated_result[-1]["id"] != tup[0].__dict__["id"]:
+            collated_result.append(tup[0].__dict__)
+        
+        movie_list = collated_result[-1]
+        
         if tup[1] is None:
-            collated_result.append(movie_list)
             continue
+
         movie = tup[1].__dict__
         average_rating = await get_movie_ratings_average(db, movie["id"])
         movie["average_rating"] = average_rating["average"]
@@ -197,9 +197,8 @@ async def get_movie_list(db: Session, movie_list_id: int):
         if "movies" not in movie_list.keys():
             movie_list["movies"] = []
         movie_list['movies'].append(movie)
-        collated_result.append(movie_list)
     
-    return collated_result
+    return collated_result[0]
 
 
 async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, current_user: User = None, get_public: bool = False, is_deleted: bool = None)->MovieListGet:
@@ -250,10 +249,14 @@ async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, curr
 
     collated_result = []
     for tup in result:
-        movie_list = tup[0].__dict__
+        if len(collated_result) == 0 or collated_result[-1]["id"] != tup[0].__dict__["id"]:
+            collated_result.append(tup[0].__dict__)
+        
+        movie_list = collated_result[-1]
+        
         if tup[1] is None:
-            collated_result.append(movie_list)
             continue
+
         movie = tup[1].__dict__
         average_rating = await get_movie_ratings_average(db, movie["id"])
         movie["average_rating"] = average_rating["average"]
@@ -261,7 +264,6 @@ async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, curr
         if "movies" not in movie_list.keys():
             movie_list["movies"] = []
         movie_list['movies'].append(movie)
-        collated_result.append(movie_list)
     return {"list": collated_result, "max_page": max_page}
     
 
@@ -281,8 +283,12 @@ async def create_movie_list(db: Session, movie_list: MovieListCreate, user_id: i
                                     description=movie_list.description, 
                                     created_at=datetime.datetime.now(),
                                     owner_id=user_id)
-    
+    # If there exists a movie list with the same name from the same user, return an error
+    if db.query(MovieList).filter(MovieList.name == movie_list.name, MovieList.owner_id == user_id).first():
+        raise HTTPException(status_code=400, detail="ERR_MOVIE_LIST_NAME_ALREADY_EXISTS")
+
     db.add(db_movie_list)
+    db.commit()
 
     for movie_id in movie_list.movie_ids:
         db_movie_list_movie = MovieListMovie(movie_list_id=db_movie_list.id, movie_id=movie_id)
@@ -310,6 +316,9 @@ async def update_movie_list(db: Session, movie_list_id, owner_id: int, movie_lis
     if owner_id != db_movie_list.owner_id:
         return {"detail": "unauthorized"}
     if movie_list.name is not None:
+        _movie_lists = db.query(MovieList).filter(MovieList.name == movie_list.name, MovieList.owner_id == owner_id).first()
+        if _movie_lists is not None:
+            return {"detail": "ERR_MOVIE_LIST_NAME_ALREADY_EXISTS"}
         db_movie_list.name = movie_list.name
     if movie_list.description is not None:
         db_movie_list.description = movie_list.description
@@ -383,7 +392,7 @@ async def get_movie(db: Session, movie_id: int, user_id: int = None):
     
     return result
 
-async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_params: dict = None, search_string: str = None, user_id: int = None):
+async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_params: dict = None, search_string: str = "", user_id: int = None):
     """
     Retrieve a list of movies from the database.
 
@@ -446,11 +455,12 @@ async def create_movie(db: Session, movie: MovieCreate):
     Args:
         db (Session): The database session.
         movie (schemas.MovieCreate): The movie data to be created.
-        movie_list_id (int): The ID of the movie list to which the movie belongs.
-
     Returns:
         models.Movie: The created movie object.
     """
+    db_movie = db.query(Movie).filter(Movie.title == movie.title).first()
+    if db_movie is not None:
+        raise HTTPException(status_code=400, detail="ERR_MOVIE_ALREADY_EXISTS")
     db_movie = Movie(**movie.model_dump())
     db_movie.views = 0
     db.add(db_movie)
@@ -499,6 +509,12 @@ async def update_movie(db: Session, movie: MovieEdit, movie_id: int):
     """
     db_movie = db.query(Movie).filter(Movie.id == movie_id).first()
     attributes = ['title', 'description', 'date_of_release', 'url', 'thumbnail_url', 'views', 'genre', 'subgenre', 'source', 'is_deleted']
+
+    if getattr(movie, "title") is not None:
+        db_movie = db.query(Movie).filter(Movie.title == movie.title).first()
+        if db_movie is not None:
+            raise HTTPException(status_code=400, detail="ERR_MOVIE_NAME_ALREADY_EXISTS")
+
     for attr in attributes:
         if getattr(movie, attr) is not None:
             setattr(db_movie, attr, getattr(movie, attr))
