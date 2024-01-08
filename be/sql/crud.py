@@ -288,6 +288,7 @@ async def create_movie_list(db: Session, movie_list: MovieListCreate, user_id: i
         raise HTTPException(status_code=400, detail="ERR_MOVIE_LIST_NAME_ALREADY_EXISTS")
 
     db.add(db_movie_list)
+    db.commit()
 
     for movie_id in movie_list.movie_ids:
         db_movie_list_movie = MovieListMovie(movie_list_id=db_movie_list.id, movie_id=movie_id)
