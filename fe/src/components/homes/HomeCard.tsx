@@ -3,33 +3,37 @@ import { Link } from 'react-router-dom';
 import '@fortawesome/fontawesome-free/css/all.css';
 import ReactStars from '../../lib/reactStar/react-star';
 import Stars from '../../lib/reactStar/react-star';
-import { IMovie } from '../../types/movies';
+import { IFirstRatePayload, IMovie, IUpdateRatingPayload } from '../../types/movies';
+import { firstRateMovie, updateRating } from './homeApi';
+import { useAppDispatch } from '../../app/hooks';
 
 interface HomeCardProps {
   item: IMovie
 }
 
-// id: number;
-// title: string;
-// description: string;
-// thumbnail_url: string;
-// url: string;
-// genre: string;
-// subgenre: string;
-// source: string;
-// views: number;
-// date_of_release: string;
-// is_deleted: boolean;
-// userRating?: number;
-// globalRaing: number;
-
 function HomeCard(props: HomeCardProps) {
-// const HomeCard: React.FC<HomeCardProps> = ({ item: { id, cover, name, userRating, globalRating, time, desc, genres, subGenre, videoURL } }) => {
-  const [ratingStar, setRatingStar] = useState(0);
+  const dispatch = useAppDispatch();
+// const HomeCard: React.FC<HomeCardProps> = ({ item: { id, cover, name, userRating, average_rating, time, desc, genres, subGenre, videoURL } }) => {
+  // const [ratingStar, setRatingStar] = useState(0);
 
-  const handleRatingChange = (newRating: number) => {
-    setRatingStar(newRating);
-    console.log('rating', ratingStar)
+  const handleRatingChange = async (newRating: number) => {
+    alert(`Bạn đã đánh giá phim này ${newRating} sao!`)
+    const firstRatePayload : IFirstRatePayload = {
+      movie_id : props.item.id,
+      rating : newRating * 2,
+    }
+    const res = await(dispatch(firstRateMovie(firstRatePayload)))
+    console.log(res.meta.requestStatus)
+    if (res.meta.requestStatus === "rejected") {
+      const updateRatingPayload : IUpdateRatingPayload = {
+        movie_id : props.item.id ,
+        rating : newRating * 2,
+      }
+      await(dispatch(updateRating(updateRatingPayload)))
+    }
+
+    // setRatingStar(newRating);
+    // console.log('rating', ratingStar)
   };
 
   return (
@@ -61,22 +65,27 @@ function HomeCard(props: HomeCardProps) {
                 size={24}
                 half={true}
                 color2={'#e50813'}
-                value={props.item.userRating ? props.item.userRating : props.item.globalRating}
+                value={ props.item.average_rating/2}
                 // edit={false}
                 onChange={handleRatingChange}
                 // color2={'#ffd700'}
                 
                 ></ReactStars>
               </div>
-              <label>{props.item.globalRating} (đánh giá)</label>
-              <label>{props.item.date_of_release} (thời gian)</label>
+              <label>{props.item.average_rating/2}/5 - {props.item.num_ratings} lượt đánh giá</label>
+              <label>Ngày phát hành: {props.item.date_of_release}</label>
             </div>
-            <p>{props.item.description}</p>
+            <p>Mô tả nội dung: {props.item.description}</p>
             <div className='cast'>
               <h4>
                 <span>Thể loại: </span>
-                {props.item.genre}
-                {props.item.subgenre}
+                {props.item.genre}, 
+                 {` ${props.item.subgenre}`}
+              </h4>
+              <h4>
+                <span>Lượt xem: </span>
+                {/* {props.item.views} */}
+                {props.item.id}
               </h4>
             </div>
             
@@ -88,7 +97,7 @@ function HomeCard(props: HomeCardProps) {
                   <img src='./images/play-button.png' alt='' />
                   <img src='./images/play.png' className='change' alt='' />
                 </div>
-                PLAY NOW
+                XEM NGAY
               </button>
             </Link>
           </div>

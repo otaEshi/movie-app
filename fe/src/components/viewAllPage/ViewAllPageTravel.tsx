@@ -115,7 +115,7 @@ function ViewAllPageTravel() {
                 <div className="d-flex flex-wrap justify-content-start">
                     {currentItems.map((travel) => (
                         <div className='me-3 ms-4 mt-4 mb-4' key={travel.id}>
-                            <ListFilmCard key={travel.id} item={travel} />
+                            {/* <ListFilmCard key={travel.id} item={travel} /> */}
                         </div>
                     ))}
                 </div>

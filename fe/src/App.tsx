@@ -12,6 +12,10 @@ import ViewAllPageSport from './components/viewAllPage/ViewAllPageSport';
 import ViewAllPageMusic from './components/viewAllPage/ViewAllPageMusic';
 import ViewAllPageTravel from './components/viewAllPage/ViewAllPageTravel';
 import ProfileContainer from './components/profile/ProfileContainer';
+import MovieListContainer from './components/movieList/MovieListContainer';
+import AdminContainer from './components/admin/AdminContainer';
+import DetailMovieList from './components/movieList/DetailMovieList';
+import SearchResultContainer from './components/search/SearchResultContainer';
 
 function App() {
   return (
@@ -28,17 +32,21 @@ function App() {
                 <Route index element={<HomePage />} />
                 <Route element={<PrivateRoute />}>
                   <Route path='/profile' element={<ProfileContainer />} />
+                  <Route path='/movie_list' element={<MovieListContainer />} />
+                  <Route path='/movie_list/detail/:id' element={<DetailMovieList />} />
+                  <Route path='/admin' element={<AdminContainer />} />
                 </Route>
                 <Route path='/tags/*'
                   element={
                     <Routes>
-                      <Route path='/sports' element={<ViewAllPageSport />} />
-                      <Route path='/musics' element={<ViewAllPageMusic />} />
-                      <Route path='/travels' element={<ViewAllPageTravel />} />
+                      <Route path='/Sport' element={<ViewAllPageSport />} />
+                      <Route path='/Music' element={<ViewAllPageMusic />} />
+                      <Route path='/Travel' element={<ViewAllPageTravel />} />
                     </Routes>
                   }
                 >
                 </Route>
+                <Route path="search_result" element={<SearchResultContainer />} />
                 <Route path="watch/:id" element={<Watch />} />
               </Routes>
             </>

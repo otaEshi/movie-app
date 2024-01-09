@@ -10,8 +10,13 @@ import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { logout, setAvatarURL } from '../auth/authSlice';
 import axios from 'axios';
 import { userInfoRequest } from '../auth/authApi';
+import { ISearchPayload } from '../../types/search';
+import { searchRequest } from '../search/searchApi';
 
 const Header = () => {
+  // set to reduce sending redundance request
+  // localStorage.setItem('is_first_time_home_page', 'true');
+
   const [Mobile, setMobile] = useState(false);
   const [search, setSearch] = useState<string>('');
   const [openSignInModal, setOpenSignInModal] = useState<boolean>(false);
@@ -49,8 +54,9 @@ const Header = () => {
     }
 
     // search while typing
-    const handleSearch = () => {
-    }
+    // const handleSearch = () => {
+
+    // }
   };
 
   const handleSignOut = () => {
@@ -61,7 +67,6 @@ const Header = () => {
     const isAuthenticatedString = localStorage.getItem('isAuthenticated');
     const isAuthenticated = isAuthenticatedString ? JSON.parse(isAuthenticatedString) : false;
     if (isAuthenticated) {
-      console.log('dispatch at header');
       await dispatch(userInfoRequest());
     }
   };
@@ -77,6 +82,23 @@ const Header = () => {
 
   const handleLoginSuccess = () => {
     setIsFirstLogin(false);
+  };
+
+  const handleSearch = async () => {
+  
+    const payload : ISearchPayload = {
+      search_string : search.trim()
+    }
+    await dispatch(searchRequest(payload))
+    navigate('/search_result')
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      if (search !== ''){
+        handleSearch();
+      }
+    }
   };
 
   // useEffect(() => {
@@ -128,8 +150,8 @@ const Header = () => {
               </div>
             </li>
             <div className='ms-4' >
-              <button className="ms-2 header-button" disabled><i className="fa fa-search custom-i" aria-hidden="true"></i></button>
-              <input id='search' className="input-search" type="text" name="q" placeholder="  Tìm kiếm" autoComplete="off" onChange={(e) => handleInputChange(e)}></input>
+              <button className="ms-2 header-button" onClick={handleSearch}><i className="fa fa-search custom-i" aria-hidden="true"></i></button>
+              <input id='search' onKeyDown={handleKeyPress} className="input-search" type="text" name="q" placeholder="  Tìm kiếm" autoComplete="off" onChange={(e) => handleInputChange(e)}></input>
             </div>
           </ul>
           {/* <button className='toggle' onClick={() => setMobile(!Mobile)}>
@@ -147,9 +169,9 @@ const Header = () => {
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 <Dropdown.Item className='dropdown-item' onClick={() => navigate('/profile')} >Trang cá nhân</Dropdown.Item>
-                <Dropdown.Item className='dropdown-item' onClick={() => navigate('/profile')}>Danh sách cá nhân</Dropdown.Item>
+                <Dropdown.Item className='dropdown-item' onClick={() => navigate('/movie_list')}>Danh sách cá nhân</Dropdown.Item>
                 {(isAdmin || isContentAdmin) && (
-                  <Dropdown.Item className='dropdown-item' onClick={() => navigate('/profile')}>
+                  <Dropdown.Item className='dropdown-item' onClick={() => navigate('/admin')}>
                     Quản lý
                   </Dropdown.Item>
                 )}
@@ -165,8 +187,7 @@ const Header = () => {
           )}
         </div>
       </div>
-
-      {/* Modals */}
+      
       <Modal
         open={openSignInModal}
         onClose={() => setOpenSignInModal(false)}

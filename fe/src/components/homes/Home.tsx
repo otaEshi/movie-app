@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import HomeCard from './HomeCard';
 import '@fortawesome/fontawesome-free/css/all.css';
-import { IMovie, ITrendingMoviesResponse } from '../../types/movies';
+import { IMovie, ITrendingMoviesPayload, ITrendingMoviesResponse } from '../../types/movies';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { topTrendingMoviesRequest } from './homeApi';
 
 const SampleNextArrow: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
   return (
@@ -27,11 +29,13 @@ const SamplePrevArrow: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
 };
 
 
-interface HomeProps {
-  items: ITrendingMoviesResponse; 
-}
+// interface HomeProps {
+//   items: ITrendingMoviesResponse; 
+// }
 
-const Home: React.FC<HomeProps> = ({ items }) => {
+// const Home: React.FC<HomeProps> = ({ items }) => {
+const Home: React.FC = () => {
+  const trendingList = useAppSelector(store => store.home.trendingListAll)
   const settings = {
     dots: false,
     infinite: true,
@@ -46,7 +50,7 @@ const Home: React.FC<HomeProps> = ({ items }) => {
     <>
       <div className='homeContainer'>
         <Slider {...settings}>
-          {items.movies.map((item: IMovie) => (
+          {trendingList && trendingList.movies.map((item: IMovie) => (
             <React.Fragment key={item.id}>
               <HomeCard item={item} />
             </React.Fragment>

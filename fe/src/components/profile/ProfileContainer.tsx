@@ -57,7 +57,7 @@ function ProfileContainer() {
 
         const res = await dispatch<any>(changePasswordRequest(payload))
         if (res.type === "api/change_password/rejected"){
-            console.log('test reject')
+            // console.log('test reject')
             // showAlert('Mật khẩu cũ không đúng', 'danger')
         }
     }
@@ -77,8 +77,7 @@ function ProfileContainer() {
             }
         }
         const res = await dispatch<any>(updateUserInfoRequest(payload))
-        console.log('check responsssse')
-        console.log(res)
+
 
     }
 

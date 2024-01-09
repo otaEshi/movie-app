@@ -1,44 +1,42 @@
-import { SetStateAction, useState } from 'react';
-import { sport, music, travel } from '../../dummyData';
-import ListFilmCard from '../listFilm/ListFilmCard';
-import './viewAllPage.scss';
+import { useParams } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { getDetailMovieList } from "./movieListApi";
+import { useEffect, useState } from "react";
+import ListFilmCard from "../listFilm/ListFilmCard";
 
-interface ViewAllPageProps {
-    items: Array<{
-        id: number;
-        cover: string;
-        name: string;
-        time: string;
-    }>;
-    title: string;
-}
+function DetailMovieList() {
+    const dispatch = useAppDispatch();
+    const currentItems = useAppSelector(store => store.detailMovieList.detaiMovieList);
+    const { id } = useParams<{ id: string }>();
+    console.log('id: ',id)
+    const getDetailList = async () => {
+        await dispatch(getDetailMovieList(id!))
+    }
 
-function ViewAllPageSport() {
-    const [sports, setSports] = useState(sport);
-    const [musics, setSusics] = useState(music);
-    const [travels, setTravels] = useState(travel);
+    useEffect(() => {
+        getDetailList();
+    },[])
 
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [moviesPerPage, setMoviesPerPage] = useState<number>(20); // Default value
+    const [moviesPerPage, setMoviesPerPage] = useState<number>(20);
 
-    const indexOfLastItem = currentPage * moviesPerPage;
+    const indexOfLastItem = currentPage * moviesPerPage
     const indexOfFirstItem = indexOfLastItem - moviesPerPage;
-    const currentItems = sports.slice(indexOfFirstItem, indexOfLastItem);
 
-    const totalPages = Math.ceil(sports.length / moviesPerPage);
+    const totalPages = Math.ceil(currentItems.movies.length / moviesPerPage);
 
     const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
     const handleMoviesPerPageChange = (event: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
         const value = parseInt(event.target.value, 10);
         setMoviesPerPage(value);
-        setCurrentPage(1); // Reset to the first page when changing movies per page
+        setCurrentPage(1);
     };
 
     const renderPaginationButtons = () => {
         const buttons = [];
 
-        const displayPages = 5; // Number of page numbers to display
+        const displayPages = 5;
         let startPage = Math.max(1, currentPage - 2);
         let endPage = Math.min(totalPages, currentPage + 2);
 
@@ -97,6 +95,8 @@ function ViewAllPageSport() {
         return buttons;
     };
 
+
+    console.log('details ',currentItems)
     return (
         <>
             <div>
@@ -112,13 +112,14 @@ function ViewAllPageSport() {
                         </select>
                         phim
                     </label>
+                    <button>Thêm phim</button>
 
                 </div>
-
                 <div className="d-flex flex-wrap justify-content-start">
-                    {currentItems.map((sport) => (
-                        <div className='me-3 ms-4 mt-4 mb-4' key={sport.id}>
-                            {/* <ListFilmCard key={sport.id} item={sport} /> */}
+                    {currentItems.movies.map((item) => (
+                        <div className='me-3 ms-4 mt-4 mb-4' key={item.id}>
+                            <button>xóa phim</button>
+                            <ListFilmCard key={item.id} item={item} />
                         </div>
                     ))}
                 </div>
@@ -130,4 +131,4 @@ function ViewAllPageSport() {
     );
 }
 
-export default ViewAllPageSport;
+export default DetailMovieList;

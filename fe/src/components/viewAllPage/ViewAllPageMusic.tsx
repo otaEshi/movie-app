@@ -3,15 +3,15 @@ import { sport, music, travel } from '../../dummyData';
 import ListFilmCard from '../listFilm/ListFilmCard';
 import './viewAllPage.scss';
 
-interface ViewAllPageProps {
-    items: Array<{
-        id: number;
-        cover: string;
-        name: string;
-        time: string;
-    }>;
-    title: string;
-}
+// interface ViewAllPageProps {
+//     items: Array<{
+//         id: number;
+//         cover: string;
+//         name: string;
+//         time: string;
+//     }>;
+//     title: string;
+// }
 
 function ViewAllPageMusic() {
     const [musics, setSusics] = useState(music);
@@ -112,18 +112,10 @@ function ViewAllPageMusic() {
                     </label>
 
                 </div>
-
-                {/* <div className="d-flex flex-wrap justify-content-around">
-                    {sports.map((sport) => (
-                        <div className='m-2 mt-4 mb-4'>
-                            <ListFilmCard key={sport.id} item={sport} />
-                        </div>
-                    ))}
-                </div> */}
                 <div className="d-flex flex-wrap justify-content-start">
                     {currentItems.map((music) => (
                         <div className='me-3 ms-4 mt-4 mb-4' key={music.id}>
-                            <ListFilmCard key={music.id} item={music} />
+                            {/* <ListFilmCard key={music.id} item={music} /> */}
                         </div>
                     ))}
                 </div>

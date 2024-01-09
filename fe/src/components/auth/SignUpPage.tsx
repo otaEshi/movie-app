@@ -65,7 +65,6 @@ function SignUpPage(props: ISignUpFormatProps) {
         setDay(value);
         setDateOfBirthError('');
         setIsDeleteCharacter(false);
-        console.log('set day')
       }
     }
 
@@ -74,7 +73,6 @@ function SignUpPage(props: ISignUpFormatProps) {
         setMonth(value);
         setDateOfBirthError('');
         setIsDeleteCharacter(false);
-        console.log('set month')
       }
     }
 
@@ -83,7 +81,6 @@ function SignUpPage(props: ISignUpFormatProps) {
         setYear(value);
         setDateOfBirthError('');
         setIsDeleteCharacter(false);
-        console.log('set year')
       }
     }
 

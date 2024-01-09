@@ -47,8 +47,6 @@ function Profile(props: IProfileProps) {
         });
     };
 
-    console.log('yolo?: ',props.currentUser)
-
     // const formatDateToSendApi = (inputDate: string): string => {
     //     const date = new Date(inputDate);
     //     const year = date.getFullYear();
@@ -85,7 +83,6 @@ function Profile(props: IProfileProps) {
 
     useLayoutEffect(() => {
         setAvatar_url(props.currentUser.avatar_url);
-        console.log('render avatar in profile: ', props.currentUser.avatar_url)
     },[props.currentUser])
 
     const handleFullnameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,7 +93,6 @@ function Profile(props: IProfileProps) {
     };
 
     const handleUpdate = () => {
-        console.log(props.currentUser)
     }
 
     return (
@@ -171,8 +167,8 @@ function Profile(props: IProfileProps) {
                                 )}
                             </div>
                             <button className="btn btn-primary mb-3" 
-                            // onClick={props.handleUpdateUser}
-                            onClick={handleUpdate}
+                            onClick={props.handleUpdateUser}
+                            // onClick={handleUpdate}
                             >Cập nhật</button>
 
                         </div>

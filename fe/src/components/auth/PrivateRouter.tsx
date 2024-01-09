@@ -1,10 +1,10 @@
 import { Navigate, Outlet, useLocation } from "react-router";
-import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import useFetchData from "../../hook/useFetchData";
-import { userInfoRequest } from "./authApi";
+// import { useAppDispatch, useAppSelector } from "../../app/hooks";
+// import useFetchData from "../../hook/useFetchData";
+// import { userInfoRequest } from "./authApi";
 
 function PrivateRoute() {
-    useFetchData()
+
     const isAuthenticatedString = localStorage.getItem('isAuthenticated');
     const isAuthenticated = isAuthenticatedString ? JSON.parse(isAuthenticatedString) : false;
     const access_token = localStorage.getItem("access_token")

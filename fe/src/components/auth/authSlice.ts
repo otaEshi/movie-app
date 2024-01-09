@@ -101,7 +101,6 @@ const authSlice = createSlice({
                     // localStorage.setItem('currentUser',) 
                     state.currentUser = action.payload;
                     localStorage.setItem('is_refresh_page', 'true');
-                    console.log('set new user')
                 }
             });
     }

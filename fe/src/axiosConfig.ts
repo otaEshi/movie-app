@@ -26,16 +26,13 @@ export const handleAxiosReponseError = async (error: any) => {
     const originalRequest = error.config;
 
     if (error.response.status === axios.HttpStatusCode.Unauthorized && error.response.data.detail === "Invalid authentication credentials" && error.response.data.detail !== "ERR_INCORRECT_OLD_PASSWORD" ) {
-        console.log('check if run refresh1')
+
         refreshTokenRequest = refreshTokenRequest ? refreshTokenRequest : _refresh_token();
         let res = await refreshTokenRequest;
         if (res?.refresh_token && res?.access_token) {
             refreshTokenRequest = null;
             axios.defaults.headers.common['Authorization'] = `Bearer ${res?.access_token}`;
             originalRequest.headers['Authorization'] = `Bearer ${res?.access_token}`;
-            console.log('refresh already')
-            console.log('new access token: ', res?.access_token)
-            console.log('new refresh token: ', res?.refresh_token)
             return axios(originalRequest);
         } else {
             return;
@@ -53,14 +50,11 @@ export const _refresh_token: RefreshTokenRequestFunction = async () => {
                 method: "POST",
                 url: url,
             }).then((response) => {
-                console.log('check xyz')
-                console.log('hehe: ', response)
                 if (response?.data?.access_token && response?.data?.refresh_token) {
                     refreshTokenRequest = null;
                     localStorage.setItem('access_token', response.data.access_token);
                     localStorage.setItem('refresh_token', response.data.refresh_token);
                     localStorage.setItem('token_type', response.data.token_type);
-                    console.log('check abc')
                     return {
                         access_token: response.data.access_token,
                         refresh_token: response.data.refresh_token,

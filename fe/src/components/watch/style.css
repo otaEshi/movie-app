@@ -51,3 +51,7 @@ iframe {
 .soical img {
   margin-left: 10px;
 }
+
+.comment-container {
+  border: 1px solid #575757;
+}
