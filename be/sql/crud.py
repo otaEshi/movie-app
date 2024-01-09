@@ -553,7 +553,7 @@ async def get_movie_ratings_average(db: Session, movie_id: int):
     Returns:
         List[models.MovieRating]: A list of movie rating objects.
     """
-    result = db.query(MovieRatings).filter(MovieRatings.movie_id == movie_id).all()
+    result = db.query(MovieRatings).filter(MovieRatings.movie_id == movie_id, MovieRatings.is_deleted == False).all()
     average = 0
     for rating in result:
         average += rating.rating
