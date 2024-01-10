@@ -29,7 +29,7 @@ export const createCommentRequest = createAsyncThunk<IComment, ICreateCommentPay
 export const updateCommentRequest = createAsyncThunk<IComment, IUpdateCommentPayload>(
     "api/update_comment",
     async (commentPayload, thunkApi) => {
-        const res  = await sendRequest(`${BASE_URL}/movies/{movie_id}/comments?movie_comment_id=${commentPayload.movie_comment_id}&comment=${commentPayload.comment}&is_deleted=${commentPayload.is_deleted}`, {
+        const res  = await sendRequest(`${BASE_URL}/movies/${commentPayload.movie_comment_id}/comments?&comment=${commentPayload.comment}&is_deleted=${commentPayload.is_deleted}`, {
             // payload: commentPayload,
             thunkApi,
             method: 'PATCH',
@@ -41,7 +41,7 @@ export const deleteCommentRequest = createAsyncThunk<void, IDeleteCommentPayload
     "api/delete_comment",
     async (commentPayload, thunkApi) => {
         localStorage.setItem('deleting_comment_id', commentPayload.movie_comment_id.toString())
-        const res  = await sendRequest(`${BASE_URL}/movies/{movie_id}/comments?movie_comment_id=${commentPayload.movie_comment_id}`, {
+        const res  = await sendRequest(`${BASE_URL}/movies/${commentPayload.movie_comment_id}/comments?movie_comment_id=`, {
             // payload: commentPayload,
             thunkApi,
             method: 'DELETE',

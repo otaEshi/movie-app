@@ -5,6 +5,7 @@ import { IUserInfoResponse } from "../../types/auth";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import './profile.scss'
 import { _refresh_token } from "../../axiosConfig";
+import { get } from "http";
 
 interface IProfileProps {
     // setOpenSignUpModal: React.Dispatch<React.SetStateAction<boolean>>;
@@ -14,9 +15,18 @@ interface IProfileProps {
     setCurrentUser: React.Dispatch<React.SetStateAction<IUserInfoResponse>>
     handleLogout: () => void
     // setUpdateAvatar: React.Dispatch<React.SetStateAction<File>>
-    handleUpdateAvatar: (newAvatar : File) => void
+    handleUpdateAvatar: (newAvatar : string) => void
     handleUpdateUser: () => void
     handleChangePassword: (old_password: string, new_password: string) => void
+}
+
+function getBase64(file: any) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
 }
 
 // function SignInPage({ setOpenSignUpModal, setOpenSignInModal, setIsLogin }: ISignInFormatProps) {
@@ -50,10 +60,12 @@ function Profile(props: IProfileProps) {
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const selectedAvatar = e.target.files[0];
-            setAvatar(selectedAvatar);
+            setAvatar(e.target.files[0]);
+            getBase64(e.target.files[0]).then((base64:any) => {
+                props.handleUpdateAvatar(base64.toString())
+            });
         }
-        console.log('avatar: ',avatar)
-        avatar && props.handleUpdateAvatar(avatar)
+        
     };
 
     useLayoutEffect(() => {

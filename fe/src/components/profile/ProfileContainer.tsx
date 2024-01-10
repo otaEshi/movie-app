@@ -7,7 +7,7 @@ import { userInfoRequest } from "../auth/authApi";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import axios from "axios";
 import { logout, setAvatarURL } from "../auth/authSlice";
-import { IChangePassword, IUpdatePayload } from "../../types/profile";
+import { IBase64Image, IChangePassword, IUpdatePayload } from "../../types/profile";
 import { changePasswordRequest, updateUserInfoRequest } from "./profileApi";
 import { showAlert } from "../../utils/showAlert";
 
@@ -15,7 +15,7 @@ import { showAlert } from "../../utils/showAlert";
 function ProfileContainer() {
     const dispatch = useAppDispatch();
     const [isChange, setIsChange] = useState<boolean>(false);
-    const [updateAvatar, setUpdateAvatar] = useState<File>();
+    const [updateAvatar, setUpdateAvatar] = useState<string>();
     const tempUser = useAppSelector(store => store.auth.currentUser);
     const [currentUser, setCurrentUser] = useState<IUserInfoResponse>(tempUser);
 
@@ -45,7 +45,7 @@ function ProfileContainer() {
     //     setCurrentUser(newCurrentUser);
     //   }, [useAppSelector((store) => store.auth.currentUser)]);
 
-    const _handleUpdateAvatar = (newAvatar : File) => {
+    const _handleUpdateAvatar = (newAvatar : string) => {
         setUpdateAvatar(newAvatar);
     }
 
@@ -61,15 +61,18 @@ function ProfileContainer() {
             // showAlert('Mật khẩu cũ không đúng', 'danger')
         }
     }
-
+    console.log('avatar: ', updateAvatar)
     const handleUpdateUser = async () => {
         console.log('updated avatar: ', updateAvatar)
         let payload: IUpdatePayload
+        console.log("update avatar: ", updateAvatar)
         if (updateAvatar) {
             payload = {
                 name: currentUser.name,
                 date_of_birth: currentUser.date_of_birth,
-                avatar: updateAvatar
+                avatar: {
+                    image_base64: updateAvatar
+                }
             }
         } else {
             payload = {

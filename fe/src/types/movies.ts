@@ -25,7 +25,7 @@ export interface ICreateMoviePayload {
     url: string;
     genre: string;
     source: string;
-    subgenre: string;
+    subgenre: string[];
     thumbnail_url: string;
 }
 export interface ITrendingMoviesResponse {
