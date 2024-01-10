@@ -9,31 +9,41 @@ import axios from "axios";
 import { logout, setAvatarURL } from "../auth/authSlice";
 import { IChangePassword, IUpdatePayload } from "../../types/profile";
 import { changePasswordRequest, updateUserInfoRequest } from "./profileApi";
+import { showAlert } from "../../utils/showAlert";
 
 // function SignInPage({ setOpenSignUpModal, setOpenSignInModal, setIsLogin }: ISignInFormatProps) {
 function ProfileContainer() {
     const dispatch = useAppDispatch();
     const [isChange, setIsChange] = useState<boolean>(false);
-    const [currentUser, setCurrentUser] = useState<IUserInfoResponse>(useAppSelector(store => store.auth.currentUser))
     const [updateAvatar, setUpdateAvatar] = useState<File>();
+    const tempUser = useAppSelector(store => store.auth.currentUser);
+    const [currentUser, setCurrentUser] = useState<IUserInfoResponse>(tempUser);
 
+    
     const handleLogout = () => {
         dispatch(logout());
     }
+    
+    useEffect(() => {
+        setCurrentUser(tempUser)
+        localStorage.setItem('is_refresh_page','false');
+    }, [localStorage.getItem('is_refresh_page')]);
+    
+
+
+    // const NewCurrentUser = () => {
+    //     const newCurrentUser = useAppSelector(store => store.auth.currentUser);
+    //     setCurrentUser(newCurrentUser)
+    // }
 
 
     // useEffect(() => {
-    //     axios.defaults.headers.common['Authorization'] = localStorage.getItem('token_type') + ' ' + localStorage.getItem('id_token');
-    //     // console.log('check abcd')
-    //     console.log('dispatch at profile')
-    //     dispatch(userInfoRequest());
-    //     // console.log('check avatar url: ', profile_avatar_url)
-    //     if (!localStorage.getItem('avatar_url')) {
-    //         // console.log('ehe: ', profile_avatar_url)
-    //         setProfileAvatar_url('https://res.cloudinary.com/dnjw76gxi/image/upload/v1704099732/w6u7d2sonsdwoupk5k1c.png');
-    //         // console.log('ehe +1: ', profile_avatar_url)
-    //     }
-    // }, [])
+    //     NewCurrentUser()
+    // }, [useAppSelector(store => store.auth.currentUser)])
+    // useEffect(() => {
+    //     const newCurrentUser = useAppSelector((store) => store.auth.currentUser);
+    //     setCurrentUser(newCurrentUser);
+    //   }, [useAppSelector((store) => store.auth.currentUser)]);
 
     const _handleUpdateAvatar = (newAvatar : File) => {
         setUpdateAvatar(newAvatar);
@@ -42,15 +52,18 @@ function ProfileContainer() {
     const _handleChangePassword = async (old_passowrd: string, new_password : string) => {
         const payload : IChangePassword = {
             old_password : old_passowrd,
-            new_password : new_password
+            new_password : new_password,
         }
 
         const res = await dispatch<any>(changePasswordRequest(payload))
-        console.log('check response')
-        console.log(res)
+        if (res.type === "api/change_password/rejected"){
+            // console.log('test reject')
+            // showAlert('Mật khẩu cũ không đúng', 'danger')
+        }
     }
 
     const handleUpdateUser = async () => {
+        console.log('updated avatar: ', updateAvatar)
         let payload: IUpdatePayload
         if (updateAvatar) {
             payload = {
@@ -65,8 +78,7 @@ function ProfileContainer() {
             }
         }
         const res = await dispatch<any>(updateUserInfoRequest(payload))
-        console.log('check responsssse')
-        console.log(res)
+
 
     }
 

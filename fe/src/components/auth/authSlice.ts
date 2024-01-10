@@ -5,20 +5,20 @@ import { signInRequest, signUpRequest, userInfoRequest } from './authApi';
 import { IUserInfoResponse } from '../../types/auth';
 
 // Try to load user info from local storage
-let id_token = localStorage.getItem('id_token');
+let access_token = localStorage.getItem('access_token');
 let userId = null;
-let isAuthenticated = Boolean(id_token);
+let isAuthenticated = Boolean(access_token);
 
-if (id_token) {
+if (access_token) {
     try {
-        let tokenDecode: any = jwtDecode(id_token);
+        let tokenDecode: any = jwtDecode(access_token);
         if (tokenDecode) {
             userId = tokenDecode['user_id'];
         }
     } catch (error) {
         isAuthenticated = false;
-        localStorage.removeItem('id_token');
-        sessionStorage.removeItem('id_token');
+        localStorage.removeItem('access_token');
+        sessionStorage.removeItem('access_token');
     }
 
 }
@@ -63,11 +63,12 @@ const authSlice = createSlice({
 
         logout: state => {
             localStorage.setItem('isAuthenticated', JSON.stringify(false));
-            localStorage.removeItem('id_token');
+            localStorage.removeItem('access_token');
             localStorage.removeItem('avatar_url');
             localStorage.removeItem('token_type');
             localStorage.removeItem('isAuthenticated');
             localStorage.removeItem('refresh_token');
+            localStorage.removeItem('is_refresh_page');
             window.location.reload();
         },
 
@@ -80,7 +81,7 @@ const authSlice = createSlice({
         builder
             .addCase(signInRequest.fulfilled, (state, action) => {
                 if (action.payload) {
-                    localStorage.setItem('id_token', action.payload.access_token);
+                    localStorage.setItem('access_token', action.payload.access_token);
                     localStorage.setItem('refresh_token', action.payload.refresh_token);
                     localStorage.setItem('token_type', action.payload.token_type);
                     // axios.defaults.headers.common['Authorization'] = action.payload.token_type + ' ' + action.payload.access_token;
@@ -88,17 +89,19 @@ const authSlice = createSlice({
                     window.location.reload();
                 }
             })
-            .addCase(signUpRequest.fulfilled, (state, action) => {
-                // if (action.payload) {
-                //     localStorage.setItem('isAuthenticated', JSON.stringify(true));
-                // }
-            })
+            // .addCase(signUpRequest.rejected, (state, action) => {
+            //     // if (action.payload) {
+            //     //     localStorage.setItem('isAuthenticated', JSON.stringify(true));
+            //     // }
+            //     console.log('slioce',action)
+            // })
+            // .addCase()
             .addCase(userInfoRequest.fulfilled, (state, action) => {
                 if (action.payload) {
                     // localStorage.setItem('avatar_url', action.payload.avatar_url);
                     // localStorage.setItem('currentUser',) 
-                    
-                    state.currentUser = action.payload
+                    state.currentUser = action.payload;
+                    localStorage.setItem('is_refresh_page', 'true');
                 }
             });
     }

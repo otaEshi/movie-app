@@ -12,8 +12,6 @@ export const signUpRequest = createAsyncThunk<ISignUpResponse, ISignUpPayload>(
             thunkApi,
             method: 'POST',
         });
-        console.log('sign-up info: ', SignUpInfo);
-        console.log('Sign-up response:', res);
         return res;
     }
 ); 

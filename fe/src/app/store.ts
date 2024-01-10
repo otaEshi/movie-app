@@ -2,11 +2,21 @@ import { Action, ThunkAction, configureStore } from '@reduxjs/toolkit';
 
 import authSlice from '../components/auth/authSlice';
 import homeSlice from '../components/homes/homeSlice';
+import watchSlice from '../components/watch/watchSlice';
+import detaiMovieListSlice from '../components/movieList/detaiMovieListSlice';
+import movieListSlice from '../components/movieList/movieListSlice';
+import searchSlice from '../components/search/searchSlice';
+import commentSlice from '../components/comment/commentSlice';
 
 export const store = configureStore({
   reducer: {
     auth:authSlice,
     home:homeSlice,
+    watch:watchSlice,
+    detailMovieList:detaiMovieListSlice,
+    movieList:movieListSlice,
+    search:searchSlice,
+    comment:commentSlice,
   },
 
   middleware: (getDefaultMiddleware) =>

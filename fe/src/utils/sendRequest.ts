@@ -35,6 +35,17 @@ export const sendRequest = async (url: string, options?: Partial<RequestOptions>
             return res.data;
         })
         .catch(error => {
+            console.log('send rq: ', error)
+            if (error.response?.data.detail === "ERR_USERNAME_ALREADY_EXISTS"){
+                alert('Tài khoản đã tồn tại')
+                localStorage.setItem('error_sign_up', 'true')
+            } else if(error.response?.status === 422){
+                // if () {
+
+                    alert('Ngày sinh không hợp lệ')
+                    localStorage.setItem('error_sign_up', 'true')
+                // } 
+            }
             if (!options?.defineAlert) {
                 if (axios.isAxiosError(error)) {
                     const statusCode = error.response?.status;
@@ -44,6 +55,8 @@ export const sendRequest = async (url: string, options?: Partial<RequestOptions>
                         showAlert(ERROR_STATUS[statusCode], "danger");
                     } else if (statusCode === 400) {
                         showAlert(error.response?.data.detail, "danger");
+                    } else if (error.response?.data.detail === "ERR_USERNAME_ALREADY_EXISTS"){
+                        alert('Tài khoản đã tồn tại')
                     }
                 } else {
                     showAlert("Send request failed.", "danger");

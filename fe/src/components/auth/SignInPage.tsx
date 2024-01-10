@@ -41,6 +41,7 @@ function SignInPage(props: ISignInFormatProps) {
         // }
         if (id === 'username') {
             setUsername(value);
+            setEmailError('');
         }
         if (id === 'password') {
             setPassword(value);
@@ -50,17 +51,17 @@ function SignInPage(props: ISignInFormatProps) {
 
     const handleSignIn = async () => {
         if (username === '') {
-            setEmailError('This field must not be blank.');
+            setEmailError('Không được để trống');
             return;
         }
         // if (!emailRegex.test(email)) {
         //     setEmailError('Please enter a valid email address.');
         //     return;
         // }
-        // if (password === '') {
-        //     setPasswordError('This field must not be blank.');
-        //     return;
-        // }
+        if (password === '') {
+            setPasswordError('Không được để trống');
+            return;
+        }
         // if (/\s/.test(password)) {
         //     setPasswordError('Password cannot contain spaces in between.');
         //     return;
@@ -87,7 +88,7 @@ function SignInPage(props: ISignInFormatProps) {
             
             props.handleLoginSuccess();
         } else {
-            setEmailError('Invalid email or password.');
+            alert('Tài khoản hoặc mật khẩu không chính xác')
         }
         // }
         // )
