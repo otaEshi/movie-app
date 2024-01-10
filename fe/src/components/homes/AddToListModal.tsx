@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { IMovieList, IMovieListPublic, IUpdateMovieLIist } from "../../types/movieList";
+import { IMovieList, IMovieListPublic, IUpdateMovieList } from "../../types/movieList";
 import { getMovieList, updateMovieList } from "../movieList/movieListApi";
 import { IMovie } from "../../types/movies";
 
@@ -30,7 +30,7 @@ function AddToListModal(props: AddToListModalProps) {
         currentList.movies.map((item) => (movie_ids.push(item.id)))
         // localStorage.setItem('')
 
-        const payload : IUpdateMovieLIist = {
+        const payload : IUpdateMovieList = {
             name : currentList.name,
             description : currentList.description,
             is_deleted : false,
