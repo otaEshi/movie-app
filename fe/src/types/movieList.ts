@@ -9,7 +9,7 @@ export interface IMovieList{
     movies: IMovie[]
 }
 
-export interface IUpdateMovieLIist{
+export interface IUpdateMovieList{
     name: string;
     description: string;
     is_deleted : boolean;
