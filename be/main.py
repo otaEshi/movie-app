@@ -82,6 +82,12 @@ async def upload_image_cloudinary(image:UploadFile) -> str:
     """
     return cloudinary.uploader.upload(image.file)
 
+async def upload_image_cloudinary_base64(image_base64:str) -> str:
+    """
+        Upload an image to cloudinary.
+    """
+    return cloudinary.uploader.upload(image_base64)
+
 async def delete_image_cloudinary(image_url:str ):
     """
         Delete an image from cloudinary.
@@ -211,11 +217,15 @@ async def change_password(
     await crud.change_password(db, args, current_user.id)
     return {"detail": "PASSWORD_CHANGE_OK"}
 
+class Base64Image(BaseModel):
+    image_base64: str
+
 @app.patch("/users/me", tags=["Users"])
 async def update_user(
     name: str = None,
     date_of_birth: date = None,
-    avatar: UploadFile = File(None),
+    # avatar: UploadFile = File(None),
+    avatar: Base64Image = None,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -227,12 +237,13 @@ async def update_user(
     # if date_of_birth is later than today, raise an error
     if date_of_birth is not None and date_of_birth > date.today():
         raise HTTPException(status_code=400, detail="Invalid date of birth")
-
+    print(avatar)
     if avatar is not None:
         # If current user has an avatar, delete it
         if current_user.avatar_url is not None and current_user.avatar_url != "":
             await delete_image_cloudinary(current_user.avatar_url)
-        cloudinary_response = await upload_image_cloudinary(avatar)
+        cloudinary_response = await upload_image_cloudinary_base64(avatar.image_base64)
+        print(cloudinary_response)
         args.avatar_url = cloudinary_response["secure_url"]
     await crud.update_user(db, args, current_user.id)
     return {"detail": "USER_UPDATE_OK"}
@@ -379,16 +390,32 @@ async def create_movie( title:str,
     movie.thumbnail_url = cloudinary_response['secure_url']
     return await crud.create_movie(db, movie=movie)
 
+class MovieCreateThumbnailUrl(BaseModel):
+    """
+        Movie model
+
+        Attributes:
+            title (str): The title of the movie.
+            description (str): The description of the movie.
+            date_of_release (date): The date of release of the movie.
+            url (str): The url of the movie.
+            genre (str): The genre of the movie.
+            subgenre (list[str]): The subgenre of the movie.
+            source (str): The source of the movie.
+            thumbnail_url (str): The thumbnail url of the movie.
+    """
+    title: str
+    description: str
+    date_of_release: date
+    url: str
+    genre: str
+    subgenre: list[str]
+    source: str
+    thumbnail_url: str
+
 @app.post("/movies/thumbnail_url", tags=["Movies"])
 async def create_movie_thumbnail_url( 
-                        title:str,
-                        description: str,
-                        date_of_release: date,
-                        url: str,
-                        genre: str,
-                        source: str,
-                        image_url: str, 
-                        subgenre: list[str] = Form(...),
+                        payload :MovieCreateThumbnailUrl,
                         db: Session = Depends(get_db),
                         current_user: User = Depends(get_current_user)):
     """
@@ -396,14 +423,14 @@ async def create_movie_thumbnail_url(
     """
     if not current_user.is_content_admin:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    movie = MovieCreate(title=title, 
-                        description=description, 
-                        date_of_release=date_of_release, 
-                        url=url, 
-                        thumbnail_url=image_url,
-                        genre=genre, 
-                        subgenre=subgenre, 
-                        source=source)
+    movie = MovieCreate(title=payload.title, 
+                        description=payload.description, 
+                        date_of_release=payload.date_of_release, 
+                        url=payload.url, 
+                        thumbnail_url=payload.thumbnail_url,
+                        genre=payload.genre, 
+                        subgenre=payload.subgenre, 
+                        source=payload.source)
     return await crud.create_movie(db, movie=movie)
 
 @app.patch("/movies/{movie_id}", tags=["Movies"])
@@ -476,7 +503,7 @@ async def update_movie_rating(movie_id: int, rating: int, is_deleted: bool = Non
     movie_rating_edit = MovieRatingEdit(rating=rating, is_deleted=is_deleted)
     return await crud.update_movie_rating(db, movie_id, movie_rating_edit, current_user.id)
 
-@app.delete("/movies/{movie_id}/ratings", tags=["Movies Rating"])
+@app.delete("/movies/{movie_rating_id}/ratings", tags=["Movies Rating"])
 async def delete_movie_rating(movie_rating_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
         Delete a rating of a movie from the database.
@@ -499,7 +526,7 @@ async def create_movie_comment(movie_id: int, comment: str, db: Session = Depend
     movie_comment_create = MovieCommentCreate(movie_id=movie_id, comment=comment, user_id=current_user.id, created_at=datetime.now())
     return await crud.create_movie_comment(db, movie_comment_create)
 
-@app.patch("/movies/{movie_id}/comments", tags=["Movies Comments"])
+@app.patch("/movies/{movie_comment_id}/comments", tags=["Movies Comments"])
 async def update_movie_comment(movie_comment_id: int, comment: str, is_deleted: bool, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
         Update a comment of a movie in the database.
@@ -507,7 +534,7 @@ async def update_movie_comment(movie_comment_id: int, comment: str, is_deleted: 
     movie_comment_edit = MovieCommentEdit(comment=comment, is_deleted=is_deleted)
     return await crud.update_movie_comment(db, movie_comment_id, movie_comment_edit, current_user.id)
 
-@app.delete("/movies/{movie_id}/comments", tags=["Movies Comments"])
+@app.delete("/movies/{movie_comment_id}/comments", tags=["Movies Comments"])
 async def delete_movie_comment(movie_comment_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     """
         Delete a comment of a movie from the database.
