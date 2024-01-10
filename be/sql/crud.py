@@ -317,7 +317,7 @@ async def update_movie_list(db: Session, movie_list_id, owner_id: int, movie_lis
         return {"detail": "unauthorized"}
     if movie_list.name is not None:
         _movie_lists = db.query(MovieList).filter(MovieList.name == movie_list.name, MovieList.owner_id == owner_id).first()
-        if _movie_lists is not None:
+        if _movie_lists is not None and _movie_lists.id != movie_list_id:
             return {"detail": "ERR_MOVIE_LIST_NAME_ALREADY_EXISTS"}
         db_movie_list.name = movie_list.name
     if movie_list.description is not None:
@@ -462,6 +462,7 @@ async def create_movie(db: Session, movie: MovieCreate):
     if db_movie is not None:
         raise HTTPException(status_code=400, detail="ERR_MOVIE_ALREADY_EXISTS")
     db_movie = Movie(**movie.model_dump())
+    db_movie.subgenre = ",".join(movie.subgenre)
     db_movie.views = 0
     db.add(db_movie)
     db.commit()
@@ -617,7 +618,7 @@ async def get_num_rating_by_movie_id(db: Session, movie_id: int):
     """
     return db.query(MovieRatings).filter(MovieRatings.movie_id == movie_id).count()
 
-async def update_movie_rating(db: Session, movie_id: int, movie_rating_edit: MovieRatingEdit, user_id: int):
+async def update_movie_rating(db: Session, movie_rating_id: int, movie_rating_edit: MovieRatingEdit, user_id: int):
     """
     Edit a movie rating in the database.
 
@@ -630,8 +631,8 @@ async def update_movie_rating(db: Session, movie_id: int, movie_rating_edit: Mov
         models.MovieRating: The edited movie rating object.
     """
     filters = {}
-    if movie_id is not None:
-        filters["movie_id"] = movie_id
+    if movie_rating_id is not None:
+        filters["movie_rating_id"] = movie_rating_id
     if user_id is not None:
         filters["user_id"] = user_id
 
@@ -708,6 +709,11 @@ async def get_movie_comments(db: Session, movie_id: int, user_id: int = None, pa
     if user_id:
         search_params["user_id"] = user_id
     result = db.query(MovieComments).filter_by(**search_params).offset(skip).limit(limit).all()
+    for comment in result:
+        user = db.query(User).filter(User.id == comment.user_id).first()
+        comment.user_name = user.name
+        comment.user_avatar_url = user.avatar_url
+
     return {"list": result, "max_page": max_page}
 
 async def update_movie_comment(db: Session, movie_comment_id: int, movie_comment_edit: MovieCommentEdit, user_id: int):
