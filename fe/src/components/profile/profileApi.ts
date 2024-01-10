@@ -7,8 +7,11 @@ const BASE_URL = 'http://localhost:8000';
 export const updateUserInfoRequest = createAsyncThunk<string, IUpdatePayload>(
     "api/update",
     async (updateInfo, thunkApi) => {
+        console.log("api sent", updateInfo)
         const res  = await sendRequest(`${BASE_URL}/users/me?name=${updateInfo.name}%20&date_of_birth=${updateInfo.date_of_birth}`, {
-            payload: updateInfo,
+            payload: {
+                image_base64: updateInfo.avatar?.image_base64,
+            },
             thunkApi,
             method: 'PATCH',
         });

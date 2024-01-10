@@ -11,7 +11,7 @@ function AddMovie() {
     const [genre, setGenre] = useState<string>('Thể thao')
     const [source, setSource] = useState<string>('')
     const [thumbnail_url, setThumbnail_url] = useState<string>('')
-    const [subgenre, setSubgenre] = useState<string>('')
+    const [subgenre, setSubgenre] = useState<string[]>([])
 
     const dispatch = useAppDispatch();
 
@@ -36,12 +36,12 @@ function AddMovie() {
             alert('Vui lòng nhập đường dẫn phim')
             return
         }
-        if (subgenre.trim() === ''){
-            alert('Vui lòng nhập đường thể loại phụ')
+        if (subgenre.length === 0){
+            alert('Vui lòng nhập thể loại phụ')
             return
         }
-        if (subgenre.trim() === ''){
-            alert('Vui lòng nhập đường đường dẫn ảnh mô tả')
+        if (source.trim() === ''){
+            alert('Vui lòng nhập đường dẫn ảnh mô tả')
             return
         }
         const payload : ICreateMoviePayload = {
@@ -136,7 +136,11 @@ function AddMovie() {
                         className="form-control"
                         id="subgenre"
                         value={subgenre}
-                        onChange={(e) => setSubgenre(e.target.value)}
+                        onChange={(e) => {
+                            // Split by comma and remove all spaces
+                            const new_subgenres = e.target.value.split(',').map((s) => s.trim())
+                            setSubgenre(new_subgenres)
+                        }}
                         placeholder="Thể loại phụ 1, thể loại phụ 2, thể loại phụ 3,..."
                     />
                 </div>

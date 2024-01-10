@@ -41,7 +41,7 @@ function EditCommentModal(props: EditCommentModalProps) {
             </div>
             <div className="d-flex justify-content-center">
                 <div className="btn btn-primary m-1" onClick={() => handleApply()}>Xác nhận</div>
-                <div className="btn btn-danger m-1" onClick={props.handleUpdateComment}>Xóa</div>
+                <div className="btn btn-danger m-1" onClick={props.handleDeleteComment}>Xóa</div>
                 <div className="btn btn-warning m-1" onClick={props.handleCancel}>Hủy</div>
             </div>
 
