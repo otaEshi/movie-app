@@ -18,6 +18,16 @@ export interface IMovie {
     average_rating: number;
     num_ratings: number
 }
+export interface ICreateMoviePayload {
+    title: string;
+    description: string;
+    date_of_release: string;
+    url: string;
+    genre: string;
+    source: string;
+    subgenre: string;
+    thumbnail_url: string;
+}
 export interface ITrendingMoviesResponse {
     movies: IMovie[]
 }

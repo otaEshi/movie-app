@@ -38,8 +38,6 @@ function MovieListContainer() {
         <>
             <button className="btn btn-primary" onClick={() => setOpenCreateNewListModal(true)}> Tạo danh sách mới </button>
             <div>Tìm kiếm</div>
-            <div></div>
-
             {personalList.list.length > 0 ? personalList.list.map((item) => (
                 <div className="position-relative">
                     <button className="btn btn-danger top-0 end-0" onClick={() => handleDeleteList(item.id)}>

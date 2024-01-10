@@ -85,9 +85,9 @@ const Header = () => {
   };
 
   const handleSearch = async () => {
-  
-    const payload : ISearchPayload = {
-      search_string : search.trim()
+
+    const payload: ISearchPayload = {
+      search_string: search.trim()
     }
     await dispatch(searchRequest(payload))
     navigate('/search_result')
@@ -95,7 +95,7 @@ const Header = () => {
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      if (search !== ''){
+      if (search !== '') {
         handleSearch();
       }
     }
@@ -163,7 +163,11 @@ const Header = () => {
             <Dropdown>
               <Dropdown.Toggle variant="dark" className='header-button'>
                 <div >
-                  <img src={`${avatar_url}`} alt='' style={{ width: '40px', height: '40px', objectFit: 'cover' }}></img>
+                  {avatar_url ?
+                    <img src={`${avatar_url}`} alt='' style={{ width: '40px', height: '40px', objectFit: 'cover' }}></img>
+                    :
+                    <i className="fa fa-user" aria-hidden="true"></i>
+                  }
                   <div>{username}</div>
                 </div>
               </Dropdown.Toggle>
@@ -187,7 +191,7 @@ const Header = () => {
           )}
         </div>
       </div>
-      
+
       <Modal
         open={openSignInModal}
         onClose={() => setOpenSignInModal(false)}

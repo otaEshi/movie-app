@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { sendRequest } from "../../utils/sendRequest";
-import { IListMovieList, IMovieList, IMovieListPublic } from "../../types/movieList";
+import { IListMovieList, IMovieList, IMovieListPublic, IUpdateMovieLIist } from "../../types/movieList";
 import { ICreateMovieListPayload, ICreateMovieListResponse } from "../../types/movies";
 
 const BASE_URL = 'http://localhost:8000';
@@ -67,6 +67,19 @@ export const createMovieList = createAsyncThunk<ICreateMovieListResponse, ICreat
                 payload: movie_list_info,
                 thunkApi,
                 method: 'POST',
+            });
+        return res;
+    }
+);
+
+export const updateMovieList = createAsyncThunk<void, IUpdateMovieLIist>(
+    "api/update_movie_list/",
+    async (movie_list_info, thunkApi) => {
+        const res = await sendRequest(`${BASE_URL}/movie_lists/${movie_list_info.id}`
+            , {
+                payload: movie_list_info,
+                thunkApi,
+                method: 'PATCH',
             });
         return res;
     }

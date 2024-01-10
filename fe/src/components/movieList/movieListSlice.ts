@@ -84,7 +84,8 @@ const movieListSlice = createSlice({
             })
             .addCase(delMovieList.fulfilled, (state, action) => {
                 const deletedList = parseInt(localStorage.getItem('deleted_list') ?? '-1');
-                state.personal_list.list = state.personal_list.list.filter(item => item.id !== deletedList)
+                state.personal_list.list = state.personal_list.list.filter(item => item.id !== deletedList);
+                localStorage.removeItem('deleted_list');
             })
             .addCase(createMovieList.fulfilled, (state, action) => {
                 const tempList = {

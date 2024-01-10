@@ -52,7 +52,7 @@ function ProfileContainer() {
     const _handleChangePassword = async (old_passowrd: string, new_password : string) => {
         const payload : IChangePassword = {
             old_password : old_passowrd,
-            new_password : new_password
+            new_password : new_password,
         }
 
         const res = await dispatch<any>(changePasswordRequest(payload))
@@ -63,6 +63,7 @@ function ProfileContainer() {
     }
 
     const handleUpdateUser = async () => {
+        console.log('updated avatar: ', updateAvatar)
         let payload: IUpdatePayload
         if (updateAvatar) {
             payload = {

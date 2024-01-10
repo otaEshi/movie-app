@@ -9,6 +9,14 @@ export interface IMovieList{
     movies: IMovie[]
 }
 
+export interface IUpdateMovieLIist{
+    name: string;
+    description: string;
+    is_deleted : boolean;
+    id : number;
+    movies: number[];
+}
+
 export interface IListMovieList{
     list: IMovieList[];
     max_page: number;

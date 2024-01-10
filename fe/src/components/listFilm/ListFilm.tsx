@@ -94,7 +94,7 @@ const ListFilm: React.FC<ListFilmProps> = ({ listType }) => {
 
   return (
     <>
-      <section className='upcome pt-4'>
+      <section className='upcome pt-5'>
         <div className='container'>
           <div className='heading flexSB'>
             <h1>{ListFilmTypeDic[listType]}</h1>

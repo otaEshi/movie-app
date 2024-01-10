@@ -37,17 +37,21 @@ const HomePage: React.FC = () => {
   console.log("DEBUG  ")
   console.log(publicList.list)
   return (
-    <div className='m-4'>
-      <Homes />
-      {/* type: 0 - all, 1-sport , 2-musics, 3-travels */}
-      <ListFilm listType={1} />
-      <ListFilm listType={2} />
-      <ListFilm listType={3} />
-      {publicList.list && publicList.list.map((item) => (
-         <MovieListSlide key={item.id} movieList={item}></MovieListSlide>
-      ))}
-      {/* {publicList.list.length>0 && <MovieListSlide movieList={publicList.list[0]}></MovieListSlide>} */}
-    </div>
+    <>
+      <div className='m-4'>
+        <Homes />
+        {/* type: 0 - all, 1-sport , 2-musics, 3-travels */}
+        <ListFilm listType={1} />
+        <ListFilm listType={2} />
+        <ListFilm listType={3} />
+        {publicList.list && publicList.list.map((item) => (
+           <MovieListSlide key={item.id} movieList={item}></MovieListSlide>
+        ))}
+        {/* {publicList.list.length>0 && <MovieListSlide movieList={publicList.list[0]}></MovieListSlide>} */}
+      </div>
+
+          
+    </>
   );
 };
 

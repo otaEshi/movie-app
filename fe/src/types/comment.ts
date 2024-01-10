@@ -1,5 +1,5 @@
 export interface IComment {
-    comment_id : number;
+    id : number;
     comment : string;
     is_delete : boolean;
     user_id : number;
@@ -13,11 +13,21 @@ export interface IGetCommentPayload {
     page : number;
     page_size : number;
 }
+export interface ICreateCommentPayload {
+    movie_id : number;
+    comment : string;
+}
 export interface IUpdateCommentPayload {
+    movie_id : number
     movie_comment_id : number;
     comment : string;
     is_deleted : boolean;
 }
 export interface IDeleteCommentPayload {
+    movie_id : number
     movie_comment_id : number;
+}
+export interface ICommentList {
+    list : IComment[];
+    max_page : number
 }

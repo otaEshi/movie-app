@@ -55,3 +55,30 @@ iframe {
 .comment-container {
   border: 1px solid #575757;
 }
+
+.custom-comment {
+  position: relative;
+}
+
+.info {
+  border: 1px solid #d8d8d8 ;
+  padding: 5px 10px;
+  background-color: #fffdfd;
+}
+
+.comment-header {
+  overflow: hidden;
+  border-bottom: solid 1px #d8d8d8;
+  padding-bottom: 5px;
+}
+.authorname {
+  font-weight: 700;
+  color: rgb(26, 70, 243);
+  font-size: 13px;
+}
+.comment-content {
+  overflow: hidden;
+  display: block;
+  padding: 10px 0 5px;
+  word-wrap: break-word;
+}

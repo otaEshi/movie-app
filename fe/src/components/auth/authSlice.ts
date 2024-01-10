@@ -89,11 +89,12 @@ const authSlice = createSlice({
                     window.location.reload();
                 }
             })
-            .addCase(signUpRequest.fulfilled, (state, action) => {
-                // if (action.payload) {
-                //     localStorage.setItem('isAuthenticated', JSON.stringify(true));
-                // }
-            })
+            // .addCase(signUpRequest.rejected, (state, action) => {
+            //     // if (action.payload) {
+            //     //     localStorage.setItem('isAuthenticated', JSON.stringify(true));
+            //     // }
+            //     console.log('slioce',action)
+            // })
             // .addCase()
             .addCase(userInfoRequest.fulfilled, (state, action) => {
                 if (action.payload) {

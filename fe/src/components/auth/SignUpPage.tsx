@@ -32,26 +32,13 @@ function SignUpPage(props: ISignUpFormatProps) {
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,64}$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  function isValidDate(day: string, month: string, year: string) {
-    // Create a new Date object using the components
-    const dateObject = new Date(`${year}-${month}-${day}`);
-
-    // Check if the components match the original input and are valid
-    return (
-      dateObject.getFullYear() === parseInt(year, 10) &&
-      dateObject.getMonth() === parseInt(month, 10) - 1 &&
-      dateObject.getDate() === parseInt(day, 10)
-    );
-  }
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Backspace' || e.key === 'Delete') {
-      setIsDeleteCharacter(true);
-    }
-  }
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDateOfBirth(e.target.value)
+  };
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -59,31 +46,6 @@ function SignUpPage(props: ISignUpFormatProps) {
       setfullname(value);
       setfullnameError('');
     }
-
-    if (id === 'day') {
-      if (day.length < 2 || isDeleteCharacter) {
-        setDay(value);
-        setDateOfBirthError('');
-        setIsDeleteCharacter(false);
-      }
-    }
-
-    if (id === 'month') {
-      if (month.length < 2 || isDeleteCharacter) {
-        setMonth(value);
-        setDateOfBirthError('');
-        setIsDeleteCharacter(false);
-      }
-    }
-
-    if (id === 'year') {
-      if (year.length < 4 || isDeleteCharacter) {
-        setYear(value);
-        setDateOfBirthError('');
-        setIsDeleteCharacter(false);
-      }
-    }
-
     if (id === 'username') {
       setUsername(value);
       setUsernameError('');
@@ -96,23 +58,17 @@ function SignUpPage(props: ISignUpFormatProps) {
       setConfirmPassword(value);
       setConfirmPasswordError('');
     }
-    setDateOfBirth(year + '-' + month + '-' + day);
   };
 
   const handleSignUp = () => {
-    // if (isValidDate(day, month, year)) {
-    setDateOfBirth(year + '-' + month + '-' + day);
-    // } else {
-    // setDateOfBirthError('Ngày sinh không hợp lệ')
-    // }
 
     if (fullname === '') {
       setfullnameError('Không được để trống');
       return;
     }
 
-    if (day === '' || month === '' || year === '') {
-      setDateOfBirthError('Không được để trống');
+    if (username === '') {
+      setUsernameError('Không được để trống');
       return;
     }
 
@@ -145,21 +101,17 @@ function SignUpPage(props: ISignUpFormatProps) {
 
     dispatch<any>(signUpRequest(payload))
       .then(async (result: any) => {
-        if (result.payload?.response?.request?.response) {
-          const response = JSON.parse(result.payload.response.request.response);
-          const errorMessage = response.detail;
-          if (errorMessage === "User is existed") {
-            setUsernameError('User Exists');
-          }
+        if (localStorage.getItem('error_sign_up')) {
+          localStorage.removeItem('error_sign_up')
+          return
+        }
+        await dispatch<any>(signInRequest(payload));
+        if (result.meta.requestStatus === "fulfilled") {
+          props.setOpenSignUpModal(false);
+          props.handleLoginSuccess();
+          return dispatch(userInfoRequest());
         } else {
-          const result = await dispatch<any>(signInRequest(payload));
-          if (result.meta.requestStatus === "fulfilled") {
-            props.setOpenSignUpModal(false);
-            props.handleLoginSuccess();
-            return dispatch(userInfoRequest());
-          } else {
 
-          }
         }
       });
   };
@@ -190,39 +142,15 @@ function SignUpPage(props: ISignUpFormatProps) {
               />
             </div>
             <div className='custom-error-text-wrapper'>{fullnameError && <div className="text-danger small custom-error-text">{fullnameError}</div>}</div>
-            <div className='d-flex justify-content-between'>
+            <div className="mb-3">
+              <label htmlFor="date" className="col-form-label">Ngày sinh</label>
               <input
-                type="text"
-                id="day"
-                className="custom-DoB-input"
-                value={day || ''}
-                onChange={(e) => handleInputChange(e)}
-                onKeyDown={handleKeyDown}
-                placeholder="Ngày"
-                autoComplete='off'
-                inputMode='numeric'
-              />
-              <input
-                type="text"
-                id="month"
-                className="custom-DoB-input"
-                value={month || ''}
-                onChange={(e) => handleInputChange(e)}
-                onKeyDown={handleKeyDown}
-                placeholder="Tháng"
-                autoComplete='off'
-                inputMode='numeric'
-              />
-              <input
-                type="text"
-                id="year"
-                className="custom-DoB-input"
-                value={year || ''}
-                onChange={(e) => handleInputChange(e)}
-                onKeyDown={handleKeyDown}
-                placeholder="Năm"
-                autoComplete='off'
-                inputMode='numeric'
+                type="date"
+                className="form-control custom-input"
+                id="date"
+                value={dateOfBirth}
+                onChange={handleDateChange}
+                style={{ background: 'transparent', border: 'none', borderBottom: '1px solid black' }}
               />
             </div>
             <div className='custom-error-text-wrapper'>{dateOfBirthError && <div className="text-danger small custom-error-text">{dateOfBirthError}</div>}</div>

@@ -47,38 +47,13 @@ function Profile(props: IProfileProps) {
         });
     };
 
-    // const formatDateToSendApi = (inputDate: string): string => {
-    //     const date = new Date(inputDate);
-    //     const year = date.getFullYear();
-    //     const month = String(date.getMonth() + 1).padStart(2, '0'); // Adding 1 to month because it's zero-indexed
-    //     const day = String(date.getDate()).padStart(2, '0');
-    //     return `${year}-${month}-${day}`;
-    // };
-
-    // const formatDateFromApi = (inputDate: string): string => {
-    //     const [year, month, day] = inputDate.split('-');
-    //     const formattedDate = `${month}/${day}/${year}`;
-    //     console.log(formattedDate)
-    //     return formattedDate;
-    // }
-
-    // useEffect(() => {
-    //     const formattedDate = formatDateFromApi(dateOfBirth);
-    //     setSelectedDate(formattedDate);
-    //     console.log('check reformat date: ', selectedDate)
-    // }, [dateOfBirth])
-
-    // useEffect(() => {
-    //     // Simulating fetching the date from the database
-    //     const dateFromDatabase = ;
-    //     setSelectedDate(dateFromDatabase);
-    // }, []);
-
     const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const selectedAvatar = e.target.files[0];
             setAvatar(selectedAvatar);
         }
+        console.log('avatar: ',avatar)
+        avatar && props.handleUpdateAvatar(avatar)
     };
 
     useLayoutEffect(() => {
@@ -99,7 +74,13 @@ function Profile(props: IProfileProps) {
         <div className="container">
             <div className="row w-100 ">
                 <div className="col-3 bg-primary-subtle border-right d-flex flex-column align-items-center">
-                    <img src={`${avatar_url}`} alt='' style={{ width: '120px', height: '120px', objectFit: 'cover' }} className="mt-2"></img>
+                    {/* <img src={`${avatar_url}`} alt='' style={{ width: '120px', height: '120px', objectFit: 'cover' }} className="mt-2"></img> */}
+                    
+                    {avatar_url ?
+                    <img src={`${avatar_url}`} alt='' style={{ width: '120px', height: '120px', objectFit: 'cover' }}></img>
+                    :
+                    <i className="fa fa-user mt-4"  aria-hidden="true"></i>
+                  }
                     <div>{props.currentUser.username}</div>
                     <div
                         className="custom-profile-nav"
