@@ -87,7 +87,8 @@ const Header = () => {
   const handleSearch = async () => {
 
     const payload: ISearchPayload = {
-      search_string: search.trim()
+      search_string: search.trim(),
+      is_deleted: false
     }
     await dispatch(searchRequest(payload))
     navigate('/search_result')
@@ -151,7 +152,7 @@ const Header = () => {
             </li>
             <div className='ms-4' >
               <button className="ms-2 header-button" onClick={handleSearch}><i className="fa fa-search custom-i" aria-hidden="true"></i></button>
-              <input id='search' onKeyDown={handleKeyPress} className="input-search" type="text" name="q" placeholder="  Tìm kiếm" autoComplete="off" onChange={(e) => handleInputChange(e)}></input>
+              <input id='search' onKeyDown={handleKeyPress} className="input-search" type="text" name="q" placeholder="  Tìm kiếm theo tên/thể loại" autoComplete="off" onChange={(e) => handleInputChange(e)}></input>
             </div>
           </ul>
           {/* <button className='toggle' onClick={() => setMobile(!Mobile)}>

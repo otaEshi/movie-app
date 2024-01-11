@@ -6,6 +6,7 @@ export interface IMovieList{
     description: string;
     create_at: string;
     id: number;
+    owner_id: number;
     movies: IMovie[]
 }
 

@@ -19,16 +19,16 @@ function ProfileContainer() {
     const tempUser = useAppSelector(store => store.auth.currentUser);
     const [currentUser, setCurrentUser] = useState<IUserInfoResponse>(tempUser);
 
-    
+
     const handleLogout = () => {
         dispatch(logout());
     }
-    
+
     useEffect(() => {
         setCurrentUser(tempUser)
-        localStorage.setItem('is_refresh_page','false');
+        localStorage.setItem('is_refresh_page', 'false');
     }, [localStorage.getItem('is_refresh_page')]);
-    
+
 
 
     // const NewCurrentUser = () => {
@@ -45,20 +45,24 @@ function ProfileContainer() {
     //     setCurrentUser(newCurrentUser);
     //   }, [useAppSelector((store) => store.auth.currentUser)]);
 
-    const _handleUpdateAvatar = (newAvatar : string) => {
+    const _handleUpdateAvatar = (newAvatar: string) => {
         setUpdateAvatar(newAvatar);
     }
 
-    const _handleChangePassword = async (old_passowrd: string, new_password : string) => {
-        const payload : IChangePassword = {
-            old_password : old_passowrd,
-            new_password : new_password,
+    const _handleChangePassword = async (old_passowrd: string, new_password: string) => {
+        const payload: IChangePassword = {
+            old_password: old_passowrd,
+            new_password: new_password,
         }
-
         const res = await dispatch<any>(changePasswordRequest(payload))
-        if (res.type === "api/change_password/rejected"){
+
+        console.log('test ', res)
+        if (res.type === "api/change_password/rejected") {
             // console.log('test reject')
             // showAlert('Mật khẩu cũ không đúng', 'danger')
+            alert('Sai mật khẩu')
+        } else {
+            alert('Đổi mật khẩu thành công')
         }
     }
     console.log('avatar: ', updateAvatar)

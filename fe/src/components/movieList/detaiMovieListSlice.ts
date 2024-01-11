@@ -14,6 +14,7 @@ const initialState: DetailMovieListState = {
         name: '',
         description: '',
         create_at: '',
+        owner_id: -1,
         id: -1,
         movies: [
             {
@@ -23,7 +24,7 @@ const initialState: DetailMovieListState = {
                 thumbnail_url: '',
                 url: '',
                 genre: '',
-                subgenre: '',
+                subgenre: [],
                 source: '',
                 views: 0,
                 date_of_release: '',

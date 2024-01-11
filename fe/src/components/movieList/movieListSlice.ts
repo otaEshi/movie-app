@@ -18,6 +18,7 @@ const initialState: MovieListState = {
                 description: '',
                 create_at: '',
                 id: -1,
+                owner_id: -1,
                 movies: [
                     {
                         id: -1,
@@ -26,7 +27,7 @@ const initialState: MovieListState = {
                         thumbnail_url: '',
                         url: '',
                         genre: '',
-                        subgenre: '',
+                        subgenre: [],
                         source: '',
                         views: 0,
                         date_of_release: '',
@@ -45,6 +46,7 @@ const initialState: MovieListState = {
                 name: '',
                 description: '',
                 create_at: '',
+                owner_id: -1,
                 id: -1,
                 movies: [
                     {
@@ -54,7 +56,7 @@ const initialState: MovieListState = {
                         thumbnail_url: '',
                         url: '',
                         genre: '',
-                        subgenre: '',
+                        subgenre: [],
                         source: '',
                         views: 0,
                         date_of_release: '',
@@ -92,6 +94,7 @@ const movieListSlice = createSlice({
                     name: action.payload.name,
                     description: action.payload.description,
                     create_at: '',
+                    owner_id: -1,
                     id:  action.payload.id,
                     movies: []
                 } as IMovieList

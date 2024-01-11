@@ -4,9 +4,6 @@ import ListFilmCard from "../listFilm/ListFilmCard";
 function SearchResultContainer() {
     const searchList = useAppSelector(store => store.search.search_list)
     console.log('searching', searchList.list)
-    searchList.list.map((item) => {
-        console.log(item.title)
-    })
 
     const MoviesSearch = () => {
         return searchList.list.map((item) => (

@@ -23,6 +23,7 @@ function EditCommentModal(props: EditCommentModalProps) {
             alert('Bình luận không được để trống')
             return;
         }
+       
         props.handleUpdateComment()
     }
 

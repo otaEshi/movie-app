@@ -103,6 +103,7 @@ function Watch() {
     }
     await dispatch(createCommentRequest(payload))
     alert('Bình luận thành công!')
+    setNewComment('')
   }
 
   return (

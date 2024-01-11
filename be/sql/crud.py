@@ -743,7 +743,7 @@ async def update_movie_comment(db: Session, movie_comment_id: int, movie_comment
     db.refresh(db_movie_comment)
     return db_movie_comment
 
-async def delete_movie_comment(db: Session, movie_comment_id: int, user_id: int):
+async def delete_movie_comment(db: Session, movie_comment_id: int, user: User):
     """
     Delete a movie comment from the database.
 
@@ -757,7 +757,7 @@ async def delete_movie_comment(db: Session, movie_comment_id: int, user_id: int)
     db_movie_comment = db.query(MovieComments).filter(MovieComments.id == movie_comment_id).first()
     if db_movie_comment is None:
         raise HTTPException(status_code=404, detail="ERR_MOVIE_COMMENT_NOT_FOUND")
-    if user_id != db_movie_comment.user_id:
+    if user.id != db_movie_comment.user_id and not user.is_content_admin:
         raise HTTPException(status_code=401, detail="ERR_UNAUTHORIZED")
     db_movie_comment.is_deleted = True
     db.commit()

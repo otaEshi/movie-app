@@ -539,4 +539,4 @@ async def delete_movie_comment(movie_comment_id: int, db: Session = Depends(get_
     """
         Delete a comment of a movie from the database.
     """
-    return await crud.delete_movie_comment(db, movie_comment_id, current_user.id)
+    return await crud.delete_movie_comment(db, movie_comment_id, current_user)

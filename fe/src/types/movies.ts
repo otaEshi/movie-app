@@ -10,7 +10,7 @@ export interface IMovie {
     thumbnail_url: string;
     url: string;
     genre: string;
-    subgenre: string;
+    subgenre: string[];
     source: string;
     views: number;
     date_of_release: string;
@@ -27,6 +27,17 @@ export interface ICreateMoviePayload {
     source: string;
     subgenre: string[];
     thumbnail_url: string;
+}
+export interface IUpdateMoviePayload {
+    id : number
+    title: string;
+    description: string;
+    date_of_release: string;
+    url: string;
+    genre: string;
+    source: string;
+    // subgenre: string[];
+    is_deleted : boolean;
 }
 export interface ITrendingMoviesResponse {
     movies: IMovie[]

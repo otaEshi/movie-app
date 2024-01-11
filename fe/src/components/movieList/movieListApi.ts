@@ -91,3 +91,4 @@ export const updateMovieList = createAsyncThunk<void, IUpdateMovieList>(
         return res;
     }
 );
+

@@ -1,14 +1,14 @@
 import { useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { getDetailMovieList } from "./movieListApi";
+import { getDetailMovieList, updateMovieList } from "./movieListApi";
 import { useEffect, useState } from "react";
 import ListFilmCard from "../listFilm/ListFilmCard";
+import { IUpdateMovieList } from "../../types/movieList";
 
 function DetailMovieList() {
     const dispatch = useAppDispatch();
     const currentItems = useAppSelector(store => store.detailMovieList.detaiMovieList);
     const { id } = useParams<{ id: string }>();
-    console.log('id: ',id)
     const getDetailList = async () => {
         await dispatch(getDetailMovieList(id!))
     }
@@ -95,36 +95,35 @@ function DetailMovieList() {
         return buttons;
     };
 
+    const handleDeleteMovieFromList = (movie_id: number) => {
+        let movie_ids : number[] = []
+        currentItems.movies && currentItems.movies.map((item) => (movie_ids.push(item.id)))
+        movie_ids = movie_ids.filter((item) => item !== movie_id)
+        const payload : IUpdateMovieList = {
+            name : currentItems.name,
+            description : currentItems.description,
+            is_deleted : false,
+            id : currentItems.id,
+            movies: movie_ids,
+        }
+        dispatch(updateMovieList(payload))
+        alert('Xóa phim khỏi danh sách thành công')
+        window.location.reload()
+    }
 
     console.log('details ',currentItems)
     return (
         <>
             <div>
                 <div className="mt-3 ms-5">
-                    <label>
-                        Hiện
-                        <select className='m-1' value={moviesPerPage} onChange={handleMoviesPerPageChange}>
-                            <option value={5}>5</option>
-                            <option value={10}>10</option>
-                            <option value={15}>15</option>
-                            <option value={20}>20</option>
-                            <option value={50}>50</option>
-                        </select>
-                        phim
-                    </label>
-                    <button>Thêm phim</button>
-
                 </div>
                 <div className="d-flex flex-wrap justify-content-start">
                     {currentItems.movies.map((item) => (
                         <div className='me-3 ms-4 mt-4 mb-4' key={item.id}>
-                            <button>xóa phim</button>
+                            <button className="btn btn-danger ms-1 mb-1" onClick={() => handleDeleteMovieFromList(item.id)}>xóa phim khỏi danh sách</button>
                             <ListFilmCard key={item.id} item={item} />
                         </div>
                     ))}
-                </div>
-                <div className="pagination justify-content-center ms-5 me-5 custom-btn-container">
-                    {renderPaginationButtons()}
                 </div>
             </div>
         </>

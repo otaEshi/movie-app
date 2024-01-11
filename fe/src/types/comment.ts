@@ -4,7 +4,7 @@ export interface IComment {
     is_delete : boolean;
     user_id : number;
     user_name: string;
-    user_url: string;
+    user_avatar_url: string;
     movie_id : number;
     create_at : Date;
 }

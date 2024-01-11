@@ -15,7 +15,7 @@ function AddToListModal(props: AddToListModalProps) {
     const getPersonalMovieList = async () => {
         const payload: IMovieListPublic = {
             page: 0,
-            page_size: 9999,
+            page_size: 999,
             is_deleted: false,
         }
         await dispatch(getMovieList(payload))
@@ -27,8 +27,6 @@ function AddToListModal(props: AddToListModalProps) {
 
     const handleAddMovie = (currentList:IMovieList) => {
         let movie_ids : number[] = []
-        console.log('currentList', currentList)
-        console.log('props.currentMovie', props.currentMovie)
         movie_ids.push(props.currentMovie.id)
         currentList.movies && currentList.movies.map((item) => (movie_ids.push(item.id)))
         // localStorage.setItem('')
@@ -40,8 +38,9 @@ function AddToListModal(props: AddToListModalProps) {
             id : currentList.id,
             movies: movie_ids,
         }
-        console.log('payload', payload)
         dispatch(updateMovieList(payload))
+        alert('Thêm thành công')
+
     }
 
     return (
