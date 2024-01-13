@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import or_ , and_
+from sqlalchemy import or_ , and_, func
 import bcrypt
 from .schemas import *
 from .models import *
@@ -582,6 +582,72 @@ async def delete_movie(db: Session, movie_id: int):
     db_movie.is_deleted = True
     db.commit()
     return {"detail": "MOVIE_DELETE_OK"}
+
+async def get_unique_genres(db: Session):
+    """
+    Retrieve a list of unique genres from the database.
+
+    Args:
+        db (Session): The database session.
+
+    Returns:
+        List[str]: A list of unique genres.
+    """
+    return db.query(Movie.genre).distinct().all()
+
+async def get_unique_subgenres(db: Session):
+    """
+    Retrieve a list of unique subgenres from the database.
+
+    Args:
+        db (Session): The database session.
+
+    Returns:
+        List[str]: A list of unique subgenres.
+    """
+    subgenres = db.query(Movie.subgenre).distinct().all()
+
+    # Split the subgenres into a list
+    subgenres = [subgenre[0].split(",") for subgenre in subgenres]
+
+    # Deduplicate the subgenres
+    subgenres = list(set([sub for subgenre in subgenres for sub in subgenre]))
+
+    return subgenres
+
+# Get viewcount by unique genre
+async def get_viewcount_by_genre(db: Session):
+    """
+    Retrieve a list of unique genres from the database.
+
+    Args:
+        db (Session): The database session.
+
+    Returns:
+        List[str]: A list of unique genres.
+    """
+    result_raw = db.query(Movie.genre, func.sum(Movie.views)).group_by(Movie.genre).all()
+    result = {}
+    for result_raw_item in result_raw:
+        result[result_raw_item[0]] = result_raw_item[1]
+    return result
+
+# Get average rating by unique genre
+async def get_avg_rating_by_genre(db: Session):
+    """
+    Retrieve a list of unique genres from the database.
+
+    Args:
+        db (Session): The database session.
+
+    Returns:
+        List[str]: A list of unique genres.
+    """
+    result_raw = db.query(Movie.genre, func.avg(MovieRatings.rating)).join(MovieRatings).group_by(Movie.genre).all()
+    result = {}
+    for result_raw_item in result_raw:
+        result[result_raw_item[0]] = result_raw_item[1]
+    return result
 
 # Movie Ratings CRUD
 async def get_movie_ratings_average(db: Session, movie_id: int):

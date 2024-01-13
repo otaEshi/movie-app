@@ -395,6 +395,22 @@ async def read_movie(movie_id: int, db: Session = Depends(get_db)):
     movie = await crud.get_movie(db, movie_id=movie_id, user_id=None)
     return movie
 
+@app.get("/movies_view_by_genre", tags=["Movies"])
+async def read_movie_view_by_genre(db: Session = Depends(get_db)):
+    """
+        Retrieve a movie from the database by its ID.
+    """
+    result = await crud.get_viewcount_by_genre(db)
+    return result
+
+@app.get("/movies_avg_rating_by_genre", tags=["Movies"])
+async def read_movie_avg_rating_by_genre(db: Session = Depends(get_db)):
+    """
+        Retrieve a movie from the database by its ID.
+    """
+    result = await crud.get_avg_rating_by_genre(db)
+    return result
+
 @app.post("/register_view/{movie_id}", tags=["Movies"])
 async def register_view(movie_id: int, db: Session = Depends(get_db)):
     """
