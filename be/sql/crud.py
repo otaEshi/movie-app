@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import or_ 
+from sqlalchemy import or_ , and_
 import bcrypt
 from .schemas import *
 from .models import *
@@ -20,7 +20,7 @@ async def get_user(db: Session, user_id: str):
     """
     return db.query(User).filter(User.id == user_id).first()
 
-async def get_users(db: Session, page:int = 0, page_size: int = 100):
+async def get_users(db: Session, user_name: str, page:int = 0, page_size: int = 100):
     """
     Retrieve a list of users from the database.
 
@@ -34,9 +34,13 @@ async def get_users(db: Session, page:int = 0, page_size: int = 100):
     """
     skip = page * page_size
     limit = page_size
-
     max_page = db.query(User).count() // page_size + 1
-    result = db.query(User).offset(skip).limit(limit).all()
+
+    search_params = {}
+    if user_name is not None:
+        search_params["name"] = user_name
+    
+    result = db.query(User).filter_by(**search_params).offset(skip).limit(limit).all()
     return {"list": result, "max_page": max_page}
 
 async def create_user(db: Session, user: UserCreate):
@@ -392,7 +396,7 @@ async def get_movie(db: Session, movie_id: int, user_id: int = None):
     
     return result
 
-async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_params: dict = None, search_string: str = "", user_id: int = None):
+async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_params: dict = None, user_id: int = None):
     """
     Retrieve a list of movies from the database.
 
@@ -409,14 +413,19 @@ async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_par
 
     max_page = db.query(Movie).count() // page_size + 1
 
-    result = db.query(Movie) \
-                .filter(or_(
-                    Movie.title.contains(search_string), 
-                    Movie.genre.contains(search_string), 
-                    Movie.subgenre.contains(search_string)
-                )) \
-                .filter_by(**search_params) \
-                .offset(skip).limit(limit).all()
+    title = search_params.pop("title", "")
+    genre = search_params.pop("genre", "")
+    subgenre = search_params.pop("subgenre", "")
+    subgenre = subgenre.split(",")
+
+    result = (db.query(Movie)
+                .filter(and_(
+                    Movie.title.contains(title), 
+                    Movie.genre.contains(genre),
+                )) 
+                .filter(or_(*[Movie.subgenre.contains(sub) for sub in subgenre])) 
+                .filter_by(**search_params) 
+                .offset(skip).limit(limit).all())
 
     for movie in result:
         average_rating = await get_movie_ratings_average(db, movie.id)
@@ -460,7 +469,7 @@ async def create_movie(db: Session, movie: MovieCreate):
     """
     db_movie = db.query(Movie).filter(Movie.title == movie.title).first()
     if db_movie is not None:
-        raise HTTPException(status_code=400, detail="ERR_MOVIE_ALREADY_EXISTS")
+        raise HTTPException(status_code=400, detail="ERR_MOVIE_NAME_ALREADY_EXISTS")
     db_movie = Movie(**movie.model_dump())
     db_movie.subgenre = ",".join(movie.subgenre)
     db_movie.views = 0
@@ -512,13 +521,18 @@ async def update_movie(db: Session, movie: MovieEdit, movie_id: int):
     attributes = ['title', 'description', 'date_of_release', 'url', 'thumbnail_url', 'views', 'genre', 'subgenre', 'source', 'is_deleted']
 
     if getattr(movie, "title") is not None:
-        db_movie = db.query(Movie).filter(Movie.title == movie.title).first()
-        if db_movie is not None:
+        same_name_movie = db.query(Movie).filter(Movie.title == movie.title).first()
+        if same_name_movie is not None and same_name_movie.id != movie_id:
             raise HTTPException(status_code=400, detail="ERR_MOVIE_NAME_ALREADY_EXISTS")
 
     for attr in attributes:
-        if getattr(movie, attr) is not None:
-            setattr(db_movie, attr, getattr(movie, attr))
+        if not hasattr(movie, attr):
+            continue
+        if getattr(movie, attr) is None:
+            continue
+        if getattr(movie, attr) == "":
+            continue
+        setattr(db_movie, attr, getattr(movie, attr))
     
     db.commit()
     db.refresh(db_movie)

@@ -33,7 +33,6 @@ class User(BaseModel):
     class Config:
         from_attributes = True
 
-
 class UserCreate(BaseModel):
     """
         UserCreate model
@@ -163,7 +162,7 @@ class MovieEdit(BaseModel):
     thumbnail_url: str|None = None
     views: int|None = None
     genre: str|None = None
-    subgenre: list[str] = []
+    subgenre: str|None = None
     source: str|None = None
     is_deleted: bool|None = None
 
