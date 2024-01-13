@@ -20,7 +20,11 @@ async def get_user(db: Session, user_id: str):
     """
     return db.query(User).filter(User.id == user_id).first()
 
-async def get_users(db: Session, user_name: str, page:int = 0, page_size: int = 100):
+async def get_users(db: Session, 
+                    user_name: str, 
+                    is_content_admin: bool,
+                    page:int = 0, 
+                    page_size: int = 100):
     """
     Retrieve a list of users from the database.
 
@@ -39,6 +43,8 @@ async def get_users(db: Session, user_name: str, page:int = 0, page_size: int = 
     search_params = {}
     if user_name is not None:
         search_params["name"] = user_name
+    if is_content_admin is not None:
+        search_params["is_content_admin"] = is_content_admin
     
     result = db.query(User).filter_by(**search_params).offset(skip).limit(limit).all()
     return {"list": result, "max_page": max_page}
@@ -88,6 +94,27 @@ async def update_user(db: Session, user: UserEdit, user_id: int):
     for attr in attributes:
         if getattr(user, attr):
             setattr(db_user, attr, getattr(user, attr))
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+async def update_user_permissions(db: Session, user_id: int, user: UserEditPermissions):
+    """
+    Edit a user's permission in the database.
+
+    Args:
+        db (Session): The database session.
+        user_id (int): The ID of the user to edit.
+        user (UserEditPermission): The updated user permission data.
+
+    Returns:
+        models.User: The edited user object.
+    """
+    db_user = db.query(User).filter(User.id == user_id).first()
+    if db_user is None:
+        return {"detail": "USER_NOT_FOUND"}
+    if user.is_content_admin is not None:
+        db_user.is_content_admin = user.is_content_admin
     db.commit()
     db.refresh(db_user)
     return db_user
@@ -521,8 +548,8 @@ async def update_movie(db: Session, movie: MovieEdit, movie_id: int):
     attributes = ['title', 'description', 'date_of_release', 'url', 'thumbnail_url', 'views', 'genre', 'subgenre', 'source', 'is_deleted']
 
     if getattr(movie, "title") is not None:
-        same_name_movie = db.query(Movie).filter(Movie.title == movie.title).first()
-        if same_name_movie is not None and same_name_movie.id != movie_id:
+        same_name_movie = db.query(Movie).filter(Movie.title == movie.title, Movie.id != movie_id).first()
+        if same_name_movie is not None:
             raise HTTPException(status_code=400, detail="ERR_MOVIE_NAME_ALREADY_EXISTS")
 
     for attr in attributes:
