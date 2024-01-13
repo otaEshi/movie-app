@@ -248,15 +248,46 @@ async def update_user(
     await crud.update_user(db, args, current_user.id)
     return {"detail": "USER_UPDATE_OK"}
 
+@app.patch("/users/permissions", tags=["Users"])
+async def update_user_permissions(
+    user_id: int,
+    is_content_admin: bool = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+        Update the permissions of a user.
+    """
+    if not current_user.is_admin:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    args = UserEditPermissions(is_content_admin=is_content_admin)
+    return await crud.update_user_permissions(db, user=args, user_id=user_id )
+    
+
 @app.get("/users", tags=["Users"])
-async def read_users(user_name: str = None, page: int = 0, page_size: int = 10, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def read_users(user_name: str = None, 
+                     is_content_admin: bool = None, 
+                     page: int = 0, 
+                     page_size: int = 10, 
+                     db: Session = Depends(get_db), 
+                     current_user: User = Depends(get_current_user)):
     """
         Retrieve a list of users from the database.
     """
     if not current_user.is_admin:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    users = await crud.get_users(db, user_name, page, page_size)
+    users = await crud.get_users(db, user_name, is_content_admin, page, page_size)
     return users
+
+@app.get("/user/{user_id}", tags=["Users"])
+async def read_user(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+        Retrieve a user from the database by its ID.
+    """
+    if not current_user.is_admin:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    user = await crud.get_user(db, user_id=user_id)
+    return user
 
 ### MOVIE LISTS ###
 @app.get("/movie_lists", tags=["Movie Lists"])

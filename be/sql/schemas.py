@@ -76,6 +76,16 @@ class UserEditPassword(BaseModel):
     old_password: str
     new_password: str
 
+class UserEditPermissions(BaseModel):
+    """
+        UserEditPermissions model
+
+        Attributes:
+            is_admin (bool): Whether the user is an admin or not.
+            is_content_admin (bool): Whether the user is a content admin or not.
+    """
+    is_content_admin: bool|None = None
+
 ### Movie ###
 
 class MovieBase(BaseModel):
