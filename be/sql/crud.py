@@ -63,7 +63,7 @@ async def create_user(db: Session, user: UserCreate):
     password_hash = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
 
     # Check for duplicate username
-    if db.query(User).filter(User.username == user.username).first():
+    if db.query(User).filter(User.username == user.username, User.is_active == True).first():
         raise HTTPException(status_code=400, detail="ERR_USERNAME_ALREADY_EXISTS")
     db_user = User(
         username=user.username,
@@ -317,7 +317,7 @@ async def create_movie_list(db: Session, movie_list: MovieListCreate, user_id: i
                                     created_at=datetime.datetime.now(),
                                     owner_id=user_id)
     # If there exists a movie list with the same name from the same user, return an error
-    if db.query(MovieList).filter(MovieList.name == movie_list.name, MovieList.owner_id == user_id).first():
+    if db.query(MovieList).filter(MovieList.name == movie_list.name, MovieList.owner_id == user_id, MovieList.is_deleted == False).first():
         raise HTTPException(status_code=400, detail="ERR_MOVIE_LIST_NAME_ALREADY_EXISTS")
 
     db.add(db_movie_list)
@@ -349,7 +349,7 @@ async def update_movie_list(db: Session, movie_list_id, owner_id: int, movie_lis
     if owner_id != db_movie_list.owner_id:
         return {"detail": "unauthorized"}
     if movie_list.name is not None:
-        _movie_lists = db.query(MovieList).filter(MovieList.name == movie_list.name, MovieList.owner_id == owner_id).first()
+        _movie_lists = db.query(MovieList).filter(MovieList.name == movie_list.name, MovieList.owner_id == owner_id, MovieList.is_deleted == False).first()
         if _movie_lists is not None and _movie_lists.id != movie_list_id:
             return {"detail": "ERR_MOVIE_LIST_NAME_ALREADY_EXISTS"}
         db_movie_list.name = movie_list.name
@@ -496,7 +496,7 @@ async def create_movie(db: Session, movie: MovieCreate):
     Returns:
         models.Movie: The created movie object.
     """
-    db_movie = db.query(Movie).filter(Movie.title == movie.title).first()
+    db_movie = db.query(Movie).filter(Movie.title == movie.title, Movie.is_deleted == False).first()
     if db_movie is not None:
         raise HTTPException(status_code=400, detail="ERR_MOVIE_NAME_ALREADY_EXISTS")
     db_movie = Movie(**movie.model_dump())
@@ -550,7 +550,7 @@ async def update_movie(db: Session, movie: MovieEdit, movie_id: int):
     attributes = ['title', 'description', 'date_of_release', 'url', 'thumbnail_url', 'views', 'genre', 'subgenre', 'source', 'is_deleted']
 
     if getattr(movie, "title") is not None:
-        same_name_movie = db.query(Movie).filter(Movie.title == movie.title, Movie.id != movie_id).first()
+        same_name_movie = db.query(Movie).filter(Movie.title == movie.title, Movie.id != movie_id, Movie.is_deleted == False).first()
         if same_name_movie is not None:
             raise HTTPException(status_code=400, detail="ERR_MOVIE_NAME_ALREADY_EXISTS")
 
@@ -866,9 +866,14 @@ async def create_movie_comment(db: Session, movie_comment: MovieCommentCreate):
     db.add(db_movie_comment)
     db.commit()
     db.refresh(db_movie_comment)
-    return db_movie_comment
+    result = db.query(MovieComments).filter(MovieComments.id == db_movie_comment.id).first()
+    user = db.query(User).filter(User.id == result.user_id).first()
+    result.user_id = user.id
+    result.user_name = user.name
+    result.user_avatar = user.avatar_url
+    return result
 
-async def get_movie_comments(db: Session, movie_id: int, user_id: int = None, page: int = 0, page_size: int = 100):
+async def get_movie_comments(db: Session, movie_id: int, user_id: int = None, is_deleted:bool = None, page: int = 0, page_size: int = 100):
     """
     Retrieve a list of movie comments from the database.
 
@@ -886,13 +891,16 @@ async def get_movie_comments(db: Session, movie_id: int, user_id: int = None, pa
         search_params["movie_id"] = movie_id
     if user_id:
         search_params["user_id"] = user_id
+    if is_deleted is not None:
+        search_params["is_deleted"] = is_deleted
 
     max_page = db.query(MovieComments).filter_by(**search_params).count() // page_size + 1
     result = db.query(MovieComments).filter_by(**search_params).offset(skip).limit(limit).all()
     for comment in result:
         user = db.query(User).filter(User.id == comment.user_id).first()
+        comment.user_id = user.id
         comment.user_name = user.name
-        comment.user_avatar_url = user.avatar_url
+        comment.user_avatar = user.avatar_url
 
     return {"list": result, "max_page": max_page}
 
@@ -921,7 +929,13 @@ async def update_movie_comment(db: Session, movie_comment_id: int, movie_comment
     
     db.commit()
     db.refresh(db_movie_comment)
-    return db_movie_comment
+
+    result = db.query(MovieComments).filter(MovieComments.id == db_movie_comment.id).first()
+    user = db.query(User).filter(User.id == result.user_id).first()
+    result.user_id = user.id
+    result.user_name = user.name
+    result.user_avatar = user.avatar_url
+    return result
 
 async def delete_movie_comment(db: Session, movie_comment_id: int, user_id: int):
     """

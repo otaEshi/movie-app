@@ -508,7 +508,15 @@ async def update_movie(movie_id: int,
     """
     if not current_user.is_content_admin:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    movie = MovieEdit(title=title, description=description, date_of_release=date_of_release, url=url, genre=genre, subgenre=subgenre, source=source, is_deleted=is_deleted)
+    subgenre = ",".join(subgenre) if subgenre is not None else ""
+    movie = MovieEdit(title=title, 
+                      description=description, 
+                      date_of_release=date_of_release, 
+                      url=url, 
+                      genre=genre, 
+                      subgenre=subgenre, 
+                      source=source, 
+                      is_deleted=is_deleted)
 
     if image is not None:
         # If current movie already has an image, delete it
@@ -613,11 +621,11 @@ async def delete_movie_rating(movie_rating_id: int, db: Session = Depends(get_db
 
 ### MOVIE COMMENTS ###
 @app.get("/movies/{movie_id}/comments", tags=["Movies Comments"])
-async def read_movie_comments(movie_id: int, page:int, page_size:int, db: Session = Depends(get_db)):
+async def read_movie_comments(movie_id: int, is_deleted:bool = None, page:int = 0, page_size:int = 10, db: Session = Depends(get_db)):
     """
         Retrieve a list of comments of a movie from the database.
     """
-    return await crud.get_movie_comments(db, movie_id=movie_id, page=page, page_size=page_size)
+    return await crud.get_movie_comments(db, movie_id=movie_id, is_deleted=is_deleted, page=page, page_size=page_size)
 
 @app.post("/movies/{movie_id}/comments", tags=["Movies Comments"])
 async def create_movie_comment(movie_id: int, comment: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
