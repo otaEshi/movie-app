@@ -174,7 +174,6 @@ async def login_for_access_token(
     return {"access_token": access_token, "refresh_token":refresh_token, "token_type": "bearer"}
 
 @app.post("/refresh_token", response_model=Token, tags=["Users"])
-# Get a new access token using a refresh token
 async def refresh_token(
     refresh_token: Annotated[str, Header(...)],
     db: Session = Depends(get_db)
@@ -237,26 +236,58 @@ async def update_user(
     # if date_of_birth is later than today, raise an error
     if date_of_birth is not None and date_of_birth > date.today():
         raise HTTPException(status_code=400, detail="Invalid date of birth")
-    print(avatar)
     if avatar is not None:
         # If current user has an avatar, delete it
         if current_user.avatar_url is not None and current_user.avatar_url != "":
             await delete_image_cloudinary(current_user.avatar_url)
-        cloudinary_response = await upload_image_cloudinary_base64(avatar.image_base64)
-        print(cloudinary_response)
+        try:
+            cloudinary_response = await upload_image_cloudinary_base64(avatar.image_base64)
+        except:
+            raise HTTPException(status_code=400, detail="Invalid image")
         args.avatar_url = cloudinary_response["secure_url"]
     await crud.update_user(db, args, current_user.id)
     return {"detail": "USER_UPDATE_OK"}
 
+@app.patch("/users/permissions", tags=["Users"])
+async def update_user_permissions(
+    user_id: int,
+    is_content_admin: bool = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+        Update the permissions of a user.
+    """
+    if not current_user.is_admin:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    args = UserEditPermissions(is_content_admin=is_content_admin)
+    return await crud.update_user_permissions(db, user=args, user_id=user_id )
+    
+
 @app.get("/users", tags=["Users"])
-async def read_users(page: int = 0, page_size: int = 10, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def read_users(user_name: str = None, 
+                     is_content_admin: bool = None, 
+                     page: int = 0, 
+                     page_size: int = 10, 
+                     db: Session = Depends(get_db), 
+                     current_user: User = Depends(get_current_user)):
     """
         Retrieve a list of users from the database.
     """
     if not current_user.is_admin:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    users = await crud.get_users(db, page, page_size)
+    users = await crud.get_users(db, user_name, is_content_admin, page, page_size)
     return users
+
+@app.get("/user/{user_id}", tags=["Users"])
+async def read_user(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """
+        Retrieve a user from the database by its ID.
+    """
+    if not current_user.is_admin:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    user = await crud.get_user(db, user_id=user_id)
+    return user
 
 ### MOVIE LISTS ###
 @app.get("/movie_lists", tags=["Movie Lists"])
@@ -316,12 +347,13 @@ async def delete_movie_list(movie_list_id: int, db: Session = Depends(get_db), c
 async def read_movies(page: int = 0, 
                       page_size: int = 100, 
                       title: str = None,
+                      genre: str = None,
+                      subgenre: str = None,
                       des: str = None,
                       source: str = None,
                       d: int = None,
                       m: int = None,
                       y: int = None,
-                      search_string: str = "",
                       is_deleted: bool = None,
                       db: Session = Depends(get_db)):
     """
@@ -329,6 +361,8 @@ async def read_movies(page: int = 0,
     """
     search_params = {
         "title": title,
+        "genre": genre,
+        "subgenre": subgenre,
         "des": des,
         "source": source,
         "d": d,
@@ -337,9 +371,8 @@ async def read_movies(page: int = 0,
         "is_deleted": is_deleted
     }
 
-    search_params = {k: v for k, v in search_params.items() if v is not None}
-    # TODO Implement user_id
-    return await crud.get_movies(db, page, page_size, search_params, search_string, user_id = None)
+    search_params = {k: v for k, v in search_params.items() if v is not None and v != ""}
+    return await crud.get_movies(db, page, page_size, search_params, user_id = None)
 
 @app.get("/movies/top_trending", tags=["Movies"])
 async def read_top_trending_movies(db: Session = Depends(get_db), top_k: int = 10, genre: str = None, is_deleted: bool = None):
@@ -461,6 +494,50 @@ async def update_movie(movie_id: int,
         
         cloudinary_response = await upload_image_cloudinary(image)
         movie.thumbnail_url = cloudinary_response['secure_url']
+    return await crud.update_movie(db, movie_id=movie_id, movie=movie)
+
+class MovieEditThumbnailUrl(BaseModel):
+    """
+        Movie model
+
+        Attributes:
+            title (str): The title of the movie.
+            description (str): The description of the movie.
+            date_of_release (date): The date of release of the movie.
+            url (str): The url of the movie.
+            genre (str): The genre of the movie.
+            subgenre (list[str]): The subgenre of the movie.
+            source (str): The source of the movie.
+            thumbnail_url (str): The thumbnail url of the movie.
+    """
+    title: str|None = None
+    description: str|None = None
+    date_of_release: date|None = None
+    url: str|None = None
+    genre: str|None = None
+    subgenre: str|None = None
+    source: str|None = None
+    thumbnail_url: str|None = None
+    is_deleted: bool|None = None
+
+@app.patch("/movies/thumbnail_url/{movie_id}", response_model=None, tags=["Movies"])
+async def update_movie_thumbnail_url(movie_id: int,
+                        payload: MovieEditThumbnailUrl = None,
+                        db: Session = Depends(get_db),
+                        current_user: User = Depends(get_current_user)):
+    """
+        Update a movie in the database using thumbnail url instead of files
+    """
+    if not current_user.is_content_admin:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    movie = MovieEdit(title=payload.title, 
+                      description=payload.description, 
+                      date_of_release=payload.date_of_release, 
+                      url=payload.url, 
+                      genre=payload.genre, 
+                      subgenre=payload.subgenre, 
+                      source=payload.source, 
+                      is_deleted=payload.is_deleted)
     return await crud.update_movie(db, movie_id=movie_id, movie=movie)
 
 @app.delete("/movies/{movie_id}", tags=["Movies"])

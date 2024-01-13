@@ -33,7 +33,6 @@ class User(BaseModel):
     class Config:
         from_attributes = True
 
-
 class UserCreate(BaseModel):
     """
         UserCreate model
@@ -76,6 +75,16 @@ class UserEditPassword(BaseModel):
     """
     old_password: str
     new_password: str
+
+class UserEditPermissions(BaseModel):
+    """
+        UserEditPermissions model
+
+        Attributes:
+            is_admin (bool): Whether the user is an admin or not.
+            is_content_admin (bool): Whether the user is a content admin or not.
+    """
+    is_content_admin: bool|None = None
 
 ### Movie ###
 
@@ -163,7 +172,7 @@ class MovieEdit(BaseModel):
     thumbnail_url: str|None = None
     views: int|None = None
     genre: str|None = None
-    subgenre: list[str] = []
+    subgenre: str|None = None
     source: str|None = None
     is_deleted: bool|None = None
 
