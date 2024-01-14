@@ -45,7 +45,7 @@ async def get_users(db: Session,
     if is_content_admin is not None:
         search_params["is_content_admin"] = is_content_admin
     
-    max_page = db.query(User).filter_by(**search_params) // page_size + 1
+    max_page = db.query(User).filter_by(**search_params).count() // page_size + 1
     result = db.query(User).filter_by(**search_params).offset(skip).limit(limit).all()
     return {"list": result, "max_page": max_page}
 
