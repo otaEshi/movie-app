@@ -758,7 +758,7 @@ async def get_avg_rating_by_subgenres(db: Session):
         List[str]: A list of unique genres.
     """
     unique_subgenres = await get_unique_subgenres(db)
-    result = {}
+    result = []
     for subgenre in unique_subgenres:
         result.append({"subgenre": subgenre, "viewcount": await get_viewcount_by_subgenre(db, subgenre)})    
     return {}
