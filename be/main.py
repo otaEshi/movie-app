@@ -387,6 +387,14 @@ async def read_top_trending_movies(db: Session = Depends(get_db), top_k: int = 1
     movies = await crud.get_top_trending_movies(db, top_k, search_params, user_id=None)
     return movies
 
+@app.get("/movies/top_listed", tags=["Movies"])
+async def read_top_listed_movies(db: Session = Depends(get_db), top_k: int = 10):
+    """
+        Retrieve a list of top favourite movies from the database.
+    """
+    movies = await crud.get_top_listed_movies(db, top_k)
+    return movies
+
 @app.get("/movies/{movie_id}", tags=["Movies"])
 async def read_movie(movie_id: int, db: Session = Depends(get_db)):
     """

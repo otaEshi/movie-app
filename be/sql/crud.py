@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import or_ , and_, func
+from sqlalchemy import or_ , and_, func, text
 import bcrypt
 from .schemas import *
 from .models import *
@@ -486,6 +486,65 @@ async def get_top_trending_movies(db: Session, top_k: int, search_params: dict, 
     
     return movies
 
+async def get_top_listed_movies(db: Session, top_k: int):
+    """
+    Retrieve a list of top favourite movies from the database (movies that are in the most movie lists).
+    Each user count 1 time
+    Args:
+        db (Session): The database session.
+        top_k (int): The number of movies to retrieve.
+    Return: 
+        List[models.Movie]: A list of movie objects.
+    """
+    
+    subqry = db.query(MovieListMovie.movie_id,
+                      Movie, 
+                      MovieListMovie.movie_list_id, 
+                      MovieList.owner_id) \
+    .join(MovieList, MovieListMovie.movie_list_id == MovieList.id) \
+    .join(Movie, MovieListMovie.movie_id == Movie.id) \
+    .filter(MovieList.is_deleted == False) \
+    .filter(Movie.is_deleted == False) \
+    .distinct().subquery()
+
+    query = db.query(subqry.c.movie_id, 
+                   subqry.c.title,
+                   subqry.c.description, 
+                   subqry.c.date_of_release, 
+                   subqry.c.url, 
+                   subqry.c.thumbnail_url, 
+                   subqry.c.views, 
+                   subqry.c.genre, 
+                   subqry.c.subgenre, 
+                   subqry.c.source, 
+                   subqry.c.is_deleted,
+                   func.count(subqry.c.movie_list_id).label("ml_count"),
+                   )\
+    .group_by(subqry.c.movie_id)\
+    .order_by(text("ml_count DESC"))\
+    .limit(top_k) \
+    .all()
+    
+    results = []
+    for item in query:
+        res = {}
+        res["id"] = item[0]
+        res["title"] = item[1]
+        res["description"] = item[2]
+        res["date_of_release"] = item[3]
+        res["url"] = item[4]
+        res["thumbnail_url"] = item[5]
+        res["views"] = item[6]
+        res["genre"] = item[7]
+        res["subgenre"] = item[8]
+        res["source"] = item[9]
+        res["is_deleted"] = item[10]
+        res["ml_count"] = item[11]
+        results.append(res)
+
+    return results
+
+
 async def create_movie(db: Session, movie: MovieCreate):
     """
     Create a new movie in the database.
@@ -629,10 +688,10 @@ async def get_viewcount_by_genre(db: Session):
         List[str]: A list of unique genres.
     """
     result_raw = db.query(Movie.genre, func.sum(Movie.views)).group_by(Movie.genre).all()
-    result = {}
+    results = []
     for result_raw_item in result_raw:
-        result[result_raw_item[0]] = result_raw_item[1]
-    return result
+        results.append({"genre": result_raw_item[0], "viewcount": result_raw_item[1]})
+    return results
 
 # Get average rating by unique genre
 async def get_avg_rating_by_genre(db: Session):
@@ -646,10 +705,10 @@ async def get_avg_rating_by_genre(db: Session):
         List[str]: A list of unique genres.
     """
     result_raw = db.query(Movie.genre, func.avg(MovieRatings.rating)).join(MovieRatings).group_by(Movie.genre).all()
-    result = {}
+    results = []
     for result_raw_item in result_raw:
-        result[result_raw_item[0]] = result_raw_item[1]
-    return result
+        results.append({"genre": result_raw_item[0], "viewcount": result_raw_item[1]})
+    return results
 
 async def get_avg_rating_by_subgenre(db: Session, subgenre:str):
     """
