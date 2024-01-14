@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import or_ , and_
+from sqlalchemy import or_ , and_, func
 import bcrypt
 from .schemas import *
 from .models import *
@@ -38,7 +38,6 @@ async def get_users(db: Session,
     """
     skip = page * page_size
     limit = page_size
-    max_page = db.query(User).count() // page_size + 1
 
     search_params = {}
     if user_name is not None:
@@ -46,6 +45,7 @@ async def get_users(db: Session,
     if is_content_admin is not None:
         search_params["is_content_admin"] = is_content_admin
     
+    max_page = db.query(User).filter_by(**search_params) // page_size + 1
     result = db.query(User).filter_by(**search_params).offset(skip).limit(limit).all()
     return {"list": result, "max_page": max_page}
 
@@ -63,7 +63,7 @@ async def create_user(db: Session, user: UserCreate):
     password_hash = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
 
     # Check for duplicate username
-    if db.query(User).filter(User.username == user.username).first():
+    if db.query(User).filter(User.username == user.username, User.is_active == True).first():
         raise HTTPException(status_code=400, detail="ERR_USERNAME_ALREADY_EXISTS")
     db_user = User(
         username=user.username,
@@ -247,36 +247,38 @@ async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, curr
     # Filter by owner if current_user is provided
     skip = page * page_size
     limit = page_size
-    max_page = db.query(MovieList).count() // page_size + 1
     filters = {}
     if is_deleted is not None:
         filters["is_deleted"] = is_deleted
     
     if get_public:
-        result =  (
+        query =  (
             db.query(MovieList, Movie)
             .filter_by(**filters)
             .join(User)
             .filter(User.is_content_admin)
             .outerjoin(MovieListMovie)
             .outerjoin(Movie)
-            .offset(skip)
-            .limit(limit)
-            .all()
         )
-
     elif current_user:
-        result =  (
+        query =  (
             db.query(MovieList, Movie)
             .filter_by(**filters)
             .join(User)
             .filter(User.id == current_user.id)
             .outerjoin(MovieListMovie)
             .outerjoin(Movie)
-            .offset(skip)
-            .limit(limit)
-            .all()
         )
+    else:
+        query =  (
+            db.query(MovieList, Movie)
+            .filter_by(**filters)
+            .outerjoin(MovieListMovie)
+            .outerjoin(Movie)
+        )
+    
+    max_page = query.count() // page_size + 1
+    result = query.offset(skip).limit(limit).all()
 
     collated_result = []
     for tup in result:
@@ -315,7 +317,7 @@ async def create_movie_list(db: Session, movie_list: MovieListCreate, user_id: i
                                     created_at=datetime.datetime.now(),
                                     owner_id=user_id)
     # If there exists a movie list with the same name from the same user, return an error
-    if db.query(MovieList).filter(MovieList.name == movie_list.name, MovieList.owner_id == user_id).first():
+    if db.query(MovieList).filter(MovieList.name == movie_list.name, MovieList.owner_id == user_id, MovieList.is_deleted == False).first():
         raise HTTPException(status_code=400, detail="ERR_MOVIE_LIST_NAME_ALREADY_EXISTS")
 
     db.add(db_movie_list)
@@ -347,7 +349,7 @@ async def update_movie_list(db: Session, movie_list_id, owner_id: int, movie_lis
     if owner_id != db_movie_list.owner_id:
         return {"detail": "unauthorized"}
     if movie_list.name is not None:
-        _movie_lists = db.query(MovieList).filter(MovieList.name == movie_list.name, MovieList.owner_id == owner_id).first()
+        _movie_lists = db.query(MovieList).filter(MovieList.name == movie_list.name, MovieList.owner_id == owner_id, MovieList.is_deleted == False).first()
         if _movie_lists is not None and _movie_lists.id != movie_list_id:
             return {"detail": "ERR_MOVIE_LIST_NAME_ALREADY_EXISTS"}
         db_movie_list.name = movie_list.name
@@ -438,21 +440,21 @@ async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_par
     skip = page * page_size
     limit = page_size
 
-    max_page = db.query(Movie).count() // page_size + 1
-
     title = search_params.pop("title", "")
     genre = search_params.pop("genre", "")
     subgenre = search_params.pop("subgenre", "")
     subgenre = subgenre.split(",")
 
-    result = (db.query(Movie)
+    query = (db.query(Movie)
                 .filter(and_(
                     Movie.title.contains(title), 
                     Movie.genre.contains(genre),
                 )) 
                 .filter(or_(*[Movie.subgenre.contains(sub) for sub in subgenre])) 
-                .filter_by(**search_params) 
-                .offset(skip).limit(limit).all())
+                .filter_by(**search_params))
+    
+    result = query.offset(skip).limit(limit).all()
+    max_page = query.count() // page_size + 1
 
     for movie in result:
         average_rating = await get_movie_ratings_average(db, movie.id)
@@ -494,7 +496,7 @@ async def create_movie(db: Session, movie: MovieCreate):
     Returns:
         models.Movie: The created movie object.
     """
-    db_movie = db.query(Movie).filter(Movie.title == movie.title).first()
+    db_movie = db.query(Movie).filter(Movie.title == movie.title, Movie.is_deleted == False).first()
     if db_movie is not None:
         raise HTTPException(status_code=400, detail="ERR_MOVIE_NAME_ALREADY_EXISTS")
     db_movie = Movie(**movie.model_dump())
@@ -548,7 +550,7 @@ async def update_movie(db: Session, movie: MovieEdit, movie_id: int):
     attributes = ['title', 'description', 'date_of_release', 'url', 'thumbnail_url', 'views', 'genre', 'subgenre', 'source', 'is_deleted']
 
     if getattr(movie, "title") is not None:
-        same_name_movie = db.query(Movie).filter(Movie.title == movie.title, Movie.id != movie_id).first()
+        same_name_movie = db.query(Movie).filter(Movie.title == movie.title, Movie.id != movie_id, Movie.is_deleted == False).first()
         if same_name_movie is not None:
             raise HTTPException(status_code=400, detail="ERR_MOVIE_NAME_ALREADY_EXISTS")
 
@@ -582,6 +584,141 @@ async def delete_movie(db: Session, movie_id: int):
     db_movie.is_deleted = True
     db.commit()
     return {"detail": "MOVIE_DELETE_OK"}
+
+async def get_unique_genres(db: Session):
+    """
+    Retrieve a list of unique genres from the database.
+
+    Args:
+        db (Session): The database session.
+
+    Returns:
+        List[str]: A list of unique genres.
+    """
+    return db.query(Movie.genre).distinct().all()
+
+async def get_unique_subgenres(db: Session):
+    """
+    Retrieve a list of unique subgenres from the database.
+
+    Args:
+        db (Session): The database session.
+
+    Returns:
+        List[str]: A list of unique subgenres.
+    """
+    subgenres = db.query(Movie.subgenre).distinct().all()
+
+    # Split the subgenres into a list
+    subgenres = [subgenre[0].split(",") for subgenre in subgenres if subgenre[0] is not None]
+
+    # Deduplicate the subgenres
+    subgenres = list(set([sub for subgenre in subgenres for sub in subgenre]))
+
+    return subgenres
+
+# Get viewcount by unique genre
+async def get_viewcount_by_genre(db: Session):
+    """
+    Retrieve a list of unique genres from the database.
+
+    Args:
+        db (Session): The database session.
+
+    Returns:
+        List[str]: A list of unique genres.
+    """
+    result_raw = db.query(Movie.genre, func.sum(Movie.views)).group_by(Movie.genre).all()
+    result = {}
+    for result_raw_item in result_raw:
+        result[result_raw_item[0]] = result_raw_item[1]
+    return result
+
+# Get average rating by unique genre
+async def get_avg_rating_by_genre(db: Session):
+    """
+    Retrieve a list of unique genres from the database.
+
+    Args:
+        db (Session): The database session.
+
+    Returns:
+        List[str]: A list of unique genres.
+    """
+    result_raw = db.query(Movie.genre, func.avg(MovieRatings.rating)).join(MovieRatings).group_by(Movie.genre).all()
+    result = {}
+    for result_raw_item in result_raw:
+        result[result_raw_item[0]] = result_raw_item[1]
+    return result
+
+async def get_avg_rating_by_subgenre(db: Session, subgenre:str):
+    """
+    Retrieve average rating by one subgenre from the database.
+
+    Args:
+        db (Session): The database session.
+    
+    Return:
+        float: The average rating.
+    """
+    result = db.query(MovieRatings.rating).join(Movie).filter(Movie.subgenre.contains(subgenre)).all()
+    average = 0
+    for rating in result:
+        average += rating[0]
+    if len(result) > 0:
+        average /= len(result)
+    return average
+
+async def get_viewcount_by_subgenre(db: Session, subgenre:str):
+    """
+    Retrieve total viewcount for one subgenre from the database.
+    
+    Args:
+        db (Session): The database session.
+
+    Return:
+        int: The total viewcount.
+    """
+    result = db.query(Movie.views).filter(Movie.subgenre.contains(subgenre)).all()
+    total = 0
+    for view in result:
+        if view[0] is None:
+            continue
+        total += view[0]
+    return total
+
+# Get average rating by subgenres
+async def get_avg_rating_by_subgenres(db: Session):
+    """
+    Retrieve a list of unique genres from the database and their average rating.
+
+    Args:
+        db (Session): The database session.
+
+    Returns:
+        List[str]: A list of unique genres.
+    """
+    unique_subgenres = await get_unique_subgenres(db)
+    result = {}
+    for subgenre in unique_subgenres:
+        result[subgenre] = await get_avg_rating_by_subgenre(db, subgenre)    
+    return {}
+
+async def get_viewcount_by_subgenres(db: Session):
+    """
+    Retrieve a list of unique genres from the database and their viewcount.
+
+    Args:
+        db (Session): The database session.
+
+    Returns:
+        List[str]: A list of unique genres.
+    """
+    unique_subgenres = await get_unique_subgenres(db)
+    result = {}
+    for subgenre in unique_subgenres:
+        result[subgenre] = await get_viewcount_by_subgenre(db, subgenre)    
+    return result
 
 # Movie Ratings CRUD
 async def get_movie_ratings_average(db: Session, movie_id: int):
@@ -637,12 +774,13 @@ async def get_movie_ratings(db: Session, movie_id: int, user_id: int = None, pag
     """
     skip = page * page_size
     limit = page_size
-    max_page = db.query(MovieRatings).count() // page_size + 1
     search_params = {}
     if movie_id is not None:
         search_params["movie_id"] = movie_id
     if user_id is not None:
         search_params["user_id"] = user_id
+    
+    max_page = db.query(MovieRatings).filter_by(search_params).count() // page_size + 1
     result = db.query(MovieRatings).filter_by(**search_params).offset(skip).limit(limit).all()
     return {"list": result, "max_page": max_page}
 
@@ -728,9 +866,14 @@ async def create_movie_comment(db: Session, movie_comment: MovieCommentCreate):
     db.add(db_movie_comment)
     db.commit()
     db.refresh(db_movie_comment)
-    return db_movie_comment
+    result = db.query(MovieComments).filter(MovieComments.id == db_movie_comment.id).first()
+    user = db.query(User).filter(User.id == result.user_id).first()
+    result.user_id = user.id
+    result.user_name = user.name
+    result.user_avatar = user.avatar_url
+    return result
 
-async def get_movie_comments(db: Session, movie_id: int, user_id: int = None, page: int = 0, page_size: int = 100):
+async def get_movie_comments(db: Session, movie_id: int, user_id: int = None, is_deleted:bool = None, page: int = 0, page_size: int = 100):
     """
     Retrieve a list of movie comments from the database.
 
@@ -743,17 +886,21 @@ async def get_movie_comments(db: Session, movie_id: int, user_id: int = None, pa
     """
     skip = page * page_size
     limit = page_size
-    max_page = db.query(MovieComments).count() // page_size + 1
     search_params = {}
     if movie_id:
         search_params["movie_id"] = movie_id
     if user_id:
         search_params["user_id"] = user_id
+    if is_deleted is not None:
+        search_params["is_deleted"] = is_deleted
+
+    max_page = db.query(MovieComments).filter_by(**search_params).count() // page_size + 1
     result = db.query(MovieComments).filter_by(**search_params).offset(skip).limit(limit).all()
     for comment in result:
         user = db.query(User).filter(User.id == comment.user_id).first()
+        comment.user_id = user.id
         comment.user_name = user.name
-        comment.user_avatar_url = user.avatar_url
+        comment.user_avatar = user.avatar_url
 
     return {"list": result, "max_page": max_page}
 
@@ -782,7 +929,13 @@ async def update_movie_comment(db: Session, movie_comment_id: int, movie_comment
     
     db.commit()
     db.refresh(db_movie_comment)
-    return db_movie_comment
+
+    result = db.query(MovieComments).filter(MovieComments.id == db_movie_comment.id).first()
+    user = db.query(User).filter(User.id == result.user_id).first()
+    result.user_id = user.id
+    result.user_name = user.name
+    result.user_avatar = user.avatar_url
+    return result
 
 async def delete_movie_comment(db: Session, movie_comment_id: int, user: User):
     """
