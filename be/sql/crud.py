@@ -443,15 +443,56 @@ async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_par
     title = search_params.pop("title", "")
     genre = search_params.pop("genre", "")
     subgenre = search_params.pop("subgenre", "")
+    max_rating = search_params.pop("max_rating", 999999)
+    min_rating = search_params.pop("min_rating", -999999)
     subgenre = subgenre.split(",")
 
+    print(min_rating, max_rating)
+
     query = (db.query(Movie)
+                .join(MovieRatings)
                 .filter(and_(
                     Movie.title.contains(title), 
                     Movie.genre.contains(genre),
                 )) 
                 .filter(or_(*[Movie.subgenre.contains(sub) for sub in subgenre])) 
-                .filter_by(**search_params))
+                .filter_by(**search_params)
+                .filter(MovieRatings.rating >= min_rating, MovieRatings.rating <= max_rating))
+    
+    result = query.offset(skip).limit(limit).all()
+    max_page = query.count() // page_size + 1
+
+    for movie in result:
+        average_rating = await get_movie_ratings_average(db, movie.id)
+        movie.average_rating = average_rating["average"]
+        movie.num_ratings = await get_num_rating_by_movie_id(db, movie.id)
+    
+    if user_id is not None:
+        for movie in result:
+            movie.current_user_rating = db.query(MovieRatings).filter(MovieRatings.movie_id == movie.id, MovieRatings.user_id == user_id).first()
+
+    return {"list": result, "max_page": max_page}
+
+async def get_movies_string_search(db: Session, page: int = 0, page_size: int = 10, search_string: str = None, user_id: int = None):
+    """
+    Retrieve a list of movies from the database.
+
+    Args:
+        db (Session): The database session.
+        skip (int, optional): Number of movies to skip. Defaults to 0.
+        limit (int, optional): Maximum number of movies to retrieve. Defaults to 100.
+
+    Returns:
+        List[models.Movie]: A list of movie objects.
+    """
+    skip = page * page_size
+    limit = page_size
+
+    query = db.query(Movie).filter(or_(
+                    Movie.title.contains(search_string), 
+                    Movie.genre.contains(search_string),
+                    Movie.subgenre.contains(search_string),
+                ))
     
     result = query.offset(skip).limit(limit).all()
     max_page = query.count() // page_size + 1
@@ -839,7 +880,7 @@ async def get_movie_ratings(db: Session, movie_id: int, user_id: int = None, pag
     if user_id is not None:
         search_params["user_id"] = user_id
     
-    max_page = db.query(MovieRatings).filter_by(search_params).count() // page_size + 1
+    max_page = db.query(MovieRatings).filter_by(**search_params).count() // page_size + 1
     result = db.query(MovieRatings).filter_by(**search_params).offset(skip).limit(limit).all()
     return {"list": result, "max_page": max_page}
 
