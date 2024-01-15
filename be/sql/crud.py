@@ -42,7 +42,7 @@ async def get_users(db: Session,
 
     search_params = {}
     if user_name is not None:
-        search_params["name"] = user_name
+        search_params["username"] = user_name
     if is_content_admin is not None:
         search_params["is_content_admin"] = is_content_admin
     
@@ -116,8 +116,29 @@ async def update_user_permissions(db: Session, user_id: int, user: UserEditPermi
         return {"detail": "USER_NOT_FOUND"}
     if user.is_content_admin is not None:
         db_user.is_content_admin = user.is_content_admin
-    db.commit()
-    db.refresh(db_user)
+        db.commit()
+        db.refresh(db_user)
+    return db_user
+
+async def update_user_active(db: Session, user_id: int, user: UserEditActive):
+    """
+    Edit a user's active status in the database.
+
+    Args:
+        db (Session): The database session.
+        user_id (int): The ID of the user to edit.
+        user (UserEditActive): The updated user active status data.
+
+    Returns:
+        models.User: The edited user object.
+    """
+    db_user = db.query(User).filter(User.id == user_id).first()
+    if db_user is None:
+        return {"detail": "USER_NOT_FOUND"}
+    if user.is_active is not None:
+        db_user.is_active = user.is_active
+        db.commit()
+        db.refresh(db_user)
     return db_user
 
 async def delete_user(db: Session, user_id: int):
@@ -448,8 +469,6 @@ async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_par
     min_rating = search_params.pop("min_rating", -999999)
     subgenre = subgenre.split(",")
 
-    print(min_rating, max_rating)
-
     query = (db.query(Movie)
                 .join(MovieRatings)
                 .filter(and_(
@@ -749,7 +768,7 @@ async def get_avg_rating_by_genre(db: Session):
     result_raw = db.query(Movie.genre, func.avg(MovieRatings.rating)).join(MovieRatings).group_by(Movie.genre).all()
     results = []
     for result_raw_item in result_raw:
-        results.append({"genre": result_raw_item[0], "viewcount": result_raw_item[1]})
+        results.append({"genre": result_raw_item[0], "rating": result_raw_item[1]})
     return results
 
 async def get_avg_rating_by_subgenre(db: Session, subgenre:str):
@@ -802,7 +821,7 @@ async def get_avg_rating_by_subgenres(db: Session):
     unique_subgenres = await get_unique_subgenres(db)
     result = []
     for subgenre in unique_subgenres:
-        result.append({"subgenre": subgenre, "viewcount": await get_viewcount_by_subgenre(db, subgenre)})    
+        result.append({"subgenre": subgenre, "rating": await get_viewcount_by_subgenre(db, subgenre)})    
     return {}
 
 async def get_viewcount_by_subgenres(db: Session):

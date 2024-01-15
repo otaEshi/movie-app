@@ -262,7 +262,21 @@ async def update_user_permissions(
         raise HTTPException(status_code=401, detail="Unauthorized")
     args = UserEditPermissions(is_content_admin=is_content_admin)
     return await crud.update_user_permissions(db, user=args, user_id=user_id )
-    
+
+@app.patch("/users/active", tags=["Users"])
+async def update_user_active(
+    user_id: int,
+    is_active: bool,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+        Update the active status of a user.
+    """
+    if not current_user.is_admin:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    args = UserEditActive(is_active=is_active)
+    return await crud.update_user_active(db, user_id=user_id, user=args)
 
 @app.get("/users", tags=["Users"])
 async def read_users(user_name: str = None, 
