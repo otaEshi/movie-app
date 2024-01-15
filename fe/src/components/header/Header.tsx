@@ -85,7 +85,9 @@ const Header = () => {
   };
 
   const handleSearch = async () => {
-
+    if (search.trim() === '') {
+      return;
+    }
     const payload: ISearchPayload = {
       search_string: search.trim(),
       is_deleted: false
@@ -96,7 +98,7 @@ const Header = () => {
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      if (search !== '') {
+      if (search.trim() !== '') {
         handleSearch();
       }
     }
@@ -128,20 +130,20 @@ const Header = () => {
                     <button
                       className="dropdown-item mb-3 mt-2"
                       style={{ background: 'none', border: 'none', color: 'white', paddingTop: '6px' }}
-                      onClick={() => navigate('/tags/sports')}
+                      onClick={() => navigate('/tags/Sport')}
                     >
                       Thể thao
                     </button>
                     <button
                       className="dropdown-item mb-3 mt-3"
-                      onClick={() => navigate('/tags/musics')}
+                      onClick={() => navigate('/tags/Music')}
                       style={{ background: 'none', border: 'none', color: 'white' }}
                     >
                       Âm nhạc
                     </button>
                     <button
                       className="dropdown-item"
-                      onClick={() => navigate('/tags/travels')}
+                      onClick={() => navigate('/tags/Travel')}
                       style={{ background: 'none', border: 'none', color: 'white' }}
                     >
                       Du lịch

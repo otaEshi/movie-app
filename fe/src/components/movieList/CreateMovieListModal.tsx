@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAppDispatch } from "../../app/hooks";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { createMovieList } from "./movieListApi";
 import { ICreateMovieListPayload } from "../../types/movies";
 
@@ -10,11 +10,16 @@ interface CreateMovieListModalProps {
 function CreateMovieListModal(props: CreateMovieListModalProps) {
     const [name, setName] = useState<string>('')
     const [description, setDescription] = useState<string>('')
+    const personalList = useAppSelector(store => store.movieList.personal_list);
     const [movieIds, setMovieIds] = useState<number[]>([])
 
     const dispatch = useAppDispatch()
 
     const handleCreateMovieList = async () => {
+        if (personalList.list.length > 0 && personalList.list.find(item => item.name === name)) {
+            window.alert('Danh sách đã tồn tại');
+            return;
+        }
         if (name === '') {
             window.alert('Tên danh sách không được để trống');
             return;
@@ -26,6 +31,7 @@ function CreateMovieListModal(props: CreateMovieListModalProps) {
         }
         await dispatch(createMovieList(payload))
         props.setOpenCreateMovieModal(false)
+        alert('Tạo danh sách thành công')
     }
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

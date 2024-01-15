@@ -15,7 +15,7 @@ interface IProfileProps {
     setCurrentUser: React.Dispatch<React.SetStateAction<IUserInfoResponse>>
     handleLogout: () => void
     // setUpdateAvatar: React.Dispatch<React.SetStateAction<File>>
-    handleUpdateAvatar: (newAvatar : string) => void
+    handleUpdateAvatar: (newAvatar: string) => void
     handleUpdateUser: () => void
     handleChangePassword: (old_password: string, new_password: string) => void
 }
@@ -53,7 +53,7 @@ function Profile(props: IProfileProps) {
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         props.setCurrentUser({
             ...props.currentUser,
-            date_of_birth : e.target.value
+            date_of_birth: e.target.value
         });
     };
 
@@ -61,21 +61,21 @@ function Profile(props: IProfileProps) {
         if (e.target.files && e.target.files.length > 0) {
             const selectedAvatar = e.target.files[0];
             setAvatar(e.target.files[0]);
-            getBase64(e.target.files[0]).then((base64:any) => {
+            getBase64(e.target.files[0]).then((base64: any) => {
                 props.handleUpdateAvatar(base64.toString())
             });
         }
-        
+
     };
 
     useLayoutEffect(() => {
         setAvatar_url(props.currentUser.avatar_url);
-    },[props.currentUser])
+    }, [props.currentUser])
 
     const handleFullnameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         props.setCurrentUser({
             ...props.currentUser,
-            name : e.target.value
+            name: e.target.value
         });
     };
 
@@ -87,12 +87,12 @@ function Profile(props: IProfileProps) {
             <div className="row w-100 ">
                 <div className="col-3 bg-primary-subtle border-right d-flex flex-column align-items-center">
                     {/* <img src={`${avatar_url}`} alt='' style={{ width: '120px', height: '120px', objectFit: 'cover' }} className="mt-2"></img> */}
-                    
+
                     {avatar_url ?
-                    <img src={`${avatar_url}`} alt='' style={{ width: '120px', height: '120px', objectFit: 'cover' }}></img>
-                    :
-                    <i className="fa fa-user mt-4"  aria-hidden="true"></i>
-                  }
+                        <img src={`${avatar_url}`} alt='' style={{ width: '120px', height: '120px', objectFit: 'cover' }}></img>
+                        :
+                        <i className="fa fa-user mt-4" aria-hidden="true"></i>
+                    }
                     <div>{props.currentUser.username}</div>
                     <div
                         className="custom-profile-nav"
@@ -159,8 +159,8 @@ function Profile(props: IProfileProps) {
                                     </div>
                                 )}
                             </div>
-                            <button className="btn btn-primary mb-3" 
-                            onClick={props.handleUpdateUser}
+                            <button className="btn btn-primary mb-3"
+                                onClick={props.handleUpdateUser}
                             // onClick={handleUpdate}
                             >Cập nhật</button>
 
@@ -171,11 +171,11 @@ function Profile(props: IProfileProps) {
                             <h1> Đổi mật khẩu </h1>
                             <div className="mb-3">
                                 <label htmlFor="oldPassword" className="form-label">Mật khẩu cũ</label>
-                                <input type="text" className="form-control" id="oldPassword" value={oldPassword} onChange={handleChangePassword}/>
+                                <input type="text" className="form-control" id="oldPassword" value={oldPassword} onChange={handleChangePassword} />
                             </div>
                             <div className="mb-3">
                                 <label htmlFor="newPassword" className="form-label">Mật khẩu mới</label>
-                                <input type="text" className="form-control" id="newPassword" value={newPassword} onChange={handleChangePassword}/>
+                                <input type="text" className="form-control" id="newPassword" value={newPassword} onChange={handleChangePassword} />
                             </div>
                             <button className="btn btn-primary mb-3" onClick={() => props.handleChangePassword(oldPassword, newPassword)}>Đổi mật khẩu</button>
                         </div>

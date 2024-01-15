@@ -11,37 +11,37 @@ interface EditMovieModalProps {
 
 function EditMovieModal(props: EditMovieModalProps) {
     const dispatch = useAppDispatch()
-    
+
     const [title, setTitle] = useState<string>(props.currentMovie.title)
     const [description, setDescription] = useState<string>(props.currentMovie.description)
     const [date_of_release, setDate_of_release] = useState<string>(props.currentMovie.date_of_release)
     const [url, setUrl] = useState<string>(props.currentMovie.url)
     const [genre, setGenre] = useState<string>(props.currentMovie.genre)
     const [source, setSource] = useState<string>(props.currentMovie.source)
-    // const [subgenre, setSubgenre] = useState<string[]>(props.currentMovie.subgenre)
+    const [subgenre, setSubgenre] = useState<string>(props.currentMovie.subgenre)
+    const [thumbnail_url, setThumbnail_url] = useState<string>(props.currentMovie.thumbnail_url)
 
     const handleUpdateMovie = () => {
 
-
         const payload: IUpdateMoviePayload = {
             id: props.currentMovie.id,
-            title: title,
-            description: description,
-            date_of_release: date_of_release,
-            url: url,
-            genre: genre,
-            source: source,
-            // subgenre: subgenre,
-            is_deleted: false
+            title: title.trim(),
+            description: description.trim(),
+            date_of_release: date_of_release.trim(),
+            url: url.trim(),
+            genre: genre.trim(),
+            source: source.trim(),
+            subgenre: subgenre.trim(),
+            is_deleted: false,
+            thumbnail_url: thumbnail_url,
         }
         dispatch(updateMovieRequest(payload))
+        alert('Cập nhật thành công')
     }
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setDate_of_release(e.target.value)
     };
-
-
 
     return (
         <>
@@ -95,6 +95,18 @@ function EditMovieModal(props: EditMovieModalProps) {
                     />
                 </div>
                 <div className="mb-3">
+                    <label htmlFor="thumbnail_url" className="form-label">
+                        Đường dẫn ảnh mô tả
+                    </label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        id="thumbnail_url"
+                        value={thumbnail_url}
+                        onChange={(e) => setThumbnail_url(e.target.value)}
+                    />
+                </div>
+                <div className="mb-3">
                     <label htmlFor="genre" className="form-label">
                         Thể loại chính
                     </label>
@@ -109,7 +121,7 @@ function EditMovieModal(props: EditMovieModalProps) {
                         <option value="Du lich">Du lịch</option>
                     </select>
                 </div>
-                {/* <div className="mb-3">
+                <div className="mb-3">
                     <label htmlFor="subgenre" className="form-label">
                         Thể loại phụ
                     </label>
@@ -120,12 +132,12 @@ function EditMovieModal(props: EditMovieModalProps) {
                         value={subgenre}
                         onChange={(e) => {
                             // Split by comma and remove all spaces
-                            const new_subgenres = e.target.value.split(',').map((s) => s.trim())
-                            setSubgenre(new_subgenres)
+                            // const new_subgenres = e.target.value.split(',').map((s) => s.trim())
+                            setSubgenre(e.target.value)
                         }}
                         placeholder="Thể loại phụ 1, thể loại phụ 2, thể loại phụ 3,..."
                     />
-                </div> */}
+                </div>
                 <div className="mb-3">
                     <label htmlFor="source" className="form-label">
                         Nguồn
@@ -139,7 +151,9 @@ function EditMovieModal(props: EditMovieModalProps) {
                         placeholder="Youtube, Tiktok, ..."
                     />
                 </div>
-                <div className="btn btn-primary" onClick={handleUpdateMovie}>Cập nhật</div>
+                <div className="d-flex justify-content-center">
+                    <div className="btn btn-primary" onClick={handleUpdateMovie}>Cập nhật</div>
+                </div>
                 {/* <div className="btn btn-danger" onClick={handleCreateMovie}>Xóa</div> */}
                 {/* <div className="btn btn-warning" onClick={handleCreateMovie}>Hủy</div> */}
             </div>

@@ -24,7 +24,7 @@ const initialState: DetailMovieListState = {
                 thumbnail_url: '',
                 url: '',
                 genre: '',
-                subgenre: [],
+                subgenre: '',
                 source: '',
                 views: 0,
                 date_of_release: '',

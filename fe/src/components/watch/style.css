@@ -82,3 +82,27 @@ iframe {
   padding: 10px 0 5px;
   word-wrap: break-word;
 }
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.pagination-item {
+  cursor: pointer;
+  margin: 0 5px; /* Adjust the margin for spacing */
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.pagination-item.active {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.pagination-item.disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}

@@ -2,16 +2,26 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { IChangePassword, IUpdatePayload } from "../../types/profile";
 import { sendRequest } from "../../utils/sendRequest";
 
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = 'http://localhost:8000';     
 
-export const updateUserInfoRequest = createAsyncThunk<string, IUpdatePayload>(
-    "api/update",
+export const updateUserInfoRequest= createAsyncThunk<string, IUpdatePayload>(
+    "api/update_with_avatar",
     async (updateInfo, thunkApi) => {
-        console.log("api sent", updateInfo)
-        const res  = await sendRequest(`${BASE_URL}/users/me?name=${updateInfo.name}%20&date_of_birth=${updateInfo.date_of_birth}`, {
+        const res  = await sendRequest(`${BASE_URL}/users/me?name=${updateInfo.name}&date_of_birth=${updateInfo.date_of_birth}`, {
             payload: {
                 image_base64: updateInfo.avatar?.image_base64,
             },
+            thunkApi,
+            method: 'PATCH',
+        });
+        return res;
+    }
+); 
+
+export const updateUserInfoRequestWithoutAvatar = createAsyncThunk<string, IUpdatePayload>(
+    "api/update_with_avatar",
+    async (updateInfo, thunkApi) => {
+        const res  = await sendRequest(`${BASE_URL}/users/me?name=${updateInfo.name}&date_of_birth=${updateInfo.date_of_birth}`, {
             thunkApi,
             method: 'PATCH',
         });

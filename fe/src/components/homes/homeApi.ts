@@ -18,6 +18,19 @@ export const topTrendingMoviesRequest = createAsyncThunk<any, ITrendingMoviesPay
         return res;
     }
 ); 
+export const topTrendingForGenreRequest = createAsyncThunk<any, ITrendingMoviesPayload>(
+    "api/movies/top_trending_for_genre",
+    async (ITrendingMoviePayload, thunkApi) => {
+        // const res  = await sendRequest(ITrendingMoviePayload.genre ? `${BASE_URL}/movies/top_trending?top_k=${ITrendingMoviePayload.top_k}&genre=${ITrendingMoviePayload.genre}` : `${BASE_URL}/movies/top_trending?top_k=${ITrendingMoviePayload.top_k}`
+        const res = await sendRequest(`${BASE_URL}/movies/top_trending`
+            , {
+                payload: ITrendingMoviePayload,
+                thunkApi,
+                method: 'GET',
+            });
+        return res;
+    }
+); 
 export const topTrendingSportRequest = createAsyncThunk<any, ITrendingMoviesPayload>(
     "api/movies/top_trending_sport",
     async (ITrendingMoviePayload, thunkApi) => {

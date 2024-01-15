@@ -6,7 +6,7 @@ import ListFilmCard from '../listFilm/ListFilmCard';
 import { Link } from 'react-router-dom';
 import { delMovieList, updateMovieList } from './movieListApi';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Modal } from 'react-bootstrap';
 
 const SampleNextArrow: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
@@ -35,10 +35,29 @@ interface IMovieListSlideProps {
 
 function MovieListSlide(props: IMovieListSlideProps) {
     const dispatch = useAppDispatch()
+    const personalList = useAppSelector(store => store.movieList.personal_list);
+    const currentListName = props.movieList.name;
+    const [checkRenameValid, setCheckRenameValid] = useState<boolean>(false)
     const [openEditListModal, setOpenEditListModal] = useState<boolean>(false)
     const [name, setName] = useState<string>(props.movieList.name)
     const [description, setDescription] = useState<string>(props.movieList.description)
     const currentUser = useAppSelector(store => store.auth.currentUser)
+
+    useEffect(() => {
+        checkRename()
+    }, [name])
+
+    const checkRename = () => {
+        if (personalList.list.find(item => item.name === name.trim())) {
+            if (name === currentListName) {
+            setCheckRenameValid(true)
+            } else {
+                setCheckRenameValid(false)
+            }
+        } else {
+            setCheckRenameValid(true)
+        }
+    }
 
     const settings: Settings = {
         dots: false,
@@ -78,6 +97,15 @@ function MovieListSlide(props: IMovieListSlideProps) {
     }
 
     const handleUpdate = () => {
+        if (!checkRenameValid) {
+            alert('Tên danh sách đã tồn tại')
+            return;
+        }
+        if (name.trim() === '') {
+            alert('Tên danh sách không được để trống')
+            return;
+        } 
+
         let movie_ids: number[] = []
         // movie_ids.push(props.movieList.id)
         props.movieList.movies && props.movieList.movies.map((item) => (movie_ids.push(item.id)))
@@ -101,10 +129,10 @@ function MovieListSlide(props: IMovieListSlideProps) {
                         <h1>{props.movieList.name}</h1>
                         {((currentUser.is_admin || currentUser.is_content_admin) || (currentUser.id === props.movieList.owner_id)) && (
                             <div>
-                                <div className='btn btn-primary' onClick={() => setOpenEditListModal(true)}>
+                                <div className='btn btn-primary m-1' onClick={() => setOpenEditListModal(true)}>
                                     Cập nhật danh sách
                                 </div>
-                                <button className="btn btn-danger" onClick={() => handleDeleteList(props.movieList.id)}>
+                                <button className="btn btn-danger m-1" onClick={() => handleDeleteList(props.movieList.id)}>
                                     {/* <span aria-hidden="true">&times;</span> */}
                                     Xóa danh sách
                                 </button>
@@ -142,6 +170,7 @@ function MovieListSlide(props: IMovieListSlideProps) {
                                 id="name"
                                 placeholder="Nhập tên danh sách"
                                 value={name}
+                                autoComplete='off'
                                 onChange={(e) => handleInputChange(e)}
                             />
                         </div>
@@ -153,6 +182,7 @@ function MovieListSlide(props: IMovieListSlideProps) {
                                 id="description"
                                 placeholder="Nhập mô tả"
                                 value={description}
+                                autoComplete='off'
                                 onChange={(e) => handleInputChange(e)}
                             />
                         </div>

@@ -29,3 +29,12 @@ export interface IMovieListPublic{
     page_size: number;
     is_deleted: boolean;
 }
+
+export interface IUpdateMovieListResponse{
+    id: number;
+    create_at: string;
+    is_deleted: boolean;
+    name: string;
+    description: string;
+    owner_id: number;
+}

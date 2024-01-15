@@ -11,7 +11,7 @@ function AddMovie() {
     const [genre, setGenre] = useState<string>('Thể thao')
     const [source, setSource] = useState<string>('')
     const [thumbnail_url, setThumbnail_url] = useState<string>('')
-    const [subgenre, setSubgenre] = useState<string[]>([])
+    const [subgenre, setSubgenre] = useState<string>('')
 
     const dispatch = useAppDispatch();
 
@@ -45,14 +45,14 @@ function AddMovie() {
             return
         }
         const payload : ICreateMoviePayload = {
-            title : title,
-            description : description,
+            title : title.trim(),
+            description : description.trim(),
             date_of_release : date_of_release,
-            url : url,
+            url : url.trim(),
             genre : genre,
-            source : source,
-            subgenre: subgenre,
-            thumbnail_url : thumbnail_url
+            subgenre: subgenre.trim(),
+            source : source.trim(),
+            thumbnail_url : thumbnail_url.trim(),
         }
         const res = await dispatch(createMovieRequest(payload))
 
@@ -138,8 +138,8 @@ function AddMovie() {
                         value={subgenre}
                         onChange={(e) => {
                             // Split by comma and remove all spaces
-                            const new_subgenres = e.target.value.split(',').map((s) => s.trim())
-                            setSubgenre(new_subgenres)
+                            // const new_subgenres = e.target.value.split(',').map((s) => s.trim())
+                            setSubgenre(e.target.value)
                         }}
                         placeholder="Thể loại phụ 1, thể loại phụ 2, thể loại phụ 3,..."
                     />

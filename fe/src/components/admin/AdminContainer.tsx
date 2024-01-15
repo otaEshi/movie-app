@@ -1,69 +1,173 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AddMovie from "./AddMovie";
 import './style.css';
+import ContentAdmin from "./ContentAdmin";
+import ManageUser from "./ManageUser";
+import Statistical from "./Statistical";
+import Graph from "./Graph";
+import { useAppDispatch } from "../../app/hooks";
+import { moviesAvgRatingByGenreRequest, moviesViewByGenreRequest, moviesViewBySubGenreRequest } from "./adminApi";
 
 function AdminContainer() {
-    const [selectedTab, setSelectedTab] = useState('thêm-phim');
+  const [selectedTab, setSelectedTab] = useState('thêm-phim');
 
-    const handleTabClick = (tabName: string) => {
-        setSelectedTab(tabName);
-    };
+  const dispatch = useAppDispatch();
 
-    return (
-        <>
-            <div style={{ display: 'flex', height: '900px' }}>
-                {/* Left Navigation Bar */}
-                <div style={{ width: '200px', height: '100%', backgroundColor: '#333', color: '#fff', padding: '10px' }}>
-                    <div className="custom-nav" style={{ cursor: 'pointer' }} onClick={() => handleTabClick('thêm-phim')}>
-                        Thêm Phim
-                    </div>
-                    <div className="custom-nav" style={{ cursor: 'pointer' }} onClick={() => handleTabClick('quản-lí-admin')}>
-                        Quản lí Admin
-                    </div>
-                    <div className="custom-nav" style={{ cursor: 'pointer' }} onClick={() => handleTabClick('thống-kê')}>
-                        Thống kê
-                    </div>
+  const handleTabClick = (tabName: string) => {
+    setSelectedTab(tabName);
+  };
+
+  const getDataForGraph = async () => {
+    await dispatch(moviesViewByGenreRequest());
+    await dispatch(moviesAvgRatingByGenreRequest());
+    await dispatch(moviesViewBySubGenreRequest());
+  }
+
+  useEffect(() => {
+    getDataForGraph();
+  }, [])
+
+  // useEffect(() => {
+  //     const contentAdminPanel = document.getElementById('collapseContentAdminPanel');
+  //     const userPanel = document.getElementById('collapseUserPanel');
+
+  //     if (selectedTab === 'quản-lí-admin') {
+  //         contentAdminPanel?.classList.add('show');
+  //         userPanel?.classList.remove('show');
+
+  //     } else if (selectedTab === 'thêm-phim') {
+  //         userPanel?.classList.add('show');
+  //         userPanel?.classList.remove('show');
+  //     }
+
+  //     if (contentAd)
+  // })
+
+  const [contentAdminPanelOpen, setContentAdminPanelOpen] = useState(false);
+  const [userPanelOpen, setUserPanelOpen] = useState(false);
+
+  const toggleContentAdminPanel = () => {
+    setContentAdminPanelOpen(!contentAdminPanelOpen);
+    setUserPanelOpen(false);
+  };
+
+  const toggleUserPanel = () => {
+    setUserPanelOpen(!userPanelOpen);
+    setContentAdminPanelOpen(false);
+  };
+
+  const [statisticalPanelOpen, setStatisticalPanelOpen] = useState(false);
+  const [graphPanelOpen, setGraphPanelOpen] = useState(false);
+
+  const toggleStatisticalPanel = () => {
+    setStatisticalPanelOpen(!statisticalPanelOpen);
+    setGraphPanelOpen(false);
+  };
+
+  const toggleGraphPanel = () => {
+    setGraphPanelOpen(!graphPanelOpen);
+    setStatisticalPanelOpen(false);
+  }
+
+  return (
+    <>
+      <div style={{ display: 'flex', height: '900px' }}>
+        {/* Left Navigation Bar */}
+        <div style={{ width: '200px', height: '100%', backgroundColor: '#333', color: '#fff', padding: '10px' }}>
+          <div className="custom-nav" style={{ cursor: 'pointer' }} onClick={() => handleTabClick('thêm-phim')}>
+            Thêm Phim
+          </div>
+          <div className="custom-nav" style={{ cursor: 'pointer' }} onClick={() => handleTabClick('quản-lí-admin')}>
+            Quản lí tài khoản
+          </div>
+          <div className="custom-nav" style={{ cursor: 'pointer' }} onClick={() => handleTabClick('thống-kê')}>
+            Thống kê
+          </div>
+        </div>
+
+        {/* Right Content Area */}
+        <div style={{ flex: 1, padding: '20px' }}>
+          {selectedTab === 'thêm-phim' && (
+            <div>
+              <h2 style={{ textAlign: 'center' }}>Thêm Phim</h2>
+              <AddMovie></AddMovie>
+              {/* Add your content for 'Thêm Phim' tab here */}
+
+            </div>
+          )}
+
+          {selectedTab === 'quản-lí-admin' && (
+            <div>
+              <h2 style={{ textAlign: 'center' }}>Quản lí tài khoản</h2>
+              <div className="d-flex">
+                <div className="m-2">
+                  <div
+                    className={`btn btn-primary mb-2 me-2 ms-2 ${contentAdminPanelOpen ? 'active' : ''}`}
+                    onClick={toggleContentAdminPanel}
+                  >
+                    Quản lí quản trị viên nội dung
+                  </div>
+                  <div
+                    className={`btn btn-primary mb-2 me-2 ${userPanelOpen ? 'active' : ''}`}
+                    onClick={toggleUserPanel}
+                  >
+                    Quản lí tài khoản
+                  </div>
                 </div>
-
-                {/* Right Content Area */}
-                <div style={{ flex: 1, padding: '20px' }}>
-                    {selectedTab === 'thêm-phim' && (
-                        <div>
-                            <h2 style={{ textAlign: 'center' }}>Thêm Phim</h2>
-                            <AddMovie></AddMovie>
-                            {/* Add your content for 'Thêm Phim' tab here */}
-
-                        </div>
-                    )}
-
-                    {selectedTab === 'quản-lí-admin' && (
-                        <div>
-                            <h2 style={{ textAlign: 'center' }}>Quản lí Admin</h2>
-                            <div className="w-30">
-                                <div className="btn btn-primary m-1"> Thêm quản trị viên nội dung </div>
-                                <div className="btn btn-danger m-1"> Tước quyền quản trị viên nội dung </div>
-                                <div className="btn btn-danger m-1"> Xóa tài khoản </div>
-                            </div>
-                            {/* Add your content for 'Quản lí Admin' tab here */}
-                        </div>
-                    )}
-
-                    {selectedTab === 'thống-kê' && (
-                        <div className="d-flex flex-column">
-                            <h2 style={{ textAlign: 'center' }}>Thống kê</h2>
-
-                            <div className="w-30">
-                                <div className="btn btn-primary m-1"> Thống kê theo lượt xem </div>
-                                <div className="btn btn-primary m-1"> Thống kê theo đánh giá </div>
-                            </div>
-                            {/* Add your content for 'Quản lí Admin' tab here */}
-                        </div>
-                    )}
+              </div>
+              <div className="m-3 accordion-group">
+                <div className={`collapse ${contentAdminPanelOpen ? 'show' : ''}`}>
+                  <div>
+                    <ContentAdmin />
+                  </div>
                 </div>
+                <div className={`collapse ${userPanelOpen ? 'show' : ''}`}>
+                  <div className="">
+                    <ManageUser />
+                  </div>
+                </div>
+              </div>
             </div>
 
-        </>
-    );
+          )}
+
+          {selectedTab === 'thống-kê' && (
+            <div className="d-flex flex-column">
+              <h2 style={{ textAlign: 'center' }}>Thống kê</h2>
+
+              <div className="w-30">
+                <div
+                  // className="btn btn-primary m-1"
+                  className={`btn btn-primary mb-2 me-2 ms-2 ${statisticalPanelOpen ? 'active' : ''}`}
+                  onClick={toggleStatisticalPanel}
+                >
+                  Thống kê  </div>
+                <div
+                  // className="btn btn-primary m-1"
+                  className={`btn btn-primary mb-2 me-2 ms-2 ${graphPanelOpen ? 'active' : ''}`}
+                  onClick={toggleGraphPanel}
+                >
+                  Biểu đồ </div>
+              </div>
+              <div className="m-3 accordion-group">
+                <div className={`collapse ${statisticalPanelOpen ? 'show' : ''}`}>
+                  <div>
+                    <Statistical />
+                  </div>
+                </div>
+                <div className={`collapse ${graphPanelOpen ? 'show' : ''}`}>
+                  <div className="">
+                    <Graph />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+    </>
+  );
 }
 
 export default AdminContainer;

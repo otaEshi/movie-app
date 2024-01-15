@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './style.css';
 import { useParams } from 'react-router-dom';
 import { homeData, recommended } from '../../dummyData';
-import { IMovie } from '../../types/movies';
+import { IFirstRatePayload, IMovie, IUpdateRatingPayload } from '../../types/movies';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { getMovieRequest, updateMovieViewRequest } from './watchApi';
 import { IComment, ICreateCommentPayload, IDeleteCommentPayload, IGetCommentPayload, IUpdateCommentPayload } from '../../types/comment';
@@ -10,6 +10,8 @@ import { createCommentRequest, deleteCommentRequest, getCommentRequest, updateCo
 import CommentCard from '../comment/CommentCard';
 import { Modal } from 'react-bootstrap';
 import EditCommentModal from '../comment/EditCommentModal';
+import ReactStars from '../../lib/reactStar/react-star';
+import { firstRateMovie, updateRating } from '../homes/homeApi';
 // import Upcomming from '../listFilm/ListFilm';
 
 // interface IWatchProps {
@@ -26,6 +28,7 @@ function Watch() {
   const [openEditCommentModal, setOpenEditCommentModal] = useState<boolean>(false)
   const [currentComment, setCurrentComment] = useState<IComment>()
   const [newComment, setNewComment] = useState<string>('')
+  const [commentPage, setCommentPage] = useState<number>(1)
 
   const currentUser = useAppSelector(store => store.auth.currentUser)
 
@@ -37,6 +40,33 @@ function Watch() {
   //     }
   //   }
   // }, [id]);
+  const getCommentPerPage = (page: number) => {
+    // setCommentPage(page)
+    if (id) {
+      const commentPayload: IGetCommentPayload = {
+        movie_id: parseInt(id),
+        page: commentPage - 1,
+        page_size: 5,
+        is_deleted: false,
+      }
+      dispatch(getCommentRequest(commentPayload))
+    }
+  }
+
+  useEffect(() => {
+    getCommentPerPage(commentPage)
+  }, [commentPage])
+
+  const changePage = (page: number) => {
+    if (page < 1) {
+      return;
+    }
+    if (page > comment_list.max_page) {
+      setCommentPage(comment_list.max_page)
+      return;
+    }
+    setCommentPage(page);
+  }
 
   const getMovie = async () => {
     if (id) {
@@ -44,8 +74,9 @@ function Watch() {
 
       const commentPayload: IGetCommentPayload = {
         movie_id: parseInt(id),
-        page: 0,
-        page_size: 999,
+        page: commentPage - 1,
+        page_size: 5,
+        is_deleted: false,
       }
       await dispatch(getCommentRequest(commentPayload))
       dispatch(updateMovieViewRequest(id));
@@ -65,15 +96,20 @@ function Watch() {
     setOpenEditCommentModal(false);
   }
 
-  const _handleUpdateComment = async () => {
-    const payload: IUpdateCommentPayload = {
-      movie_id: currentMovie.id,
-      movie_comment_id: currentComment!.id,
-      comment: currentComment!.comment,
-      is_deleted: false,
+  const _handleUpdateComment = async (newComment: string) => {
+    if (currentUser.id === currentComment!.user_id) {
+      const payload: IUpdateCommentPayload = {
+        movie_id: currentMovie.id,
+        movie_comment_id: currentComment!.id,
+        comment: newComment,
+        is_deleted: false,
+      }
+      await dispatch(updateCommentRequest(payload))
+      setOpenEditCommentModal(false)
+      alert('Cập nhật thành công')
+    } else {
+      alert('Bạn không thể cập nhật bình luận của người khác')
     }
-    await dispatch(updateCommentRequest(payload))
-    setOpenEditCommentModal(false)
   }
 
   const _handleDeleteComment = async () => {
@@ -93,18 +129,39 @@ function Watch() {
   }
 
   const handleCreateComment = async () => {
-    if (newComment.trim() === ''){
+    if (newComment.trim() === '') {
       alert('Bình luận không được để trống')
       return;
     }
-    const payload : ICreateCommentPayload = {
-      movie_id : currentMovie.id,
-      comment : newComment,
+    const payload: ICreateCommentPayload = {
+      movie_id: currentMovie.id,
+      comment: newComment,
     }
     await dispatch(createCommentRequest(payload))
     alert('Bình luận thành công!')
     setNewComment('')
   }
+
+  const handleRatingChange = async (newRating: number) => {
+    if (!currentUser.id) {
+      alert('Bạn cần đăng nhập để đánh giá phim!')
+      return;
+    }
+    alert(`Bạn đã đánh giá phim này ${newRating} sao!`)
+    const firstRatePayload: IFirstRatePayload = {
+      movie_id: currentMovie.id,
+      rating: newRating * 2,
+    }
+    const res = await (dispatch(firstRateMovie(firstRatePayload)))
+    if (res.meta.requestStatus === "rejected") {
+      const updateRatingPayload: IUpdateRatingPayload = {
+        movie_id: currentMovie.id,
+        rating: newRating * 2,
+      }
+      await (dispatch(updateRating(updateRatingPayload)))
+    }
+  };
+
 
   return (
     <>
@@ -124,8 +181,22 @@ function Watch() {
                 </iframe>
                 <h3>Ngày phát hành : {currentMovie.date_of_release}</h3>
                 <p> Mô tả: {currentMovie.description}</p>
+                <div className='rating flex mb-2'>
+                  <div className=''>
+                    <ReactStars
+                      count={5}
+                      size={24}
+                      half={true}
+                      color2={'#e50813'}
+                      value={currentMovie.average_rating / 2}
+                      onChange={handleRatingChange}
+                    ></ReactStars>
+                  </div>
+                  <label>{currentMovie.average_rating / 2}/5 - {currentMovie.num_ratings} lượt đánh giá</label>
+
+                </div>
                 <div className='comment-container'>
-                  <div  style={{ textAlign: 'center' , fontWeight: '600', fontSize: '24px'}}>BÌNH LUẬN CỦA NGƯỜI DÙNG</div>
+                  <div style={{ textAlign: 'center', fontWeight: '600', fontSize: '24px' }}>BÌNH LUẬN CỦA NGƯỜI DÙNG</div>
                   {currentUser.id && <div className='d-flex justify-content-center mt-2 pb-3'>
                     <input
                       type="text"
@@ -148,6 +219,46 @@ function Watch() {
                   ))
                     :
                     <div> Không có bình luận nào </div>
+                  }
+
+                  {comment_list &&
+                    <div className="pagination-container">
+                      <span
+                        className={`pagination-item ${commentPage === 1 ? 'disabled' : ''}`}
+                        onClick={() => changePage(1)}
+                      >
+                        {'<<'}
+                      </span>
+                      <span
+                        className={`pagination-item ${commentPage === 1 ? 'disabled' : ''}`}
+                        onClick={() => changePage(commentPage - 1)}
+                      >
+                        {'<'}
+                      </span>
+                      {Array.from({ length: 5 }, (_, index) => commentPage - 2 + index).map((page) =>
+                        (page > 0 && page <= comment_list.max_page) ? (
+                          <span
+                            key={page}
+                            className={`pagination-item ${page === commentPage ? 'active' : ''}`}
+                            onClick={() => changePage(page)}
+                          >
+                            {page}
+                          </span>
+                        ) : null
+                      )}
+                      <span
+                        className={`pagination-item ${commentPage === comment_list.max_page ? 'disabled' : ''}`}
+                        onClick={() => changePage(commentPage + 1)}
+                      >
+                        {'>'}
+                      </span>
+                      <span
+                        className={`pagination-item ${commentPage === comment_list.max_page ? 'disabled' : ''}`}
+                        onClick={() => changePage(comment_list.max_page)}
+                      >
+                        {'>>'}
+                      </span>
+                    </div>
                   }
                 </div>
               </div>

@@ -1,8 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { IMovieList, IMovieListPublic, IUpdateMovieList } from "../../types/movieList";
 import { getMovieList, updateMovieList } from "../movieList/movieListApi";
 import { IMovie } from "../../types/movies";
+import { Modal } from "react-bootstrap";
+import CreateMovieListModal from "../movieList/CreateMovieListModal";
 
 interface AddToListModalProps {
     currentMovie: IMovie
@@ -11,6 +13,7 @@ interface AddToListModalProps {
 function AddToListModal(props: AddToListModalProps) {
     const personalList = useAppSelector(store => store.movieList.personal_list);
     const dispatch = useAppDispatch()
+    const [openCreateNewListModal, setOpenCreateNewListModal] = useState<boolean>(false)
 
     const getPersonalMovieList = async () => {
         const payload: IMovieListPublic = {
@@ -26,21 +29,28 @@ function AddToListModal(props: AddToListModalProps) {
     }, [])
 
     const handleAddMovie = (currentList:IMovieList) => {
-        let movie_ids : number[] = []
-        movie_ids.push(props.currentMovie.id)
-        currentList.movies && currentList.movies.map((item) => (movie_ids.push(item.id)))
-        // localStorage.setItem('')
-
-        const payload : IUpdateMovieList = {
-            name : currentList.name,
-            description : currentList.description,
-            is_deleted : false,
-            id : currentList.id,
-            movies: movie_ids,
+        let chosenList = JSON.parse(localStorage.getItem('chosenList') || '[]')
+        if (currentList.movies && (currentList.movies.find((item) => (item.id === props.currentMovie.id)) || chosenList.map((item: number) => (item === props.currentMovie.id)))) {
+            alert('Phim đã có trong danh sách')
+        } else {
+            let movie_ids : number[] = []
+            movie_ids.push(props.currentMovie.id)
+            currentList.movies && currentList.movies.map((item) => (movie_ids.push(item.id)))
+            // localStorage.setItem('')
+    
+            const payload : IUpdateMovieList = {
+                name : currentList.name,
+                description : currentList.description,
+                is_deleted : false,
+                id : currentList.id,
+                movies: movie_ids,
+            }
+            dispatch(updateMovieList(payload))
+            
+            chosenList.push(props.currentMovie.id)
+            localStorage.setItem('chosenList', JSON.stringify(chosenList))
+            alert('Thêm thành công')
         }
-        dispatch(updateMovieList(payload))
-        alert('Thêm thành công')
-
     }
 
     return (
@@ -57,9 +67,24 @@ function AddToListModal(props: AddToListModalProps) {
                     ))}
                 </div>
                 <div className="d-flex justify-content-center">
-                    <div className="btn btn-primary m-2">Tạo danh sách mới</div>
+                    <div className="btn btn-primary m-2" onClick={() => setOpenCreateNewListModal(true)}>Tạo danh sách mới</div>
                 </div>
             </div>
+            <Modal
+                show={openCreateNewListModal}
+                onHide={() => setOpenCreateNewListModal(false)}
+                // centered
+                aria-labelledby="modal-modal-title"
+                aria-describedby="modal-modal-description"
+            // size='lg'
+            >
+                <CreateMovieListModal
+                    setOpenCreateMovieModal={setOpenCreateNewListModal}
+                >
+
+                </CreateMovieListModal>
+            </Modal>
+
         </>
     );
 }

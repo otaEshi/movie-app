@@ -24,6 +24,10 @@ function HomeCard(props: HomeCardProps) {
   const [openEditMovieModal, setOpenEditMovieModal] = useState<boolean>(false)
 
   const handleRatingChange = async (newRating: number) => {
+    if (!currentUser.id) {
+      alert('Bạn cần đăng nhập để đánh giá phim!')
+      return;
+    }
     alert(`Bạn đã đánh giá phim này ${newRating} sao!`)
     const firstRatePayload: IFirstRatePayload = {
       movie_id: props.item.id,
@@ -45,7 +49,6 @@ function HomeCard(props: HomeCardProps) {
 
   const handleDeleteMovie = (id: number) => {
     if (window.confirm('Bạn có chắc rằng muốn xóa phim này?')){
-
       dispatch(deleteMovieRequest(id));
       window.location.reload()
     }
@@ -131,7 +134,10 @@ function HomeCard(props: HomeCardProps) {
 
       <Modal
         show={openAddToListModal}
-        onHide={() => setOpenAddToListModal(false)}
+        onHide={() => {
+          localStorage.removeItem('chosenList')
+          setOpenAddToListModal(false)}
+        }
       >
         <AddToListModal
           currentMovie={props.item}

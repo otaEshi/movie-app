@@ -13,7 +13,7 @@ function CommentCard(props: ICommentCardProps) {
 
     return (
         <div className="m-2 d-flex pb-4">
-            {props.item.user_avatar_url ? <img src={`${props.item.user_avatar_url}`} alt='' style={{ width: '40px', height: '40px', objectFit: 'cover' }}></img>
+            {props.item.user_avatar ? <img src={`${props.item.user_avatar}`} alt='' style={{ width: '40px', height: '40px', objectFit: 'cover' }}></img>
                 :
                 <i className="fa fa-user" style={{ width: '40px', height: '40px', objectFit: 'cover' }}></i>
             }
@@ -22,21 +22,7 @@ function CommentCard(props: ICommentCardProps) {
                 <div className="info">
                     <div className="comment-header d-flex justify-content-between">
                         <span className="authorname "> {props.item.user_name} </span>
-                        {/* <span className="authorname "> user name </span> */}
-                        {/* <div className="dropdown"> */}
                         {((currentUser.is_admin || currentUser.is_content_admin) || (currentUser.id === props.item.user_id)) ? <i className="fas fa-ellipsis-h m-1 ms-3 custom-comment-button" onClick={() => props.handleOpenEditCommentModal(props.item.id)}></i> : <></>}
-                        {/* </div> */}
-                        {/* <Dropdown>
-                            <Dropdown.Toggle variant="success" id="dropdown-basic">
-                               <div> test </div>
-                            </Dropdown.Toggle>
-
-                            <Dropdown.Menu>
-                                <Dropdown.Item href="#/action-1">Action</Dropdown.Item>
-                                <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
-                                <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
-                            </Dropdown.Menu>
-                        </Dropdown> */}
                     </div>
                     <div className="comment-content">
                         {props.item.comment}

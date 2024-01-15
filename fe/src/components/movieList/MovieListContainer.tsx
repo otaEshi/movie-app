@@ -32,13 +32,11 @@ function MovieListContainer() {
 
     }
 
-
-
     return (
         <>
             <div className="ms-5 ps-5">
-                <button className="btn btn-primary m-1 ms-5" onClick={() => setOpenCreateNewListModal(true)}> Tạo danh sách mới </button>
-                </div>
+                <button className="btn btn-primary m-1 ms-3" onClick={() => setOpenCreateNewListModal(true)}> Tạo danh sách mới </button>
+            </div>
             {personalList.list.length > 0 ? personalList.list.map((item) => (
                 <div className="position-relative">
                     {/* <button className="btn btn-danger top-0 end-0" onClick={() => handleDeleteList(item.id)}>
@@ -58,7 +56,7 @@ function MovieListContainer() {
                 // centered
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
-                // size='lg'
+            // size='lg'
             >
                 <CreateMovieListModal
                     setOpenCreateMovieModal={setOpenCreateNewListModal}

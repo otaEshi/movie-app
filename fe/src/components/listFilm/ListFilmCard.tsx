@@ -25,7 +25,10 @@ function ListFilmCard(props: ListFilmCardProps) {
   const [openDetailMovieModal, setOpenDetailMovieModal] = useState<boolean>(false);
 
   const handleRatingChange = async (newRating: number) => {
-    console.log('number change', newRating)
+    if (!currentUser.id) {
+      alert('Bạn cần đăng nhập để đánh giá phim!')
+      return;
+    }
     alert(`Bạn đã đánh giá phim này ${newRating} sao!`)
     const firstRatePayload: IFirstRatePayload = {
       movie_id: props.item.id,
@@ -41,9 +44,15 @@ function ListFilmCard(props: ListFilmCardProps) {
     }
   };
 
+  // const handleDeleteMovie = (id: number) => {
+  //   dispatch(deleteMovieRequest(id));
+  //   alert('Xóa thành công')
+  // }
   const handleDeleteMovie = (id: number) => {
-    dispatch(deleteMovieRequest(id));
-    alert('Xóa thành công')
+    if (window.confirm('Bạn có chắc rằng muốn xóa phim này?')){
+      dispatch(deleteMovieRequest(id));
+      window.location.reload()
+    }
   }
 
   return (
@@ -131,7 +140,11 @@ function ListFilmCard(props: ListFilmCardProps) {
 
         <Modal
           show={openAddToListModal}
-          onHide={() => setOpenAddToListModal(false)}
+          onHide={() => {
+            localStorage.removeItem('chosenList')
+            setOpenAddToListModal(false)
+          }
+        }
         >
           <AddToListModal
             currentMovie={props.item}

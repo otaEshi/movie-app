@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import axios from "axios";
 import { logout, setAvatarURL } from "../auth/authSlice";
 import { IBase64Image, IChangePassword, IUpdatePayload } from "../../types/profile";
-import { changePasswordRequest, updateUserInfoRequest } from "./profileApi";
+import { changePasswordRequest, updateUserInfoRequest, updateUserInfoRequestWithoutAvatar } from "./profileApi";
 import { showAlert } from "../../utils/showAlert";
 
 // function SignInPage({ setOpenSignUpModal, setOpenSignInModal, setIsLogin }: ISignInFormatProps) {
@@ -50,43 +50,45 @@ function ProfileContainer() {
     }
 
     const _handleChangePassword = async (old_passowrd: string, new_password: string) => {
+        if (new_password.trim() === old_passowrd.trim()) {
+            alert('Mật khẩu mới không được trùng với mật khẩu cũ')
+            return
+        }
         const payload: IChangePassword = {
-            old_password: old_passowrd,
-            new_password: new_password,
+            old_password: old_passowrd.trim(),
+            new_password: new_password.trim(),
         }
         const res = await dispatch<any>(changePasswordRequest(payload))
 
-        console.log('test ', res)
         if (res.type === "api/change_password/rejected") {
-            // console.log('test reject')
-            // showAlert('Mật khẩu cũ không đúng', 'danger')
             alert('Sai mật khẩu')
         } else {
             alert('Đổi mật khẩu thành công')
         }
     }
-    console.log('avatar: ', updateAvatar)
+
     const handleUpdateUser = async () => {
-        console.log('updated avatar: ', updateAvatar)
         let payload: IUpdatePayload
-        console.log("update avatar: ", updateAvatar)
         if (updateAvatar) {
             payload = {
-                name: currentUser.name,
+                name: currentUser.name.trim(),
                 date_of_birth: currentUser.date_of_birth,
                 avatar: {
                     image_base64: updateAvatar
                 }
             }
+            const res = await dispatch<any>(updateUserInfoRequest(payload))
+            alert('Cập nhật thành công'	)
+            window.location.reload()
         } else {
             payload = {
-                name: currentUser.name,
+                name: currentUser.name.trim(),
                 date_of_birth: currentUser.date_of_birth,
             }
+            const res = await dispatch<any>(updateUserInfoRequestWithoutAvatar(payload))
+            alert('Cập nhật thành công')
+            window.location.reload()
         }
-        const res = await dispatch<any>(updateUserInfoRequest(payload))
-
-
     }
 
     return (

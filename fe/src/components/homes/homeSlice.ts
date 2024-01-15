@@ -3,7 +3,7 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { IUserInfoResponse } from '../../types/auth';
 import { ITrendingMoviesResponse } from '../../types/movies';
-import { topTrendingMoviesRequest, topTrendingMusicRequest, topTrendingSportRequest, topTrendingTravelRequest } from './homeApi';
+import { topTrendingForGenreRequest, topTrendingMoviesRequest, topTrendingMusicRequest, topTrendingSportRequest, topTrendingTravelRequest } from './homeApi';
 
 // Try to load user info from local storage
 
@@ -13,86 +13,27 @@ interface HomeState {
     trendingListSport: ITrendingMoviesResponse;
     trendingListMusic: ITrendingMoviesResponse;
     trendingListTravel: ITrendingMoviesResponse;
+    trendingListForGenre: ITrendingMoviesResponse;
 }
 
 const initialState: HomeState = {
     trendingListAll: {
-        movies: [
-            {
-                id: -1,
-                title: 'strng',
-                description: '',
-                thumbnail_url: '',
-                url: '',
-                genre: '',
-                subgenre: [],
-                source: '',
-                views: 0,
-                date_of_release: '',
-                is_deleted: false,
-                average_rating: 0,
-                num_ratings:0,
-            }
-        ]
+        movies: [ ]
     },
     trendingListSport: {
-        movies: [
-            {
-                id: -1,
-                title: 'strng',
-                description: '',
-                thumbnail_url: '',
-                url: '',
-                genre: 'Sport',
-                subgenre: [],
-                source: '',
-                views: 0,
-                date_of_release: '',
-                is_deleted: false,
-                average_rating: 0,
-                num_ratings:0,
-            }
-        ]
+        movies: []
     }
     ,
     trendingListMusic: {
-        movies: [
-            {
-                id: -1,
-                title: 'strng',
-                description: '',
-                thumbnail_url: '',
-                url: '',
-                genre: 'Music',
-                subgenre: [],
-                source: '',
-                views: 0,
-                date_of_release: '',
-                is_deleted: false,
-                average_rating: 0,
-                num_ratings:0,
-            }
-        ]
+        movies: []
     }
     ,
     trendingListTravel: {
-        movies: [
-            {
-                id: -1,
-                title: 'strng',
-                description: '',
-                thumbnail_url: '',
-                url: '',
-                genre: 'Travel',
-                subgenre: [],
-                source: '',
-                views: 0,
-                date_of_release: '',
-                is_deleted: false,
-                average_rating: 0,
-                num_ratings:0,
-            }
-        ]
+        movies: []
+    }
+    ,
+    trendingListForGenre: {
+        movies: []
     }
 };
 
@@ -137,6 +78,12 @@ const homeSlice = createSlice({
                 state.trendingListTravel = action.payload;
                 if (state.trendingListTravel) {
                     state.trendingListTravel.movies = action.payload;
+                }
+            })
+            .addCase(topTrendingForGenreRequest.fulfilled, (state,action) => {              
+                state.trendingListForGenre = action.payload;
+                if (state.trendingListForGenre) {
+                    state.trendingListForGenre.movies = action.payload;
                 }
             })
     }
