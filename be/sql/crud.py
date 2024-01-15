@@ -22,8 +22,8 @@ async def get_user(db: Session, user_id: str):
     return db.query(User).filter(User.id == user_id).first()
 
 async def get_users(db: Session, 
-                    user_name: str, 
                     is_content_admin: bool,
+                    user_name: str, 
                     page:int = 0, 
                     page_size: int = 100):
     """
@@ -41,13 +41,14 @@ async def get_users(db: Session,
     limit = page_size
 
     search_params = {}
-    if user_name is not None:
-        search_params["username"] = user_name
     if is_content_admin is not None:
         search_params["is_content_admin"] = is_content_admin
+    if user_name is None:
+        user_name = ""
+    query = db.query(User).filter_by(**search_params).filter(User.username.contains(user_name))
     
-    max_page = math.ceil(db.query(User).filter_by(**search_params).count() / page_size)
-    result = db.query(User).filter_by(**search_params).offset(skip).limit(limit).all()
+    max_page = math.ceil(query.count() / page_size)
+    result = query.offset(skip).limit(limit).all()
     return {"list": result, "max_page": max_page}
 
 async def create_user(db: Session, user: UserCreate):
