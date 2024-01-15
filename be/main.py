@@ -354,6 +354,8 @@ async def read_movies(page: int = 0,
                       d: int = None,
                       m: int = None,
                       y: int = None,
+                      max_rating: int = None,
+                      min_rating: int = None,
                       is_deleted: bool = None,
                       db: Session = Depends(get_db)):
     """
@@ -368,11 +370,23 @@ async def read_movies(page: int = 0,
         "d": d,
         "m": m,
         "y": y,
+        "max_rating": max_rating,
+        "min_rating": min_rating,
         "is_deleted": is_deleted
     }
 
     search_params = {k: v for k, v in search_params.items() if v is not None and v != ""}
-    return await crud.get_movies(db, page, page_size, search_params, user_id = None)
+    return await crud.get_movies(db, page, page_size, search_params)
+
+@app.get("/movies/string_search", tags=["Movies"])
+async def read_movies_string_search(page: int = 0,
+                             page_size: int = 100,
+                             search_str: str = None,
+                             db: Session = Depends(get_db)):    
+    """
+        Retrieve a list of movies from the database using a string search.
+    """
+    return await crud.get_movies_string_search(db, page, page_size, search_str)
 
 @app.get("/movies/top_trending", tags=["Movies"])
 async def read_top_trending_movies(db: Session = Depends(get_db), top_k: int = 10, genre: str = None, is_deleted: bool = None):
@@ -598,7 +612,7 @@ async def read_movie_ratings_average(movie_id: int, db: Session = Depends(get_db
     return await crud.get_movie_ratings_average(db, movie_id=movie_id)
 
 @app.get("/movies/{movie_id}/ratings", tags=["Movies Rating"])
-async def read_movie_ratings(movie_id: int, page:int, page_size:int, db: Session = Depends(get_db)):
+async def read_movie_ratings(movie_id: int, page:int = 0, page_size:int = 10, db: Session = Depends(get_db)):
     """
         Retrieve a list of ratings of a movie from the database.
     """
