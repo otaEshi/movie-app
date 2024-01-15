@@ -768,7 +768,7 @@ async def get_avg_rating_by_genre(db: Session):
     result_raw = db.query(Movie.genre, func.avg(MovieRatings.rating)).join(MovieRatings).group_by(Movie.genre).all()
     results = []
     for result_raw_item in result_raw:
-        results.append({"genre": result_raw_item[0], "viewcount": result_raw_item[1]})
+        results.append({"genre": result_raw_item[0], "rating": result_raw_item[1]})
     return results
 
 async def get_avg_rating_by_subgenre(db: Session, subgenre:str):
@@ -821,7 +821,7 @@ async def get_avg_rating_by_subgenres(db: Session):
     unique_subgenres = await get_unique_subgenres(db)
     result = []
     for subgenre in unique_subgenres:
-        result.append({"subgenre": subgenre, "viewcount": await get_viewcount_by_subgenre(db, subgenre)})    
+        result.append({"subgenre": subgenre, "rating": await get_viewcount_by_subgenre(db, subgenre)})    
     return {}
 
 async def get_viewcount_by_subgenres(db: Session):
