@@ -45,6 +45,7 @@ async def get_users(db: Session,
         search_params["is_content_admin"] = is_content_admin
     if user_name is None:
         user_name = ""
+    print(user_name)
     query = db.query(User).filter_by(**search_params).filter(User.username.contains(user_name))
     
     max_page = math.ceil(query.count() / page_size)

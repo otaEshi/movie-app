@@ -290,7 +290,11 @@ async def read_users(user_name: str = None,
     """
     if not current_user.is_admin:
         raise HTTPException(status_code=401, detail="Unauthorized")
-    users = await crud.get_users(db, user_name, is_content_admin, page, page_size)
+    users = await crud.get_users(db, 
+                                 is_content_admin=is_content_admin,
+                                 user_name=user_name,
+                                page=page,
+                                page_size=page_size)
     return users
 
 @app.get("/user/{user_id}", tags=["Users"])
