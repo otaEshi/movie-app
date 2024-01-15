@@ -5,6 +5,7 @@ from .schemas import *
 from .models import *
 from fastapi import HTTPException
 import datetime
+import math
 
 ### User CRUD ###
 async def get_user(db: Session, user_id: str):
@@ -45,7 +46,7 @@ async def get_users(db: Session,
     if is_content_admin is not None:
         search_params["is_content_admin"] = is_content_admin
     
-    max_page = db.query(User).filter_by(**search_params).count() // page_size + 1
+    max_page = math.ceil(db.query(User).filter_by(**search_params).count() / page_size)
     result = db.query(User).filter_by(**search_params).offset(skip).limit(limit).all()
     return {"list": result, "max_page": max_page}
 
@@ -277,7 +278,7 @@ async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, curr
             .outerjoin(Movie)
         )
     
-    max_page = query.count() // page_size + 1
+    max_page = math.ceil(query.count() / page_size)
     result = query.offset(skip).limit(limit).all()
 
     collated_result = []
@@ -460,7 +461,7 @@ async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_par
                 .filter(MovieRatings.rating >= min_rating, MovieRatings.rating <= max_rating))
     
     result = query.offset(skip).limit(limit).all()
-    max_page = query.count() // page_size + 1
+    max_page = math.ceil(query.count() / page_size)
 
     for movie in result:
         average_rating = await get_movie_ratings_average(db, movie.id)
@@ -495,7 +496,7 @@ async def get_movies_string_search(db: Session, page: int = 0, page_size: int = 
                 ))
     
     result = query.offset(skip).limit(limit).all()
-    max_page = query.count() // page_size + 1
+    max_page = math.ceil(query.count() / page_size)
 
     for movie in result:
         average_rating = await get_movie_ratings_average(db, movie.id)
@@ -880,7 +881,7 @@ async def get_movie_ratings(db: Session, movie_id: int, user_id: int = None, pag
     if user_id is not None:
         search_params["user_id"] = user_id
     
-    max_page = db.query(MovieRatings).filter_by(**search_params).count() // page_size + 1
+    max_page = math.ceil(db.query(MovieRatings).filter_by(**search_params).count() / page_size)
     result = db.query(MovieRatings).filter_by(**search_params).offset(skip).limit(limit).all()
     return {"list": result, "max_page": max_page}
 
@@ -994,7 +995,7 @@ async def get_movie_comments(db: Session, movie_id: int, user_id: int = None, is
     if is_deleted is not None:
         search_params["is_deleted"] = is_deleted
 
-    max_page = db.query(MovieComments).filter_by(**search_params).count() // page_size + 1
+    max_page = math.ceil(db.query(MovieComments).filter_by(**search_params).count() / page_size)
     result = db.query(MovieComments).filter_by(**search_params).offset(skip).limit(limit).all()
     for comment in result:
         user = db.query(User).filter(User.id == comment.user_id).first()
