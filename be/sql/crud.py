@@ -42,7 +42,7 @@ async def get_users(db: Session,
 
     search_params = {}
     if user_name is not None:
-        search_params["name"] = user_name
+        search_params["username"] = user_name
     if is_content_admin is not None:
         search_params["is_content_admin"] = is_content_admin
     
@@ -116,8 +116,29 @@ async def update_user_permissions(db: Session, user_id: int, user: UserEditPermi
         return {"detail": "USER_NOT_FOUND"}
     if user.is_content_admin is not None:
         db_user.is_content_admin = user.is_content_admin
-    db.commit()
-    db.refresh(db_user)
+        db.commit()
+        db.refresh(db_user)
+    return db_user
+
+async def update_user_active(db: Session, user_id: int, user: UserEditActive):
+    """
+    Edit a user's active status in the database.
+
+    Args:
+        db (Session): The database session.
+        user_id (int): The ID of the user to edit.
+        user (UserEditActive): The updated user active status data.
+
+    Returns:
+        models.User: The edited user object.
+    """
+    db_user = db.query(User).filter(User.id == user_id).first()
+    if db_user is None:
+        return {"detail": "USER_NOT_FOUND"}
+    if user.is_active is not None:
+        db_user.is_active = user.is_active
+        db.commit()
+        db.refresh(db_user)
     return db_user
 
 async def delete_user(db: Session, user_id: int):
@@ -447,8 +468,6 @@ async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_par
     max_rating = search_params.pop("max_rating", 999999)
     min_rating = search_params.pop("min_rating", -999999)
     subgenre = subgenre.split(",")
-
-    print(min_rating, max_rating)
 
     query = (db.query(Movie)
                 .join(MovieRatings)

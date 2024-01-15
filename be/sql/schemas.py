@@ -81,10 +81,18 @@ class UserEditPermissions(BaseModel):
         UserEditPermissions model
 
         Attributes:
-            is_admin (bool): Whether the user is an admin or not.
             is_content_admin (bool): Whether the user is a content admin or not.
     """
     is_content_admin: bool|None = None
+
+class UserEditActive(BaseModel):
+    """
+        UserEditIsActive model
+
+        Attributes:
+            is_active (bool): Whether the user is active or not.
+    """
+    is_active: bool|None = None
 
 ### Movie ###
 
