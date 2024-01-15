@@ -8,6 +8,8 @@ import { firstRateMovie, updateRating } from './homeApi';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { Modal } from 'react-bootstrap';
 import AddToListModal from './AddToListModal';
+import EditMovieModal from './EditMovieModal';
+import { deleteMovieRequest } from '../admin/adminApi';
 
 interface HomeCardProps {
   item: IMovie
@@ -19,8 +21,13 @@ function HomeCard(props: HomeCardProps) {
   // const [ratingStar, setRatingStar] = useState(0);
   const currentUser = useAppSelector(store => store.auth.currentUser)
   const [openAddToListModal, setOpenAddToListModal] = useState<boolean>(false)
+  const [openEditMovieModal, setOpenEditMovieModal] = useState<boolean>(false)
 
   const handleRatingChange = async (newRating: number) => {
+    if (!currentUser.id) {
+      alert('Bạn cần đăng nhập để đánh giá phim!')
+      return;
+    }
     alert(`Bạn đã đánh giá phim này ${newRating} sao!`)
     const firstRatePayload: IFirstRatePayload = {
       movie_id: props.item.id,
@@ -39,6 +46,13 @@ function HomeCard(props: HomeCardProps) {
     // setRatingStar(newRating);
     // console.log('rating', ratingStar)
   };
+
+  const handleDeleteMovie = (id: number) => {
+    if (window.confirm('Bạn có chắc rằng muốn xóa phim này?')){
+      dispatch(deleteMovieRequest(id));
+      window.location.reload()
+    }
+  }
 
   return (
     <>
@@ -88,12 +102,18 @@ function HomeCard(props: HomeCardProps) {
               </h4>
               <h4>
                 <span>Lượt xem: </span>
-                {/* {props.item.views} */}
-                {props.item.id}
+                {props.item.views}
+                {/* {props.item.id} */}
               </h4>
               {currentUser.id && <div className='d-flex'>
                 <div className='btn btn-primary me-2' onClick={() => setOpenAddToListModal(true)}>Thêm vào danh sách</div>
-                {(currentUser.is_admin || currentUser.is_content_admin) && <div className='btn btn-warning ms-2'>Chỉnh sửa</div>}
+                {(currentUser.is_admin || currentUser.is_content_admin) &&
+                  <div>
+
+                    <div className='btn btn-warning ms-2' onClick={() => setOpenEditMovieModal(true)}>Chỉnh sửa</div>
+                    <div className='btn btn-danger ms-2' onClick={() => handleDeleteMovie(props.item.id)}>Xóa </div>
+                  </div>
+                }
               </div>}
             </div>
 
@@ -113,14 +133,28 @@ function HomeCard(props: HomeCardProps) {
       </div>
 
       <Modal
-      show={openAddToListModal}
-      onHide={() => setOpenAddToListModal(false)}
+        show={openAddToListModal}
+        onHide={() => {
+          localStorage.removeItem('chosenList')
+          setOpenAddToListModal(false)}
+        }
       >
         <AddToListModal
           currentMovie={props.item}
         >
 
         </AddToListModal>
+      </Modal>
+
+      <Modal
+        show={openEditMovieModal}
+        onHide={() => setOpenEditMovieModal(false)}
+      >
+        <EditMovieModal
+          currentMovie={props.item}
+        >
+
+        </EditMovieModal>
       </Modal>
     </>
   );

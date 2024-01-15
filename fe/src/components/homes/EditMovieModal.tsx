@@ -1,69 +1,51 @@
-import { useState } from "react";
-import { ICreateMoviePayload } from "../../types/movies";
-import { useAppDispatch } from "../../app/hooks";
-import { createMovieRequest } from "./adminApi";
+import { useEffect, useState } from "react";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { IMovieList, IMovieListPublic, IUpdateMovieList } from "../../types/movieList";
+import { getMovieList, updateMovieList } from "../movieList/movieListApi";
+import { IMovie, IUpdateMoviePayload } from "../../types/movies";
+import { updateMovieRequest } from "../admin/adminApi";
 
-function AddMovie() {
-    const [title, setTitle] = useState<string>('')
-    const [description, setDescription] = useState<string>('')
-    const [date_of_release, setDate_of_release] = useState<string>('')
-    const [url, setUrl] = useState<string>('')
-    const [genre, setGenre] = useState<string>('Thể thao')
-    const [source, setSource] = useState<string>('')
-    const [thumbnail_url, setThumbnail_url] = useState<string>('')
-    const [subgenre, setSubgenre] = useState<string>('')
+interface EditMovieModalProps {
+    currentMovie: IMovie
+}
 
-    const dispatch = useAppDispatch();
+function EditMovieModal(props: EditMovieModalProps) {
+    const dispatch = useAppDispatch()
+
+    const [title, setTitle] = useState<string>(props.currentMovie.title)
+    const [description, setDescription] = useState<string>(props.currentMovie.description)
+    const [date_of_release, setDate_of_release] = useState<string>(props.currentMovie.date_of_release)
+    const [url, setUrl] = useState<string>(props.currentMovie.url)
+    const [genre, setGenre] = useState<string>(props.currentMovie.genre)
+    const [source, setSource] = useState<string>(props.currentMovie.source)
+    const [subgenre, setSubgenre] = useState<string>(props.currentMovie.subgenre)
+    const [thumbnail_url, setThumbnail_url] = useState<string>(props.currentMovie.thumbnail_url)
+
+    const handleUpdateMovie = () => {
+
+        const payload: IUpdateMoviePayload = {
+            id: props.currentMovie.id,
+            title: title.trim(),
+            description: description.trim(),
+            date_of_release: date_of_release.trim(),
+            url: url.trim(),
+            genre: genre.trim(),
+            source: source.trim(),
+            subgenre: subgenre.trim(),
+            is_deleted: false,
+            thumbnail_url: thumbnail_url,
+        }
+        dispatch(updateMovieRequest(payload))
+        alert('Cập nhật thành công')
+    }
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setDate_of_release(e.target.value)
     };
 
-    const handleCreateMovie = async () => {
-        if (title.trim() === ''){
-            alert('Vui lòng nhập tên phim')
-            return
-        }
-        if (description.trim() === ''){
-            alert('Vui lòng nhập mô tả')
-            return
-        }
-        if (date_of_release === ''){
-            alert('Vui lòng chọn ngày ra mắt')
-            return
-        }
-        if (url.trim() === ''){
-            alert('Vui lòng nhập đường dẫn phim')
-            return
-        }
-        if (subgenre.length === 0){
-            alert('Vui lòng nhập thể loại phụ')
-            return
-        }
-        if (source.trim() === ''){
-            alert('Vui lòng nhập đường dẫn ảnh mô tả')
-            return
-        }
-        const payload : ICreateMoviePayload = {
-            title : title.trim(),
-            description : description.trim(),
-            date_of_release : date_of_release,
-            url : url.trim(),
-            genre : genre,
-            subgenre: subgenre.trim(),
-            source : source.trim(),
-            thumbnail_url : thumbnail_url.trim(),
-        }
-        const res = await dispatch(createMovieRequest(payload))
-
-        if (res.type === "api/create_movie/fulfilled"){
-            alert('Thêm phim thành công')
-        }
-    }
-
     return (
         <>
-            <div>
+            <div className="m-2">
                 <div className="mb-3">
                     <label htmlFor="title" className="form-label">
                         Tên Phim
@@ -113,6 +95,18 @@ function AddMovie() {
                     />
                 </div>
                 <div className="mb-3">
+                    <label htmlFor="thumbnail_url" className="form-label">
+                        Đường dẫn ảnh mô tả
+                    </label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        id="thumbnail_url"
+                        value={thumbnail_url}
+                        onChange={(e) => setThumbnail_url(e.target.value)}
+                    />
+                </div>
+                <div className="mb-3">
                     <label htmlFor="genre" className="form-label">
                         Thể loại chính
                     </label>
@@ -157,22 +151,14 @@ function AddMovie() {
                         placeholder="Youtube, Tiktok, ..."
                     />
                 </div>
-                <div className="mb-3">
-                    <label htmlFor="thumbnail_url" className="form-label">
-                        Đường dẫn ảnh mô tả
-                    </label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="thumbnail_url"
-                        value={thumbnail_url}
-                        onChange={(e) => setThumbnail_url(e.target.value)}
-                    />
+                <div className="d-flex justify-content-center">
+                    <div className="btn btn-primary" onClick={handleUpdateMovie}>Cập nhật</div>
                 </div>
-                <div className="btn btn-primary" onClick={handleCreateMovie}>Thêm phim</div>
+                {/* <div className="btn btn-danger" onClick={handleCreateMovie}>Xóa</div> */}
+                {/* <div className="btn btn-warning" onClick={handleCreateMovie}>Hủy</div> */}
             </div>
         </>
     );
 }
 
-export default AddMovie;
+export default EditMovieModal;

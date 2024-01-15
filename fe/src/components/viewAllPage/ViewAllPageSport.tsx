@@ -1,133 +1,66 @@
-import { SetStateAction, useState } from 'react';
-import { sport, music, travel } from '../../dummyData';
+import { SetStateAction, useEffect, useState } from 'react';
 import ListFilmCard from '../listFilm/ListFilmCard';
 import './viewAllPage.scss';
-
-interface ViewAllPageProps {
-    items: Array<{
-        id: number;
-        cover: string;
-        name: string;
-        time: string;
-    }>;
-    title: string;
-}
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { ISearchPayload } from '../../types/search';
+import { searchRequest } from '../search/searchApi';
 
 function ViewAllPageSport() {
-    const [sports, setSports] = useState(sport);
-    const [musics, setSusics] = useState(music);
-    const [travels, setTravels] = useState(travel);
+    const dispatch = useAppDispatch()
+    const sportList = useAppSelector(store => store.search.search_list)
 
-    const [currentPage, setCurrentPage] = useState<number>(1);
-    const [moviesPerPage, setMoviesPerPage] = useState<number>(20); // Default value
+    const [search, setSearch] = useState<string>('');
 
-    const indexOfLastItem = currentPage * moviesPerPage;
-    const indexOfFirstItem = indexOfLastItem - moviesPerPage;
-    const currentItems = sports.slice(indexOfFirstItem, indexOfLastItem);
-
-    const totalPages = Math.ceil(sports.length / moviesPerPage);
-
-    const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
-
-    const handleMoviesPerPageChange = (event: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
-        const value = parseInt(event.target.value, 10);
-        setMoviesPerPage(value);
-        setCurrentPage(1); // Reset to the first page when changing movies per page
-    };
-
-    const renderPaginationButtons = () => {
-        const buttons = [];
-
-        const displayPages = 5; // Number of page numbers to display
-        let startPage = Math.max(1, currentPage - 2);
-        let endPage = Math.min(totalPages, currentPage + 2);
-
-        if (currentPage <= 2) {
-            endPage = Math.min(displayPages, totalPages);
-        } else if (currentPage >= totalPages - 2) {
-            startPage = Math.max(1, totalPages - displayPages + 1);
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { id, value } = e.target;
+        if (id === 'search') {
+            setSearch(value);
         }
-
-        const buttonStyle = {
-            textDecoration: 'none',
-            fontSize: '24px',
-        };
-
-        // First page button
-        buttons.push(
-            <button key="<<-" onClick={() => paginate(1)} style={buttonStyle}>
-                {"<< "}
-            </button>
-        );
-
-        // Previous page button
-        buttons.push(
-            <button key="<-" onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} style={buttonStyle}>
-                {"< "}
-            </button>
-        );
-
-        // Page number buttons
-        for (let i = startPage; i <= endPage; i++) {
-            buttons.push(
-                <button
-                    key={i}
-                    onClick={() => paginate(i)}
-                    style={{ ...buttonStyle, textDecoration: currentPage === i ? 'underline' : 'none' }}
-                >
-                    {i}
-                </button>
-            );
-        }
-
-        // Next page button
-        buttons.push(
-            <button key="->" onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} style={buttonStyle}>
-                {"> "}
-            </button>
-        );
-
-        // Last page button
-        buttons.push(
-            <button key="->>" onClick={() => paginate(totalPages)} style={buttonStyle}>
-                {">> "}
-            </button>
-        );
-
-        return buttons;
     };
+    const searchSport = async () => {
+        const payload: ISearchPayload = {
+            search_string: 'Thể thao',
+            page_size: 99999,
+            is_deleted: false,
+        }
+        await dispatch(searchRequest(payload))
+    }
+
+    const filteredSportList = sportList.list.filter((item) =>
+        item.title.toLowerCase().includes(search.toLowerCase())
+    );
+
+    useEffect(() => {
+        searchSport()
+    }, [])
 
     return (
         <>
             <div>
-                <div className="mt-3 ms-5">
-                    <label>
-                        Hiện
-                        <select className='m-1' value={moviesPerPage} onChange={handleMoviesPerPageChange}>
-                            <option value={5}>5</option>
-                            <option value={10}>10</option>
-                            <option value={15}>15</option>
-                            <option value={20}>20</option>
-                            <option value={50}>50</option>
-                        </select>
-                        phim
-                    </label>
-
-                </div>
-
-                <div className="d-flex flex-wrap justify-content-start">
-                    {currentItems.map((sport) => (
-                        <div className='me-3 ms-4 mt-4 mb-4' key={sport.id}>
-                            {/* <ListFilmCard key={sport.id} item={sport} /> */}
+                <div>
+                <h1 style={{textAlign:'center'}}> Thể loại: Thể thao</h1>
+                    <div className='ms-4' >
+                        <button className="ms-2 header-button" ><i className="fa fa-search custom-i" aria-hidden="true"></i></button>
+                        <div className='d-flex justify-content-center'>
+                            <input id='search'  className="form-control w-50" type="text" name="q" placeholder="  Tìm kiếm theo tên" autoComplete="off" onChange={(e) => handleInputChange(e)}></input>
                         </div>
-                    ))}
+                    </div>
+                    <div className="mt-3 ms-5">
+                    </div>
+                    <div className="d-flex flex-wrap justify-content-start">
+                        {filteredSportList.map((item) => (
+                            <div className='me-3 ms-4 mt-4 mb-4' key={item.id}>
+                                {/* <button className="btn btn-danger ms-1 mb-1" onClick={() => handleDeleteMovieFromList(item.id)}>xóa phim khỏi danh sách</button> */}
+                                <ListFilmCard key={item.id} item={item} />
+                            </div>
+                        ))}
+                    </div>
                 </div>
-                <div className="pagination justify-content-center ms-5 me-5 custom-btn-container">
-                    {renderPaginationButtons()}
-                </div>
+
             </div>
         </>
     );
 }
+
 
 export default ViewAllPageSport;

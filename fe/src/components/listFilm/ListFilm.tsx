@@ -91,13 +91,25 @@ const ListFilm: React.FC<ListFilmProps> = ({ listType }) => {
       },
     ],
   };
+  const [translate, setTranslate] = useState<string>('')
+  useEffect(() => {
+    if (listType === 1){
+      setTranslate('Thể thao')
+    }
+    if (listType === 2){
+      setTranslate('Âm nhạc')
+    }
+    if (listType === 3){
+      setTranslate('Du lịch')
+    }
+  },[])
 
   return (
     <>
       <section className='upcome pt-5'>
         <div className='container'>
           <div className='heading flexSB'>
-            <h1>{ListFilmTypeDic[listType]}</h1>
+            <h1>{translate }</h1>
             <Link to={`/tags/${ListFilmTypeDic[listType]}`}>Xem tất cả</Link>
           </div>
           <div className='content'>

@@ -6,6 +6,7 @@ export interface IMovieList{
     description: string;
     create_at: string;
     id: number;
+    owner_id: number;
     movies: IMovie[]
 }
 
@@ -27,4 +28,13 @@ export interface IMovieListPublic{
     page: number;
     page_size: number;
     is_deleted: boolean;
+}
+
+export interface IUpdateMovieListResponse{
+    id: number;
+    create_at: string;
+    is_deleted: boolean;
+    name: string;
+    description: string;
+    owner_id: number;
 }

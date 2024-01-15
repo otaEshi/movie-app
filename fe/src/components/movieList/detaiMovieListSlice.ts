@@ -14,6 +14,7 @@ const initialState: DetailMovieListState = {
         name: '',
         description: '',
         create_at: '',
+        owner_id: -1,
         id: -1,
         movies: [
             {

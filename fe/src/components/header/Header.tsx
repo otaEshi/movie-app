@@ -85,9 +85,12 @@ const Header = () => {
   };
 
   const handleSearch = async () => {
-
+    if (search.trim() === '') {
+      return;
+    }
     const payload: ISearchPayload = {
-      search_string: search.trim()
+      search_string: search.trim(),
+      is_deleted: false
     }
     await dispatch(searchRequest(payload))
     navigate('/search_result')
@@ -95,7 +98,7 @@ const Header = () => {
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      if (search !== '') {
+      if (search.trim() !== '') {
         handleSearch();
       }
     }
@@ -127,20 +130,20 @@ const Header = () => {
                     <button
                       className="dropdown-item mb-3 mt-2"
                       style={{ background: 'none', border: 'none', color: 'white', paddingTop: '6px' }}
-                      onClick={() => navigate('/tags/sports')}
+                      onClick={() => navigate('/tags/Sport')}
                     >
                       Thể thao
                     </button>
                     <button
                       className="dropdown-item mb-3 mt-3"
-                      onClick={() => navigate('/tags/musics')}
+                      onClick={() => navigate('/tags/Music')}
                       style={{ background: 'none', border: 'none', color: 'white' }}
                     >
                       Âm nhạc
                     </button>
                     <button
                       className="dropdown-item"
-                      onClick={() => navigate('/tags/travels')}
+                      onClick={() => navigate('/tags/Travel')}
                       style={{ background: 'none', border: 'none', color: 'white' }}
                     >
                       Du lịch
@@ -151,7 +154,7 @@ const Header = () => {
             </li>
             <div className='ms-4' >
               <button className="ms-2 header-button" onClick={handleSearch}><i className="fa fa-search custom-i" aria-hidden="true"></i></button>
-              <input id='search' onKeyDown={handleKeyPress} className="input-search" type="text" name="q" placeholder="  Tìm kiếm" autoComplete="off" onChange={(e) => handleInputChange(e)}></input>
+              <input id='search' onKeyDown={handleKeyPress} className="input-search" type="text" name="q" placeholder="  Tìm kiếm theo tên/thể loại" autoComplete="off" onChange={(e) => handleInputChange(e)}></input>
             </div>
           </ul>
           {/* <button className='toggle' onClick={() => setMobile(!Mobile)}>

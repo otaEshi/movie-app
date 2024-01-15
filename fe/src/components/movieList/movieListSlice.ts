@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { IListMovieList, IMovieList } from '../../types/movieList';
-import { createMovieList, delMovieList, getDetailMovieList, getMovieList, getMovieListPublic } from './movieListApi';
+import { createMovieList, delMovieList, getDetailMovieList, getMovieList, getMovieListPublic, updateMovieList } from './movieListApi';
 
 // Try to load user info from local storage
 
@@ -18,6 +18,7 @@ const initialState: MovieListState = {
                 description: '',
                 create_at: '',
                 id: -1,
+                owner_id: -1,
                 movies: [
                     {
                         id: -1,
@@ -45,6 +46,7 @@ const initialState: MovieListState = {
                 name: '',
                 description: '',
                 create_at: '',
+                owner_id: -1,
                 id: -1,
                 movies: [
                     {
@@ -54,7 +56,7 @@ const initialState: MovieListState = {
                         thumbnail_url: '',
                         url: '',
                         genre: '',
-                        subgenre: '',
+                        subgenre:'' ,
                         source: '',
                         views: 0,
                         date_of_release: '',
@@ -87,13 +89,22 @@ const movieListSlice = createSlice({
                 state.personal_list.list = state.personal_list.list.filter(item => item.id !== deletedList);
                 localStorage.removeItem('deleted_list');
             })
+            // .addCase(updateMovieList.fulfilled, (state, action) => {
+            //     state.personal_list.list.map(item => {
+            //         if (item.id === action.payload.id) {
+            //             return action.payload;
+            //         }
+            //         return item;
+            //     });
+            // })
             .addCase(createMovieList.fulfilled, (state, action) => {
                 const tempList = {
                     name: action.payload.name,
                     description: action.payload.description,
                     create_at: '',
+                    owner_id: -1,
                     id:  action.payload.id,
-                    movies: []
+                    movies: [],
                 } as IMovieList
                 state.personal_list.list.push(tempList)
             })

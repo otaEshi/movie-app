@@ -24,7 +24,7 @@ function MovieListContainer() {
         getPersonalMovieList()
     }, [])
 
-    const handleDeleteList = (listId: number) => {
+    const _handleDeleteList = (listId: number) => {
         if (window.confirm(`Bạn có muốn xóa danh sách ${personalList.list.find(item => item.id === listId)?.name}`)) {
             localStorage.setItem('deleted_list', listId.toString());
             dispatch(delMovieList(listId));
@@ -32,17 +32,16 @@ function MovieListContainer() {
 
     }
 
-
-
     return (
         <>
-            <button className="btn btn-primary" onClick={() => setOpenCreateNewListModal(true)}> Tạo danh sách mới </button>
-            <div>Tìm kiếm</div>
+            <div className="ms-5 ps-5">
+                <button className="btn btn-primary m-1 ms-3" onClick={() => setOpenCreateNewListModal(true)}> Tạo danh sách mới </button>
+            </div>
             {personalList.list.length > 0 ? personalList.list.map((item) => (
                 <div className="position-relative">
-                    <button className="btn btn-danger top-0 end-0" onClick={() => handleDeleteList(item.id)}>
+                    {/* <button className="btn btn-danger top-0 end-0" onClick={() => handleDeleteList(item.id)}>
                         <span aria-hidden="true">&times;</span>
-                    </button>
+                    </button> */}
                     <MovieListSlide key={item.id} movieList={item}></MovieListSlide>
                 </div>
 
@@ -57,7 +56,7 @@ function MovieListContainer() {
                 // centered
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
-                // size='lg'
+            // size='lg'
             >
                 <CreateMovieListModal
                     setOpenCreateMovieModal={setOpenCreateNewListModal}

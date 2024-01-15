@@ -42,8 +42,8 @@ export const sendRequest = async (url: string, options?: Partial<RequestOptions>
             } else if(error.response?.status === 422){
                 // if () {
 
-                    alert('Ngày sinh không hợp lệ')
-                    localStorage.setItem('error_sign_up', 'true')
+                    // alert('Ngày sinh không hợp lệ')
+                    // localStorage.setItem('error_sign_up', 'true')
                 // } 
             }
             if (!options?.defineAlert) {

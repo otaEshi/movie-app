@@ -7,6 +7,7 @@ import detaiMovieListSlice from '../components/movieList/detaiMovieListSlice';
 import movieListSlice from '../components/movieList/movieListSlice';
 import searchSlice from '../components/search/searchSlice';
 import commentSlice from '../components/comment/commentSlice';
+import adminSlice from '../components/admin/adminSlice';
 
 export const store = configureStore({
   reducer: {
@@ -17,6 +18,7 @@ export const store = configureStore({
     movieList:movieListSlice,
     search:searchSlice,
     comment:commentSlice,
+    admin: adminSlice,
   },
 
   middleware: (getDefaultMiddleware) =>
