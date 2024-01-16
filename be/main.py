@@ -400,11 +400,12 @@ async def read_movies(page: int = 0,
 async def read_movies_string_search(page: int = 0,
                              page_size: int = 100,
                              search_str: str = None,
+                             is_deleted: bool = None,
                              db: Session = Depends(get_db)):    
     """
         Retrieve a list of movies from the database using a string search.
     """
-    return await crud.get_movies_string_search(db, page, page_size, search_str)
+    return await crud.get_movies_string_search(db, page, page_size, search_str, is_deleted=is_deleted)
 
 @app.get("/movies/top_trending", tags=["Movies"])
 async def read_top_trending_movies(db: Session = Depends(get_db), top_k: int = 10, genre: str = None, is_deleted: bool = None):

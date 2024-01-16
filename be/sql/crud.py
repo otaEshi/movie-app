@@ -495,7 +495,7 @@ async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_par
 
     return {"list": result, "max_page": max_page}
 
-async def get_movies_string_search(db: Session, page: int = 0, page_size: int = 10, search_string: str = None, user_id: int = None):
+async def get_movies_string_search(db: Session, page: int = 0, page_size: int = 10, search_string: str = None, user_id: int = None, is_deleted: bool = None):
     """
     Retrieve a list of movies from the database.
 
@@ -509,12 +509,17 @@ async def get_movies_string_search(db: Session, page: int = 0, page_size: int = 
     """
     skip = page * page_size
     limit = page_size
+    search_params = {}
+    if search_string is None:
+        search_string = ""
+    if is_deleted is not None:
+        search_params["is_deleted"] = is_deleted
 
     query = db.query(Movie).filter(or_(
                     Movie.title.contains(search_string), 
                     Movie.genre.contains(search_string),
                     Movie.subgenre.contains(search_string),
-                ))
+                )).filter_by(**search_params)
     
     result = query.offset(skip).limit(limit).all()
     max_page = math.ceil(query.count() / page_size)
