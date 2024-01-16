@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { IListMovieRatingPerGenre, IListMovieViewPerGenre, IMovieInTopList, IMovieRatingPerGenre, IMovieViewPerGenre, ITopListed, IUserList } from '../../types/admin';
 import { IUserInfoResponse } from '../../types/auth';
-import { adjustUserPermissionRequest, getAllAdminRequest, getAllUserRequest, moviesAvgRatingByGenreRequest, moviesViewByGenreRequest, moviesViewBySubGenreRequest, topListRequest } from './adminApi';
+import { adjustUserPermissionRequest, getAllAdminRequest, getAllUserRequest, moviesAvgRatingByGenreRequest, moviesViewByGenreRequest, moviesViewBySubGenreRequest, topListRequest, updateUserActive } from './adminApi';
 
 interface AdminState {
     userList: IUserList;
@@ -79,6 +79,10 @@ const adminSlice = createSlice({
                 state.topListed = action.payload;
                 console.log('state: ',state.topListed)
                 console.log('action: ',action.payload)
+            })
+            .addCase(updateUserActive.fulfilled, (state, action) => {
+                state.userList.list = state.userList.list.filter((user) => user.id !== action.payload.id);
+                state.userList.list.push(action.payload);
             })
     }
 });

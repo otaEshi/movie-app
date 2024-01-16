@@ -12,12 +12,23 @@ function UserCard(props: UserCardProps) {
                     {props.user.avatar_url ?
                         <img src={`${props.user.avatar_url}`} alt='' style={{ width: '40px', height: '48px', objectFit: 'cover' }}></img>
                         :
-                        <i className="fa fa-user-large" aria-hidden="true" style={{ width: '40px', height: '48px', objectFit: 'cover', paddingLeft:'12px', paddingTop:'14px' }}></i>
+                        <i className="fa fa-user-large" aria-hidden="true" style={{ width: '40px', height: '48px', objectFit: 'cover', paddingLeft: '12px', paddingTop: '14px' }}></i>
                     }
                 </div>
 
                 <div className="flex-grow-1">
-                    <div><strong>Tên tài khoản: </strong>{props.user.username}</div>
+                    <div>
+                        <strong>Tên tài khoản: </strong>
+                        {props.user.username}
+                        <span> (</span>
+                        {
+                            props.user.is_active ? 
+                            <span className="text-primary ">Đang hoạt động</span>
+                            :
+                            <span className="text-danger ">Đã khóa</span>
+                        }
+                        <span>)</span>
+                    </div>
                     <div>
                         {!props.user.is_content_admin ? (
                             <div><strong>Vai trò:</strong> Người dùng thường</div>

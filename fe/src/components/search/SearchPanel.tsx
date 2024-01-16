@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { IAdvancedSearchPayload } from "../../types/search";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { advancedSearchRequest } from "./searchApi";
+import SubgenreSelector from "./SubgenreSelector";
 
 interface SearchPanelProps {
     currentPage: number;
@@ -15,54 +16,23 @@ interface SearchPanelProps {
     setSubgenre: (subgenre: string) => void;
     source: string;
     setSource: (source: string) => void;
+    max_rating: number;
+    setMax_Rating: (rating: number) => void;
+    min_rating: number;
+    setMin_Rating: (rating: number) => void;
+    is_for_one_genre: boolean;
 }
 
 function SearchPanel(props: SearchPanelProps) {
     const dispatch = useAppDispatch();
     const searchList = useAppSelector(store => store.search.search_list)
 
-    // const [title, setTitle] = useState("");
-    // const [genre, setGenre] = useState("The thao");
-    // const [subgenre, setSubgenre] = useState("");
-    // const [source, setSource] = useState("");
-
-    
-
-
-    // const changePage = (page: number) => {
-    //     if (page < 1) {
-    //         return;
-    //     }
-    //     if (page > searchList.max_page) {
-    //         setCurrentPage(searchList.max_page)
-    //         return;
-    //     }
-    //     setCurrentPage(page);
-    // }
-
-    // const getMoviePerPage = (page: number) => {
-    //     // if (page < 1) {
-    //     //     return;
-    //     // }
-    //     // if (page > searchList.max_page) {
-    //     //     setCurrentPage(searchList.max_page)
-    //     //     return;
-    //     // }
-    //     props.setCurrentPage(page);
-    //     const payload: IAdvancedSearchPayload = {
-    //         page: page,
-    //         page_size: 12,
-    //         title: title,
-    //         genre: genre,
-    //         subgenre: subgenre,
-    //         source: source,
-    //     }
-    //     const res = dispatch(advancedSearchRequest(payload));
-    // }
-
-    
-
     const handleSearch = () => {
+        if (props.max_rating < props.min_rating) {
+            alert("Đánh giá tối đa phải lớn hơn hoặc bằng đánh giá tối thiểu");
+            return;
+        }
+        props.setCurrentPage(1);
         const payload: IAdvancedSearchPayload = {
             page: 0,
             page_size: 12,
@@ -70,9 +40,17 @@ function SearchPanel(props: SearchPanelProps) {
             genre: props.genre,
             subgenre: props.subgenre,
             source: props.source,
+            max_rating: props.max_rating,
+            min_rating: props.min_rating,
         }
         const res = dispatch(advancedSearchRequest(payload));
     }
+
+    // const [subgenre, setSubgenre] = useState('');
+
+    const handleSubgenresSelected = (selectedSubgenres: string[]) => {
+        props.setSubgenre(selectedSubgenres.join(', '));
+    };
 
     return (
         <>
@@ -97,17 +75,19 @@ function SearchPanel(props: SearchPanelProps) {
                     id="genre"
                     value={props.genre}
                     onChange={(e) => props.setGenre(e.target.value)}
+                    disabled={props.is_for_one_genre}
                 >
-                    <option value="The thao">Thể thao</option>
-                    <option value="Am nhac">Âm nhạc</option>
-                    <option value="Du lich">Du lịch</option>
+                    <option value="Thể thao">Thể thao</option>
+                    <option value="Âm nhạc">Âm nhạc</option>
+                    <option value="Du lịch">Du lịch</option>
                 </select>
             </div>
             <div className="mb-3">
                 <label htmlFor="subgenre" className="form-label">
                     Thể loại phụ
                 </label>
-                <input
+                <SubgenreSelector onSubgenresSelected={handleSubgenresSelected} />
+                {/* <input
                     type="text"
                     className="form-control"
                     id="subgenre"
@@ -116,7 +96,7 @@ function SearchPanel(props: SearchPanelProps) {
                         props.setSubgenre(e.target.value)
                     }}
                     placeholder="Thể loại phụ 1, thể loại phụ 2, thể loại phụ 3,..."
-                />
+                /> */}
             </div>
             <div className="mb-3">
                 <label htmlFor="source" className="form-label">
@@ -130,6 +110,54 @@ function SearchPanel(props: SearchPanelProps) {
                     onChange={(e) => props.setSource(e.target.value)}
                     placeholder="Youtube, Tiktok, ..."
                 />
+            </div>
+            <div>
+                <div className="mb-3">
+                    <label htmlFor="max_rating" className="form-label">
+                        Đánh giá tối đa
+                    </label>
+                    <select
+                        className="form-select"
+                        id="max_rating"
+                        value={props.max_rating}
+                        onChange={(e) => props.setMax_Rating(Number(e.target.value))}
+                    >
+                        <option value={0}>0</option>
+                        <option value={1}>0.5</option>
+                        <option value={2}>1</option>
+                        <option value={3}>1.5</option>
+                        <option value={4}>2</option>
+                        <option value={5}>2.5</option>
+                        <option value={6}>3</option>
+                        <option value={7}>3.5</option>
+                        <option value={8}>4</option>
+                        <option value={9}>4.5</option>
+                        <option value={10}>5</option>
+                    </select>
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="min_rating" className="form-label">
+                        Đánh giá tối thiểu
+                    </label>
+                    <select
+                        className="form-select"
+                        id="min_rating"
+                        value={props.min_rating}
+                        onChange={(e) => props.setMin_Rating(Number(e.target.value))}
+                    >
+                        <option value={0}>0</option>
+                        <option value={1}>0.5</option>
+                        <option value={2}>1</option>
+                        <option value={3}>1.5</option>
+                        <option value={4}>2</option>
+                        <option value={5}>2.5</option>
+                        <option value={6}>3</option>
+                        <option value={7}>3.5</option>
+                        <option value={8}>4</option>
+                        <option value={9}>4.5</option>
+                        <option value={10}>5</option>
+                    </select>
+                </div>
             </div>
             <div className="btn btn-primary" onClick={handleSearch}>Tìm kiếm</div>
         </>

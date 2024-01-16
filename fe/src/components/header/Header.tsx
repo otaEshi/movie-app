@@ -10,7 +10,7 @@ import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { logout, setAvatarURL } from '../auth/authSlice';
 import axios from 'axios';
 import { userInfoRequest } from '../auth/authApi';
-import { ISearchPayload } from '../../types/search';
+import { ISearchPayload, ISearchStringPayload } from '../../types/search';
 import { searchRequest } from '../search/searchApi';
 
 const Header = () => {
@@ -88,9 +88,10 @@ const Header = () => {
     if (search.trim() === '') {
       return;
     }
-    const payload: ISearchPayload = {
+    const payload: ISearchStringPayload = {
       search_string: search.trim(),
-      is_deleted: false
+      page: 0,
+      page_size: 9999999,
     }
     await dispatch(searchRequest(payload))
     navigate('/search_result')

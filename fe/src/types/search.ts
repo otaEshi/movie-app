@@ -9,6 +9,11 @@ export interface ISearchPayload {
     search_string: string;
     is_deleted: boolean;
 }
+export interface ISearchStringPayload{
+    search_string: string;
+    page? : number;
+    page_size? : number;
+}
 export interface IAdvancedSearchPayload {
     page? : number;
     page_size? : number;
@@ -17,6 +22,8 @@ export interface IAdvancedSearchPayload {
     subgenre?: string;
     source? : string;
     is_deleted?: boolean;
+    max_rating?: number;
+    min_rating?: number;
 }
 export interface ISearchResponse {
     list: IMovie[];
