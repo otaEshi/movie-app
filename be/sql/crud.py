@@ -467,28 +467,33 @@ async def get_movies(db: Session, page: int = 0, page_size: int = 10, search_par
     title = search_params.pop("title", "")
     genre = search_params.pop("genre", "")
     subgenre = search_params.pop("subgenre", "")
+    subgenre = subgenre.split(",")
     max_rating = search_params.pop("max_rating", 999999)
     min_rating = search_params.pop("min_rating", -999999)
-    subgenre = subgenre.split(",")
-
+    print(min_rating, max_rating)
     query = (db.query(Movie)
-                .join(MovieRatings)
+                .filter_by(**search_params)
                 .filter(and_(
                     Movie.title.contains(title), 
                     Movie.genre.contains(genre),
                 )) 
                 .filter(or_(*[Movie.subgenre.contains(sub) for sub in subgenre])) 
-                .filter_by(**search_params)
-                .filter(MovieRatings.rating >= min_rating, MovieRatings.rating <= max_rating))
+                )
     
     result = query.offset(skip).limit(limit).all()
     max_page = math.ceil(query.count() / page_size)
 
+    _result = []
     for movie in result:
         average_rating = await get_movie_ratings_average(db, movie.id)
+        if average_rating["average"] < min_rating or average_rating["average"] > max_rating:
+            continue
         movie.average_rating = average_rating["average"]
         movie.num_ratings = await get_num_rating_by_movie_id(db, movie.id)
+        _result.append(movie)
     
+    result = _result
+
     if user_id is not None:
         for movie in result:
             movie.current_user_rating = db.query(MovieRatings).filter(MovieRatings.movie_id == movie.id, MovieRatings.user_id == user_id).first()
