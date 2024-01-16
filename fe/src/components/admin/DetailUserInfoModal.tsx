@@ -90,23 +90,17 @@ function DetailUserInfoModal(props: DetailUserInfoModalProps) {
                 <select
                     className="form-select"
                     id="is_active"
-                    // value={is_active } 
-                    // onChange={(e) => setIs_active(e.target.value)}
+                    value={is_active.toString()} 
                     onChange={(e) => {
                         if (e.target.value === "true") {
                             setIs_active(true)
-                            // console.log('truehehe')
                         } else {
                             setIs_active(false)
-                            // console.log('falsehehe')
                         }
-                        // setIs_active(e.target.value === "true")
-                        // console.log(e.target.value)
-                        // console.log('is_active', is_active)
                     }}
                 >
                     <option value="true">Hoạt động</option>
-                    <option value="false">Không hoạt động</option>
+                    <option value="false">Khóa</option>
                 </select>
             </div>
                     <div className="ms-5 ps-5">

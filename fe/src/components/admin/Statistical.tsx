@@ -54,9 +54,6 @@ function Statistical() {
     return (
         <>
             <div>
-                <p>Top k phim được thêm vào danh sách</p>
-                <p>Top k phim được xem nhiều nhất toàn bộ dữ liệu</p>
-                <p>Top k phim được xem nhiều nhất theo thể loại</p>
                 <div>
                     <div className="d-flex mb-2">
                         <input
@@ -73,16 +70,18 @@ function Statistical() {
                             autoComplete="off"
                             style={{ width: '60px' }}
                         />
-                        <span className="mt-3 ms-2 me-3">Phim được thêm vào danh sách nhiều nhất</span>
+                        <span className="mt-3 ms-2 me-3 text-primary" style={{fontSize:'20px'}}>Phim được thêm vào danh sách nhiều nhất</span>
                         <div className="btn btn-primary mt-2" style={{ height: '38px' }} onClick={handleGetTopList}>
                             Tìm
                         </div>
                     </div>
-                    {topListed && topListed.map((item: IMovieInTopList, index: Key | null | undefined) => (
-                        <div key={index}>
-                            <TopListMovieCard item={item}></TopListMovieCard>
-                        </div>
-                    ))}
+                    <div className="border">
+                        {topListed && topListed.map((item: IMovieInTopList, index: Key | null | undefined) => (
+                            <div key={index}>
+                                <TopListMovieCard item={item}></TopListMovieCard>
+                            </div>
+                        ))}
+                    </div>
                 </div>
                 <div>
                     <div className="d-flex mb-2">
@@ -100,16 +99,18 @@ function Statistical() {
                             autoComplete="off"
                             style={{ width: '60px' }}
                         />
-                        <span className="mt-3 ms-2 me-3">Phim được xem nhiều nhất</span>
+                        <span className="mt-3 ms-2 me-3 text-primary" style={{fontSize:'20px'}}>Phim được xem nhiều nhất</span>
                         <div className="btn btn-primary mt-2" style={{ height: '38px' }} onClick={handleGetTopTrendingAllMovies}>
                             Tìm
                         </div>
                     </div>
-                    {topTrendingMoviesAllGenreList.movies.length > 0 && topTrendingMoviesAllGenreList.movies.map((item: any, index: any) => (
-                        <div key={index}>
-                            <TopViewMovies item={item}></TopViewMovies>
-                        </div>
-                    ))}
+                    <div className="border">
+                        {topTrendingMoviesAllGenreList.movies.length > 0 && topTrendingMoviesAllGenreList.movies.map((item: any, index: any) => (
+                            <div key={index}>
+                                <TopViewMovies item={item}></TopViewMovies>
+                            </div>
+                        ))}
+                    </div>
                 </div>
                 <div>
                     <div className="d-flex mb-2">
@@ -128,7 +129,7 @@ function Statistical() {
                             style={{ width: '60px' }}
                         />
                         <span className="mt-3 ms-2 me-3 d-flex">
-                            <span className="me-2 mt-1">Phim thuộc thể loại</span>
+                            <span className="me-2 mt-1 text-primary" style={{fontSize:'20px'}}>Phim thuộc thể loại</span>
                             <select
                                 className="form-select"
                                 id="genre"
@@ -140,17 +141,19 @@ function Statistical() {
                                 <option value="Am nhac">Âm nhạc</option>
                                 <option value="Du lich">Du lịch</option>
                             </select>
-                            <span className="ms-2 mt-1">được xem nhiều nhất</span>
+                            <span className="ms-2 mt-1 text-primary" style={{fontSize:'20px'}}>được xem nhiều nhất</span>
                         </span>
                         <div className="btn btn-primary mt-3" style={{ height: '38px' }} onClick={handleGetTopTrendingListForGenre}>
                             Tìm
                         </div>
                     </div>
-                    {topTrendingListForGenre.movies.length > 0 && topTrendingListForGenre.movies.map((item: any, index: any) => (
-                        <div key={index}>
-                            <TopViewMovies item={item}></TopViewMovies>
-                        </div>
-                    ))}
+                    <div className="border">
+                        {topTrendingListForGenre.movies.length > 0 && topTrendingListForGenre.movies.map((item: any, index: any) => (
+                            <div key={index}>
+                                <TopViewMovies item={item}></TopViewMovies>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </>

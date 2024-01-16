@@ -5,11 +5,12 @@ import ContentAdmin from "./ContentAdmin";
 import ManageUser from "./ManageUser";
 import Statistical from "./Statistical";
 import Graph from "./Graph";
-import { useAppDispatch } from "../../app/hooks";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { moviesAvgRatingByGenreRequest, moviesViewByGenreRequest, moviesViewBySubGenreRequest } from "./adminApi";
 
 function AdminContainer() {
   const [selectedTab, setSelectedTab] = useState('thêm-phim');
+  const currentUser = useAppSelector(store => store.auth.currentUser)
 
   const dispatch = useAppDispatch();
 
@@ -71,15 +72,15 @@ function AdminContainer() {
 
   return (
     <>
-      <div style={{ display: 'flex', height: '900px' }}>
+      <div className="h-100" style={{ display: 'flex' }}>
         {/* Left Navigation Bar */}
-        <div style={{ width: '200px', height: '100%', backgroundColor: '#333', color: '#fff', padding: '10px' }}>
+        <div style={{ width: '200px', height: '914px', backgroundColor: '#333', color: '#fff', padding: '10px' }}>
           <div className="custom-nav" style={{ cursor: 'pointer' }} onClick={() => handleTabClick('thêm-phim')}>
             Thêm Phim
           </div>
-          <div className="custom-nav" style={{ cursor: 'pointer' }} onClick={() => handleTabClick('quản-lí-admin')}>
+          {currentUser.is_admin && <div className="custom-nav" style={{ cursor: 'pointer' }} onClick={() => handleTabClick('quản-lí-admin')}>
             Quản lí tài khoản
-          </div>
+          </div>}
           <div className="custom-nav" style={{ cursor: 'pointer' }} onClick={() => handleTabClick('thống-kê')}>
             Thống kê
           </div>

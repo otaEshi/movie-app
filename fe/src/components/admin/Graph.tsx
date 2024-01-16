@@ -48,7 +48,7 @@ function Graph() {
         datasets: [
             {
                 label: 'Lượt xem',
-                data: listRatingsByGenre.map((item: { viewcount: number }) => item.viewcount),
+                data: listRatingsByGenre.map((item: { rating: number }) => item.rating / 2),
                 backgroundColor: [
                     'rgba(255, 99, 132, 0.2)',
                 ],
@@ -60,20 +60,65 @@ function Graph() {
         ],
     });
 
+    const [mainGenreGraphOpen, setMainGenreGraphOpen] = useState(false);
+    const [subGenreGraphOpen, setSubGenreGraphOpen] = useState(false);
+    const [ratingGraphOpen, setRatingGraphOpen] = useState(false);
+
+    const toggleMainGenreGraph = () => {
+        setMainGenreGraphOpen(!mainGenreGraphOpen);
+        setSubGenreGraphOpen(false);
+        setRatingGraphOpen(false);
+    };
+
+    const toggleSubGenreGraph = () => {
+        setSubGenreGraphOpen(!subGenreGraphOpen);
+        setMainGenreGraphOpen(false);
+        setRatingGraphOpen(false);
+    }
+
+    const toggleRatingGraph = () => {
+        setRatingGraphOpen(!ratingGraphOpen);
+        setMainGenreGraphOpen(false);
+        setSubGenreGraphOpen(false);
+    }
+
     return (
         <>
             <div>
                 <div>
-                    <div className="mt-2">Lượt xem theo thể loại chính</div>
-                    <BarChart chartData={viewByGenreData} />
+                    <div
+                        // className="btn btn-primary m-1"
+                        className={`btn btn-primary mb-2 me-2 ms-2 ${mainGenreGraphOpen ? 'active' : ''}`}
+                        onClick={toggleMainGenreGraph}
+                    >
+                        Lượt xem theo thể loại chính </div>
+                    <div
+                        // className="btn btn-primary m-1"
+                        className={`btn btn-primary mb-2 me-2 ms-2 ${subGenreGraphOpen ? 'active' : ''}`}
+                        onClick={toggleSubGenreGraph}
+                    >
+                        Lượt xem theo thể loại phụ </div>
+                    <div
+                        // className="btn btn-primary m-1"
+                        className={`btn btn-primary mb-2 me-2 ms-2 ${ratingGraphOpen ? 'active' : ''}`}
+                        onClick={toggleRatingGraph}
+                    >
+                        Đánh giá trung bình thể loại chính </div>
                 </div>
                 <div>
-                    <div className="mt-2">Lượt xem theo thể loại phụ</div>
-                    <BarChart chartData={viewBySubGenreData} />
+                    <div className={`collapse ${mainGenreGraphOpen ? 'show' : ''}`}>
+                        <BarChart chartData={viewByGenreData} />
+                    </div>
                 </div>
                 <div>
-                    <div className="mt-2">Đánh giá trung bình theo thể loại chính</div>
-                    <BarChart chartData={ratingByGenre} />
+                    <div className={`collapse ${subGenreGraphOpen ? 'show' : ''}`} >
+                        <BarChart chartData={viewBySubGenreData} />
+                    </div>
+                </div>
+                <div>
+                    <div className={`collapse ${ratingGraphOpen ? 'show' : ''}`}>
+                        <BarChart chartData={ratingByGenre} />
+                    </div>
                 </div>
             </div>
         </>

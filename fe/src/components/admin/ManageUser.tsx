@@ -29,17 +29,17 @@ function ManageUser() {
     }
 
     const handleGetNotAdmin = async () => {
-        let payload : IGetAllUserPayload 
+        let payload: IGetAllUserPayload
         if (username.trim() !== '') {
-             payload = {
+            payload = {
                 user_name: username.trim(),
-                is_content_admin: false,
+                // is_content_admin: false,
                 page: userCurrentPage - 1,
                 page_size: 6,
             }
         } else {
-             payload = {
-                is_content_admin: false,
+            payload = {
+                // is_content_admin: false,
                 page: userCurrentPage - 1,
                 page_size: 6,
             }
@@ -54,6 +54,7 @@ function ManageUser() {
     const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             // if (username.trim() !== '') {
+            setUserCurrentPage(1)
             handleGetNotAdmin();
             setIsSearch(true);
             // }

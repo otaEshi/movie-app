@@ -100,13 +100,14 @@ export const adjustUserPermissionRequest = createAsyncThunk<IUserInfoResponse, I
     }
 ); 
 
-export const updateUserActive = createAsyncThunk<void, IUpdateUserActivePayload>(
+export const updateUserActive = createAsyncThunk<IUserInfoResponse, IUpdateUserActivePayload>(
     "api/delete_user",
     async (payload, thunkApi) => {
-        const res  = await sendRequest(`${BASE_URL}/user/${payload.user_id}`, {
-            payload: {
-                is_active: payload.is_active,
-            },
+        const res  = await sendRequest(`${BASE_URL}/users/active?user_id=${payload.user_id}&is_active=${payload.is_active}`, {
+            // payload: {
+            //     user_id: payload.user_id,
+            //     is_active: payload.is_active,
+            // },
             thunkApi,
             method: 'PATCH',
         });

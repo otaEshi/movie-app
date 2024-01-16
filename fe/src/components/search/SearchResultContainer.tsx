@@ -4,6 +4,7 @@ import ListFilmCard from "../listFilm/ListFilmCard";
 import SearchPanel from "./SearchPanel";
 import { IAdvancedSearchPayload } from "../../types/search";
 import { advancedSearchRequest } from "./searchApi";
+import { moviesViewBySubGenreRequest } from "../admin/adminApi";
 
 function SearchResultContainer() {
     const dispatch = useAppDispatch();
@@ -11,9 +12,11 @@ function SearchResultContainer() {
     const [currentPage, setCurrentPage] = useState<number>(0);
 
     const [title, setTitle] = useState("");
-    const [genre, setGenre] = useState("");
+    const [genre, setGenre] = useState("Thể thao");
     const [subgenre, setSubgenre] = useState("");
     const [source, setSource] = useState("");
+    const [max_rating, setMax_Rating] = useState(10);
+    const [min_rating, setMin_Rating] = useState(0);
 
     const MoviesSearch = () => {
         return searchList.list.map((item) => (
@@ -54,9 +57,15 @@ function SearchResultContainer() {
             genre: genre,
             subgenre: subgenre,
             source: source,
+            max_rating: max_rating,
+            min_rating: min_rating,
         }
         const res = dispatch(advancedSearchRequest(payload));
     }
+
+    useEffect(() => {
+      dispatch(moviesViewBySubGenreRequest())
+    },[])
 
     return (
         <>
@@ -91,6 +100,11 @@ function SearchResultContainer() {
                         setSubgenre={setSubgenre}
                         source={source}
                         setSource={setSource}
+                        max_rating={max_rating}
+                        setMax_Rating={setMax_Rating}
+                        min_rating={min_rating}
+                        setMin_Rating={setMin_Rating}
+                        is_for_one_genre={false}
                     >
 
                     </SearchPanel>
