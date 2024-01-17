@@ -1,40 +1,43 @@
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-from datetime import datetime
+from selenium import webdriver
+from bs4 import BeautifulSoup
+import time, json
 
-# API settings
-API_KEY = 'YOUR_YOUTUBE_API_KEY' # Put your YouTube API key here
-API_NAME = 'youtube'
-API_VERSION = 'v3'
+def get_video_info(driver, url):
+    driver.get(url)
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    script = soup.find("script", attrs={"type":"application/ld+json"})
+    details = json.loads(script.string)
 
-youtube = build(API_NAME, API_VERSION, developerKey=API_KEY)
+    title = details.get("name")
+    description = details.get("description")
+    thumbnailUrl = details.get("thumbnailUrl")[0]
+    url = details.get("url")
 
-search_terms = ['list of', 'search terms']  # Put your search terms here
+    return {"title": title, "description": description,"thumbnail_url": thumbnailUrl, "url": url}
 
-for search_term in search_terms:
-    search_response = youtube.search().list(
-        q=search_term,
-        type='video',
-        part='id,snippet',
-        maxResults=10
-    ).execute()
+def search_keyword(keyword):
+    driver = webdriver.Chrome()  # initiate a driver, in this case Chrome
+    driver.get('https://www.youtube.com/results?search_query=' + keyword) # go to the URL
 
-    print(f'Videos for the search term "{search_term}":\n')
+    videos = []
+    while len(videos) < 20:
+        driver.execute_script("window.scrollBy(0, 1080)") # scroll down
+        time.sleep(2) # wait for new videos to load
+        soup = BeautifulSoup(driver.page_source, 'html.parser')
+        video_tags = soup.findAll('a', attrs={'id': 'video-title'})
+        print(len(video_tags))
+        
+        for vtag in video_tags[:20-len(videos)]:
+            url = 'https://www.youtube.com' + vtag['href']
+            videos.append(get_video_info(driver, url))
+    driver.close()
+    return videos
 
-    for search_result in search_response.get('items', []):
-        video_id = search_result['id']['videoId']
-        video_info = youtube.videos().list(
-            id=video_id,
-            part='snippet')
-        video_response= video_info.execute()
-        for video_result in video_response.get('items', []):
-            title = video_result['snippet']['title']
-            description = video_result['snippet']['description']
-            release_date = video_result['snippet']['publishedAt']
-            thumbnail_url = video_result['snippet']['thumbnails']['default']['url']
+def main():
+    keyword = "what"
+    data = search_keyword(keyword)
+    for video in data:
+        print(video)
 
-            print(f"Title: {title}")
-            print(f"Description: {description}")
-            print(f"Release Date: {datetime.strptime(release_date, '%Y-%m-%dT%H:%M:%SZ')}")
-            print(f"Thumbnail URL: {thumbnail_url}")
-            print("\n")
+if __name__ == "__main__":
+    main()

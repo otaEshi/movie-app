@@ -245,6 +245,9 @@ async def get_movie_list(db: Session, movie_list_id: int):
         if tup[1] is None:
             continue
 
+        if tup[1].is_deleted:
+            continue
+
         movie = tup[1].__dict__
         average_rating = await get_movie_ratings_average(db, movie["id"])
         movie["average_rating"] = average_rating["average"]
@@ -312,6 +315,9 @@ async def get_movie_lists(db: Session, page: int = 0, page_size: int = 100, curr
         movie_list = collated_result[-1]
         
         if tup[1] is None:
+            continue
+
+        if tup[1].is_deleted:
             continue
 
         movie = tup[1].__dict__

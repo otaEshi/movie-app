@@ -159,6 +159,12 @@ async def login_for_access_token(
     db: Session = Depends(get_db)
 ):
     user = await crud.authenticate_user(db, form_data.username, form_data.password)
+    if user.is_active == False and user.is_admin == False:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Inactive user",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -474,7 +480,7 @@ async def create_movie( title:str,
                         url: str,
                         genre: str,
                         source: str,
-                        subgenre: list[str] = Form(...),
+                        subgenre: str,
                         image: UploadFile = File(...), 
                         db: Session = Depends(get_db),
                         current_user: User = Depends(get_current_user)):
@@ -507,7 +513,7 @@ class MovieCreateThumbnailUrl(BaseModel):
     date_of_release: date
     url: str
     genre: str
-    subgenre: list[str]
+    subgenre: str
     source: str
     thumbnail_url: str
 
