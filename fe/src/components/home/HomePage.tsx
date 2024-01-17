@@ -11,9 +11,9 @@ import { IMovieListPublic } from '../../types/movieList';
 import MovieListSlide from '../movieList/MovieListSlide';
 
 export const ListFilmTypeDic: Record<number, string> = {
-  1: 'Sport',
-  2: 'Music',
-  3: 'Travel',
+  1: 'Thể thao',
+  2: 'Âm nhạc',
+  3: 'Du lịch',
 };
 
 const HomePage: React.FC = () => {
