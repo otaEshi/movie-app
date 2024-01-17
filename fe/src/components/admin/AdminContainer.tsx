@@ -7,6 +7,7 @@ import Statistical from "./Statistical";
 import Graph from "./Graph";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { moviesAvgRatingByGenreRequest, moviesViewByGenreRequest, moviesViewBySubGenreRequest } from "./adminApi";
+import RestoreMovie from "./RestoreMovie";
 
 function AdminContainer() {
   const [selectedTab, setSelectedTab] = useState('thêm-phim');
@@ -78,6 +79,9 @@ function AdminContainer() {
           <div className="custom-nav" style={{ cursor: 'pointer' }} onClick={() => handleTabClick('thêm-phim')}>
             Thêm Phim
           </div>
+          <div className="custom-nav" style={{ cursor: 'pointer' }} onClick={() => handleTabClick('restore-movie')}>
+            Khôi phục phim
+          </div>
           {currentUser.is_admin && <div className="custom-nav" style={{ cursor: 'pointer' }} onClick={() => handleTabClick('quản-lí-admin')}>
             Quản lí tài khoản
           </div>}
@@ -93,6 +97,14 @@ function AdminContainer() {
               <h2 style={{ textAlign: 'center' }}>Thêm Phim</h2>
               <AddMovie></AddMovie>
               {/* Add your content for 'Thêm Phim' tab here */}
+
+            </div>
+          )}
+
+          {selectedTab === 'restore-movie' && (
+            <div>
+              <h2 style={{ textAlign: 'center' }}>Khôi phục phim</h2>
+              <RestoreMovie></RestoreMovie>
 
             </div>
           )}

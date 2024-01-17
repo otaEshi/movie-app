@@ -1,7 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { IListMovieRatingPerGenre, IListMovieViewPerGenre, IMovieInTopList, IMovieRatingPerGenre, IMovieViewPerGenre, ITopListed, IUserList } from '../../types/admin';
 import { IUserInfoResponse } from '../../types/auth';
-import { adjustUserPermissionRequest, getAllAdminRequest, getAllNormalUserRequest, getAllUserRequest, moviesAvgRatingByGenreRequest, moviesViewByGenreRequest, moviesViewBySubGenreRequest, topListRequest, updateUserActive } from './adminApi';
+import { adjustUserPermissionRequest, getAllAdminRequest, getAllNormalUserRequest, getAllUserRequest, getDeletedRequest, moviesAvgRatingByGenreRequest, moviesViewByGenreRequest, moviesViewBySubGenreRequest, restoreMovieRequest, topListRequest, updateUserActive } from './adminApi';
+import { ISearchResponse } from '../../types/search';
 
 interface AdminState {
     userList: IUserList;
@@ -15,6 +16,7 @@ interface AdminState {
     listViewsBySubgenre: any;
     // topListed: ITopListed;
     topListed: IMovieInTopList[];
+    deletedMovieList: ISearchResponse
 }
 
 const initialState: AdminState = {
@@ -41,6 +43,10 @@ const initialState: AdminState = {
         list: [] as IUserInfoResponse[],
         max_page: 0,
     },
+    deletedMovieList : {
+        list: [],
+        max_page : 0
+    }
 };
 
 const adminSlice = createSlice({
@@ -64,6 +70,12 @@ const adminSlice = createSlice({
                     state.adminList.list = state.adminList.list.filter((user) => user.id !== action.payload.id);
                     state.userList.list.push(action.payload);
                 }
+            })
+            .addCase(getDeletedRequest.fulfilled, (state, action) => {
+                state.deletedMovieList = action.payload;
+            })
+            .addCase(restoreMovieRequest.fulfilled, (state, action) => {
+                state.deletedMovieList.list = state.deletedMovieList.list.filter((movie) => movie.id !== action.payload.id);
             })
             // .addCase(getUserRequest.fulfilled, (state, action) => {
             //     state.currentUser = action.payload;

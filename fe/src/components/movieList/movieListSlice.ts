@@ -145,7 +145,9 @@ const movieListSlice = createSlice({
                 const id = temp_id ? parseInt(temp_id, 10) : null;
 
                 state.public_list.list.map(list => {
-                    list.movies = list.movies.filter(movie => movie.id !== id);
+                    if (list.movies){
+                        list.movies = list.movies.filter(movie => movie.id !== id);
+                    }
                 })
             })
     }

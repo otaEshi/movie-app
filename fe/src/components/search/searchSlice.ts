@@ -33,7 +33,6 @@ const searchSlice = createSlice({
             .addCase(deleteMovieRequest.fulfilled, (state, action) => {
                 const temp_id = localStorage.getItem('deleted_movie');
                 const id = temp_id ? parseInt(temp_id, 10) : null;
-
                 state.search_list.list = state.search_list.list.filter((movie) => movie.id !== id);
             })        
     }

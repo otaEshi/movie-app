@@ -13,6 +13,7 @@ export interface ISearchStringPayload{
     search_string: string;
     page? : number;
     page_size? : number;
+    is_deleted?: boolean;
 }
 export interface IAdvancedSearchPayload {
     page? : number;

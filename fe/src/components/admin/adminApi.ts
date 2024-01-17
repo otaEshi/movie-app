@@ -3,6 +3,7 @@ import { sendRequest } from "../../utils/sendRequest";
 import { ICreateMoviePayload, IUpdateMoviePayload, IUpdateMovieResponse } from "../../types/movies";
 import { IAdjustUserPermissionPayload, IGetAllUserPayload, IListMovieRatingPerGenre, IListMovieViewPerGenre, IMovieInTopList, IMovieViewPerGenre, ITopListPayload, ITopListed, IUpdateUserActivePayload, IUserList } from "../../types/admin";
 import { IUserInfoResponse } from "../../types/auth";
+import { ISearchResponse, ISearchStringPayload } from "../../types/search";
 
 const BASE_URL = 'http://localhost:8000';
 
@@ -41,12 +42,52 @@ export const updateMovieRequest = createAsyncThunk<IUpdateMovieResponse, IUpdate
     }
 );
 
+export const restoreMovieRequest = createAsyncThunk<IUpdateMovieResponse, IUpdateMoviePayload>(
+    "api/restore_movie/",
+    async (update_movie_info, thunkApi) => {
+        const res = await sendRequest(`${BASE_URL}/movies/thumbnail_url/${update_movie_info.id}`
+            , {
+                payload: {
+                    title : update_movie_info.title,
+                    description : update_movie_info.description,
+                    date_of_release : update_movie_info.date_of_release,
+                    url : update_movie_info.url,
+                    genre : update_movie_info.genre,
+                    subgenre : update_movie_info.subgenre,
+                    source : update_movie_info.source,
+                    thumbnail_url: update_movie_info.thumbnail_url,
+                    is_deleted : update_movie_info.is_deleted,
+                },
+                thunkApi,
+                method: 'PATCH',
+            });
+        return res;
+    }
+);
+
 export const deleteMovieRequest = createAsyncThunk<void, number>(
     "api/delete_movie",
     async (id, thunkApi) => {
         const res  = await sendRequest(`${BASE_URL}/movies/${id}`, {
             thunkApi,
             method: 'DELETE',
+        });
+        return res;
+    }
+); 
+
+export const getDeletedRequest = createAsyncThunk<ISearchResponse, ISearchStringPayload>(
+    "api/search_delete_movie",
+    async (searchPayload, thunkApi) => {
+        const res  = await sendRequest(`${BASE_URL}/movies/string_search`, {
+            payload: {
+                search_str: searchPayload.search_string,
+                page: searchPayload.page,
+                page_size: searchPayload.page_size,
+                is_deleted: false,
+            },
+            thunkApi,
+            method: 'GET',
         });
         return res;
     }
@@ -169,3 +210,4 @@ export const topListRequest = createAsyncThunk<IMovieInTopList[], ITopListPayloa
         return res;
     }
 ); 
+

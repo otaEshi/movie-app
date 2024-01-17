@@ -39,7 +39,6 @@ function AddToListModal(props: AddToListModalProps) {
         // } 
         if (currentList.movies) {
             if (currentList.movies.find((item) => item.id === props.currentMovie.id)) {
-                console.log('if 1')
                 alert('Phim đã có trong danh sách');
                 return;
             } 
