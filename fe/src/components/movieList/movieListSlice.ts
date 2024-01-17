@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { IListMovieList, IMovieList } from '../../types/movieList';
 import { createMovieList, delMovieList, getDetailMovieList, getMovieList, getMovieListPublic, updateMovieList } from './movieListApi';
-import { updateMovieRequest } from '../admin/adminApi';
+import { deleteMovieRequest, updateMovieRequest } from '../admin/adminApi';
 import { ITrendingMoviesResponse } from '../../types/movies';
 
 // Try to load user info from local storage
@@ -139,7 +139,15 @@ const movieListSlice = createSlice({
                         }
                     })
                 })
-            });
+            })
+            .addCase(deleteMovieRequest.fulfilled, (state, action) => {
+                const temp_id = localStorage.getItem('deleted_movie');
+                const id = temp_id ? parseInt(temp_id, 10) : null;
+
+                state.public_list.list.map(list => {
+                    list.movies = list.movies.filter(movie => movie.id !== id);
+                })
+            })
     }
 });
 
