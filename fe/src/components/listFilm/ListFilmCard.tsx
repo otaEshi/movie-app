@@ -50,8 +50,9 @@ function ListFilmCard(props: ListFilmCardProps) {
   // }
   const handleDeleteMovie = (id: number) => {
     if (window.confirm('Bạn có chắc rằng muốn xóa phim này?')){
+      localStorage.setItem('deleted_movie', id.toString());
       dispatch(deleteMovieRequest(id));
-      window.location.reload()
+      // window.location.reload()
     }
   }
 
@@ -141,7 +142,7 @@ function ListFilmCard(props: ListFilmCardProps) {
         <Modal
           show={openAddToListModal}
           onHide={() => {
-            localStorage.removeItem('chosenList')
+            // localStorage.removeItem('chosenList')
             setOpenAddToListModal(false)
           }
         }
@@ -160,6 +161,7 @@ function ListFilmCard(props: ListFilmCardProps) {
         >
           <EditMovieModal
             currentMovie={props.item}
+            setOpenedModal={setOpenEditMovieModal}
           >
 
           </EditMovieModal>

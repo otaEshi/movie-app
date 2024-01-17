@@ -40,6 +40,19 @@ export interface IUpdateMoviePayload {
     thumbnail_url: string;
     is_deleted : boolean;
 }
+export interface IUpdateMovieResponse {
+    id : number
+    title: string;
+    description: string;
+    date_of_release: string;
+    url: string;
+    genre: string;
+    source: string;
+    subgenre: string;
+    thumbnail_url: string;
+    views: number;
+    is_deleted : boolean;
+}
 export interface ITrendingMoviesResponse {
     movies: IMovie[]
 }
@@ -64,4 +77,7 @@ export interface ICreateMovieListResponse{
     name: string;
     description: string;
     id: number;
+    owner_id: number;
+    create_at: string;
+    is_deleted: boolean;
 }

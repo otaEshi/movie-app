@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { IAdjustUserPermissionPayload, IGetAllUserPayload } from "../../types/admin";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { adjustUserPermissionRequest, getAllAdminRequest, getAllUserRequest } from "./adminApi";
+import { adjustUserPermissionRequest, getAllAdminRequest, getAllNormalUserRequest, getAllUserRequest } from "./adminApi";
 import UserCard from "./UserCard";
 import './style.css';
 
@@ -11,7 +11,7 @@ function ContentAdmin() {
 
     const dispatch = useAppDispatch();
     const currentContentAdminList = useAppSelector(store => store.admin.adminList);
-    const currentUserList = useAppSelector(store => store.admin.userList);
+    const currentUserList = useAppSelector(store => store.admin.normalUserList);
     const [isSearch, setIsSearch] = useState(false);
 
     const changePage = (page: number) => {
@@ -70,7 +70,7 @@ function ContentAdmin() {
             page: userCurrentPage - 1,
             page_size: 6,
         }
-        await dispatch(getAllUserRequest(payload))
+        await dispatch(getAllNormalUserRequest(payload))
     }
     useEffect(() => {
         handleGetNotAdmin();

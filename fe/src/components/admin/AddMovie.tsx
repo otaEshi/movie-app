@@ -110,6 +110,20 @@ function AddMovie() {
                         id="url"
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
+                        placeholder="https://www.youtube.com/embed/<video-id>"
+                    />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="thumbnail_url" className="form-label">
+                        Đường dẫn ảnh mô tả
+                    </label>
+                    <input
+                        type="text"
+                        className="form-control"
+                        id="thumbnail_url"
+                        value={thumbnail_url}
+                        onChange={(e) => setThumbnail_url(e.target.value)}
+                        placeholder="https://img.youtube.com/vi/<video-id>/hqdefault.jpg"
                     />
                 </div>
                 <div className="mb-3">
@@ -122,9 +136,9 @@ function AddMovie() {
                         value={genre}
                         onChange={(e) => setGenre(e.target.value)}
                     >
-                        <option value="The thao">Thể thao</option>
-                        <option value="Am nhac">Âm nhạc</option>
-                        <option value="Du lich">Du lịch</option>
+                        <option value="Thể thao">Thể thao</option>
+                        <option value="Âm nhạc">Âm nhạc</option>
+                        <option value="Du lịch">Du lịch</option>
                     </select>
                 </div>
                 <div className="mb-3">
@@ -157,18 +171,7 @@ function AddMovie() {
                         placeholder="Youtube, Tiktok, ..."
                     />
                 </div>
-                <div className="mb-3">
-                    <label htmlFor="thumbnail_url" className="form-label">
-                        Đường dẫn ảnh mô tả
-                    </label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="thumbnail_url"
-                        value={thumbnail_url}
-                        onChange={(e) => setThumbnail_url(e.target.value)}
-                    />
-                </div>
+               
                 <div className="btn btn-primary" onClick={handleCreateMovie}>Thêm phim</div>
             </div>
         </>

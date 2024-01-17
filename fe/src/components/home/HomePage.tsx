@@ -6,7 +6,7 @@ import { sport, music, travel } from '../../dummyData';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import useFetchData from '../../hook/useFetchData';
 import ListFilm from '../listFilm/ListFilm';
-import { getMovieListPublic } from '../movieList/movieListApi';
+import { getMovieList, getMovieListPublic } from '../movieList/movieListApi';
 import { IMovieListPublic } from '../../types/movieList';
 import MovieListSlide from '../movieList/MovieListSlide';
 
@@ -31,7 +31,21 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     getPublicMovieList()
+    getPersonalMovieList()
   }, [])
+
+  const getPersonalMovieList = async () => {
+    const payload: IMovieListPublic = {
+        page: 0,
+        page_size: 9999,
+        is_deleted: false,
+    }
+    await dispatch(getMovieList(payload))
+}
+
+useEffect(() => {
+    getPersonalMovieList()
+}, [])
 
   // const dispatch = useAppDispatch();
   console.log("DEBUG  ")

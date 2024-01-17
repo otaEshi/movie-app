@@ -49,8 +49,9 @@ function HomeCard(props: HomeCardProps) {
 
   const handleDeleteMovie = (id: number) => {
     if (window.confirm('Bạn có chắc rằng muốn xóa phim này?')){
+      localStorage.setItem('deleted_movie', id.toString());
       dispatch(deleteMovieRequest(id));
-      window.location.reload()
+      // window.location.reload()
     }
   }
 
@@ -152,6 +153,7 @@ function HomeCard(props: HomeCardProps) {
       >
         <EditMovieModal
           currentMovie={props.item}
+          setOpenedModal={setOpenEditMovieModal}
         >
 
         </EditMovieModal>
