@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { sendRequest } from "../../utils/sendRequest";
-import { ICreateMoviePayload, IUpdateMoviePayload } from "../../types/movies";
+import { ICreateMoviePayload, IUpdateMoviePayload, IUpdateMovieResponse } from "../../types/movies";
 import { IAdjustUserPermissionPayload, IGetAllUserPayload, IListMovieRatingPerGenre, IListMovieViewPerGenre, IMovieInTopList, IMovieViewPerGenre, ITopListPayload, ITopListed, IUpdateUserActivePayload, IUserList } from "../../types/admin";
 import { IUserInfoResponse } from "../../types/auth";
 
@@ -18,7 +18,7 @@ export const createMovieRequest = createAsyncThunk<void, ICreateMoviePayload>(
     }
 ); 
 
-export const updateMovieRequest = createAsyncThunk<void, IUpdateMoviePayload>(
+export const updateMovieRequest = createAsyncThunk<IUpdateMovieResponse, IUpdateMoviePayload>(
     "api/update_movie/",
     async (update_movie_info, thunkApi) => {
         const res = await sendRequest(`${BASE_URL}/movies/thumbnail_url/${update_movie_info.id}`
@@ -78,6 +78,18 @@ export const getAllUserRequest = createAsyncThunk<IUserList, IGetAllUserPayload>
 
 export const getAllAdminRequest = createAsyncThunk<IUserList, IGetAllUserPayload>(
     "api/get_all_admin",
+    async (payload, thunkApi) => {
+        const res  = await sendRequest(`${BASE_URL}/users`, {
+            payload: payload,
+            thunkApi,
+            method: 'GET',
+        });
+        return res;
+    }
+); 
+
+export const getAllNormalUserRequest = createAsyncThunk<IUserList, IGetAllUserPayload>(
+    "api/get_all_normal_user",
     async (payload, thunkApi) => {
         const res  = await sendRequest(`${BASE_URL}/users`, {
             payload: payload,

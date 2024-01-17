@@ -7,22 +7,22 @@ import { updateMovieRequest } from "../admin/adminApi";
 
 interface EditMovieModalProps {
     currentMovie: IMovie
+    setOpenedModal: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 function EditMovieModal(props: EditMovieModalProps) {
     const dispatch = useAppDispatch()
 
-    const [title, setTitle] = useState<string>(props.currentMovie.title)
-    const [description, setDescription] = useState<string>(props.currentMovie.description)
-    const [date_of_release, setDate_of_release] = useState<string>(props.currentMovie.date_of_release)
-    const [url, setUrl] = useState<string>(props.currentMovie.url)
-    const [genre, setGenre] = useState<string>(props.currentMovie.genre)
-    const [source, setSource] = useState<string>(props.currentMovie.source)
-    const [subgenre, setSubgenre] = useState<string>(props.currentMovie.subgenre)
-    const [thumbnail_url, setThumbnail_url] = useState<string>(props.currentMovie.thumbnail_url)
+    const [title, setTitle] = useState<string>(props.currentMovie.title || '')
+    const [description, setDescription] = useState<string>(props.currentMovie.description || '')
+    const [date_of_release, setDate_of_release] = useState<string>(props.currentMovie.date_of_release || '')
+    const [url, setUrl] = useState<string>(props.currentMovie.url || '')
+    const [genre, setGenre] = useState<string>(props.currentMovie.genre || '')
+    const [source, setSource] = useState<string>(props.currentMovie.source || '')
+    const [subgenre, setSubgenre] = useState<string>(props.currentMovie.subgenre || '')
+    const [thumbnail_url, setThumbnail_url] = useState<string>(props.currentMovie.thumbnail_url || '')
 
     const handleUpdateMovie = () => {
-
         const payload: IUpdateMoviePayload = {
             id: props.currentMovie.id,
             title: title.trim(),
@@ -37,6 +37,9 @@ function EditMovieModal(props: EditMovieModalProps) {
         }
         dispatch(updateMovieRequest(payload))
         alert('Cập nhật thành công')
+        props.setOpenedModal(false)
+
+        // window.location.reload();
     }
 
     const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,6 +95,7 @@ function EditMovieModal(props: EditMovieModalProps) {
                         id="url"
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
+                        placeholder="https://www.youtube.com/embed/<video-id>"
                     />
                 </div>
                 <div className="mb-3">
@@ -104,6 +108,7 @@ function EditMovieModal(props: EditMovieModalProps) {
                         id="thumbnail_url"
                         value={thumbnail_url}
                         onChange={(e) => setThumbnail_url(e.target.value)}
+                        placeholder="https://img.youtube.com/vi/<video-id>/hqdefault.jpg"
                     />
                 </div>
                 <div className="mb-3">
@@ -116,9 +121,9 @@ function EditMovieModal(props: EditMovieModalProps) {
                         value={genre}
                         onChange={(e) => setGenre(e.target.value)}
                     >
-                        <option value="The thao">Thể thao</option>
-                        <option value="Am nhac">Âm nhạc</option>
-                        <option value="Du lich">Du lịch</option>
+                        <option value="Thể thao">Thể thao</option>
+                        <option value="Âm nhạc">Âm nhạc</option>
+                        <option value="Du lịch">Du lịch</option>
                     </select>
                 </div>
                 <div className="mb-3">

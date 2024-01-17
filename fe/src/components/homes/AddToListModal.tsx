@@ -28,29 +28,50 @@ function AddToListModal(props: AddToListModalProps) {
         getPersonalMovieList()
     }, [])
 
-    const handleAddMovie = (currentList:IMovieList) => {
-        let chosenList = JSON.parse(localStorage.getItem('chosenList') || '[]')
-        if (currentList.movies && (currentList.movies.find((item) => (item.id === props.currentMovie.id)) || chosenList.map((item: number) => (item === props.currentMovie.id)))) {
-            alert('Phim đã có trong danh sách')
-        } else {
-            let movie_ids : number[] = []
-            movie_ids.push(props.currentMovie.id)
-            currentList.movies && currentList.movies.map((item) => (movie_ids.push(item.id)))
-            // localStorage.setItem('')
-    
-            const payload : IUpdateMovieList = {
-                name : currentList.name,
-                description : currentList.description,
-                is_deleted : false,
-                id : currentList.id,
-                movies: movie_ids,
-            }
-            dispatch(updateMovieList(payload))
-            
-            chosenList.push(props.currentMovie.id)
-            localStorage.setItem('chosenList', JSON.stringify(chosenList))
-            alert('Thêm thành công')
+    const handleAddMovie = (currentList: IMovieList) => {
+        console.log('check chosen list')
+        // let chosenList = JSON.parse(localStorage.getItem('chosenList') || '[]')
+        // console.log('chosen list', chosenList)
+        // console.log('curent list', currentList.movies)
+        // console.log('current movie', props.currentMovie.id)
+        // if (currentList.movies && (currentList.movies.find((item) => (item.id === props.currentMovie.id)) || chosenList.map((item: number) => (item === props.currentMovie.id)))) {
+        //     alert('Phim đã có trong danh sách')
+        // } 
+        if (currentList.movies) {
+            if (currentList.movies.find((item) => item.id === props.currentMovie.id)) {
+                console.log('if 1')
+                alert('Phim đã có trong danh sách');
+                return;
+            } 
+            // else {
+            //     if (chosenList.some((item: number) => item === props.currentMovie.id)) {
+            //         console.log('if 1')
+            //         alert('Phim đã có trong danh sách');
+            //         return;
+            //     }
+            // }
         }
+        // else {
+        let movie_ids: number[] = []
+        movie_ids.push(props.currentMovie.id)
+        currentList.movies && currentList.movies.map((item) => (movie_ids.push(item.id)))
+        // localStorage.setItem('')
+
+        const payload: IUpdateMovieList = {
+            name: currentList.name,
+            description: currentList.description,
+            is_deleted: false,
+            id: currentList.id,
+            movies: movie_ids,
+        }
+        dispatch(updateMovieList(payload))
+
+        // chosenList.push(props.currentMovie.id)
+        // localStorage.setItem('chosenList', JSON.stringify(chosenList))
+
+        alert('Thêm thành công')
+        // window.location.reload();
+        // }
     }
 
     return (

@@ -1,6 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { IListMovieList, IMovieList } from '../../types/movieList';
 import { createMovieList, delMovieList, getDetailMovieList, getMovieList, getMovieListPublic, updateMovieList } from './movieListApi';
+import { updateMovieRequest } from '../admin/adminApi';
+import { ITrendingMoviesResponse } from '../../types/movies';
 
 // Try to load user info from local storage
 
@@ -56,7 +58,7 @@ const initialState: MovieListState = {
                         thumbnail_url: '',
                         url: '',
                         genre: '',
-                        subgenre:'' ,
+                        subgenre: '',
                         source: '',
                         views: 0,
                         date_of_release: '',
@@ -101,13 +103,43 @@ const movieListSlice = createSlice({
                 const tempList = {
                     name: action.payload.name,
                     description: action.payload.description,
-                    create_at: '',
-                    owner_id: -1,
-                    id:  action.payload.id,
+                    create_at: action.payload.create_at,
+                    owner_id: action.payload.owner_id,
+                    id: action.payload.id,
                     movies: [],
                 } as IMovieList
                 state.personal_list.list.push(tempList)
             })
+            .addCase(updateMovieList.fulfilled, (state, action) => {
+                const { id, name, description } = action.payload;
+
+                const updatedList = state.personal_list.list.find(item => item.id === id);
+
+                if (updatedList) {
+                    // If the list with the same ID is found, update specific properties from the payload
+                    updatedList.name = name;
+                    updatedList.description = description;
+                }
+            })
+            .addCase(updateMovieRequest.fulfilled, (state, action) => {
+                const { id, title, description, date_of_release, url, genre, subgenre, source, thumbnail_url, is_deleted } = action.payload;
+            
+                state.public_list.list.map(list => {
+                    list.movies.map(movie => {
+                        if (movie.id === id) {
+                            movie.title = title;
+                            movie.description = description;
+                            movie.date_of_release = date_of_release;
+                            movie.url = url;
+                            movie.genre = genre;
+                            movie.subgenre = subgenre;
+                            movie.source = source;
+                            movie.thumbnail_url = thumbnail_url;
+                            movie.is_deleted = is_deleted;
+                        }
+                    })
+                })
+            });
     }
 });
 

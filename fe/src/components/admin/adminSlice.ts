@@ -1,11 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { IListMovieRatingPerGenre, IListMovieViewPerGenre, IMovieInTopList, IMovieRatingPerGenre, IMovieViewPerGenre, ITopListed, IUserList } from '../../types/admin';
 import { IUserInfoResponse } from '../../types/auth';
-import { adjustUserPermissionRequest, getAllAdminRequest, getAllUserRequest, moviesAvgRatingByGenreRequest, moviesViewByGenreRequest, moviesViewBySubGenreRequest, topListRequest, updateUserActive } from './adminApi';
+import { adjustUserPermissionRequest, getAllAdminRequest, getAllNormalUserRequest, getAllUserRequest, moviesAvgRatingByGenreRequest, moviesViewByGenreRequest, moviesViewBySubGenreRequest, topListRequest, updateUserActive } from './adminApi';
 
 interface AdminState {
     userList: IUserList;
     adminList: IUserList;
+    normalUserList: IUserList;
     currentUser: IUserInfoResponse;
     listViewsByGenre: any;
     // listRatingsByGenre: IListMovieRatingPerGenre;
@@ -36,6 +37,10 @@ const initialState: AdminState = {
         list: [] as IMovieViewPerGenre[],
     },
     topListed : [],
+    normalUserList: {
+        list: [] as IUserInfoResponse[],
+        max_page: 0,
+    },
 };
 
 const adminSlice = createSlice({
@@ -83,6 +88,9 @@ const adminSlice = createSlice({
             .addCase(updateUserActive.fulfilled, (state, action) => {
                 state.userList.list = state.userList.list.filter((user) => user.id !== action.payload.id);
                 state.userList.list.push(action.payload);
+            })
+            .addCase(getAllNormalUserRequest.fulfilled, (state, action) => {
+                state.normalUserList = action.payload;
             })
     }
 });

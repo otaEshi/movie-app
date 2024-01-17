@@ -50,7 +50,7 @@ function MovieListSlide(props: IMovieListSlideProps) {
     const checkRename = () => {
         if (personalList.list.find(item => item.name === name.trim())) {
             if (name === currentListName) {
-            setCheckRenameValid(true)
+                setCheckRenameValid(true)
             } else {
                 setCheckRenameValid(false)
             }
@@ -80,9 +80,14 @@ function MovieListSlide(props: IMovieListSlideProps) {
     };
 
     const handleDeleteList = (listId: number) => {
-        if (window.confirm(`Bạn có muốn xóa danh sách ${props.movieList.name}`)) {
-            localStorage.setItem('deleted_list', listId.toString());
-            dispatch(delMovieList(listId));
+        if (personalList && personalList.list.find(item => item.id === props.movieList.id)) {
+            if (window.confirm(`Bạn có muốn xóa danh sách ${props.movieList.name}`)) {
+                localStorage.setItem('deleted_list', listId.toString());
+                dispatch(delMovieList(listId));
+                // window.location.reload();
+            }
+        } else {
+            alert('Bạn không có quyền xóa danh sách này')
         }
 
     }
@@ -104,7 +109,7 @@ function MovieListSlide(props: IMovieListSlideProps) {
         if (name.trim() === '') {
             alert('Tên danh sách không được để trống')
             return;
-        } 
+        }
 
         let movie_ids: number[] = []
         // movie_ids.push(props.movieList.id)
@@ -118,7 +123,16 @@ function MovieListSlide(props: IMovieListSlideProps) {
         }
         dispatch(updateMovieList(payload))
         alert('Cập nhật thành công')
-        window.location.reload()
+        setOpenEditListModal(false)
+        // window.location.reload()
+    }
+
+    const handleOpenUpdatePanel = () => {
+        if (personalList && personalList.list.find(item => item.id === props.movieList.id)) {
+            setOpenEditListModal(true)
+        } else {
+            alert('Bạn không có quyền cập nhật danh sách này')
+        }
     }
 
     return (
@@ -129,7 +143,7 @@ function MovieListSlide(props: IMovieListSlideProps) {
                         <h1>{props.movieList.name}</h1>
                         {((currentUser.is_admin || currentUser.is_content_admin) || (currentUser.id === props.movieList.owner_id)) && (
                             <div>
-                                <div className='btn btn-primary m-1' onClick={() => setOpenEditListModal(true)}>
+                                <div className='btn btn-primary m-1' onClick={handleOpenUpdatePanel}>
                                     Cập nhật danh sách
                                 </div>
                                 <button className="btn btn-danger m-1" onClick={() => handleDeleteList(props.movieList.id)}>
