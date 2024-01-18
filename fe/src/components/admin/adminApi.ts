@@ -84,7 +84,7 @@ export const getDeletedRequest = createAsyncThunk<ISearchResponse, ISearchString
                 search_str: searchPayload.search_string,
                 page: searchPayload.page,
                 page_size: searchPayload.page_size,
-                is_deleted: false,
+                is_deleted: searchPayload.is_deleted,
             },
             thunkApi,
             method: 'GET',

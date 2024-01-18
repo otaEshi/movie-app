@@ -15,13 +15,14 @@ function RestoreMovie() {
     const deletedMovieList = useAppSelector(store => store.admin.deletedMovieList)
 
     const handleSearch = async (page: number) => {
-        if (search.trim() === '') {
-            return;
-        }
+        console.log('searching')
+        // if (search.trim() === '') {
+        //     return;
+        // }
         const payload: ISearchStringPayload = {
             search_string: search.trim(),
             page: page,
-            page_size: 12,
+            page_size: 6,
             is_deleted: true
         }
         await dispatch(getDeletedRequest(payload))
@@ -52,9 +53,10 @@ function RestoreMovie() {
 
     const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
-            if (search.trim() !== '') {
+            // if (search.trim() !== '') {
                 handleSearch(0);
-            }
+                setCurrentPage(1);
+            // }
         }
     };
     return (

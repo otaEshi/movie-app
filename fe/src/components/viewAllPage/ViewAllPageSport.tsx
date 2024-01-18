@@ -22,7 +22,7 @@ function ViewAllPageSport() {
     const searchSport = async () => {
         const payload: ISearchPayload = {
             search_string: 'Thể thao',
-            page_size: 99999,
+            page_size: 12,
             is_deleted: false,
         }
         await dispatch(searchRequest(payload))
@@ -80,6 +80,7 @@ function ViewAllPageSport() {
             source: source,
             max_rating: max_rating,
             min_rating: min_rating,
+            is_deleted: false,
         }
         const res = dispatch(advancedSearchRequest(payload));
     }
@@ -128,7 +129,7 @@ function ViewAllPageSport() {
                 <MoviesSearch></MoviesSearch>
             </div>
             {searchList &&
-                    <div className="pagination-container">
+                    <div className="pagination-container pt-4 mt-3">
                       <span
                         className={`pagination-item ${currentPage === 1 ? 'disabled' : ''}`}
                         onClick={() => changePage(1)}

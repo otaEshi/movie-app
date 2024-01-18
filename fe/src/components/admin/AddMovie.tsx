@@ -41,7 +41,7 @@ function AddMovie() {
             return
         }
         if (source.trim() === ''){
-            alert('Vui lòng nhập đường dẫn ảnh mô tả')
+            alert('Vui lòng nhập nguồn')
             return
         }
         const payload : ICreateMoviePayload = {
@@ -58,7 +58,7 @@ function AddMovie() {
 
         if (res.type === "api/create_movie/fulfilled"){
             alert('Thêm phim thành công')
-        }
+        } 
     }
 
     return (

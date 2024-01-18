@@ -53,14 +53,20 @@ useEffect(() => {
   return (
     <>
       <div className='m-4'>
-        <Homes />
+        <div className='pb-5'><Homes /></div>
+
         {/* type: 0 - all, 1-sport , 2-musics, 3-travels */}
-        <ListFilm listType={1} />
-        <ListFilm listType={2} />
-        <ListFilm listType={3} />
-        {publicList.list && publicList.list.map((item) => (
-           <MovieListSlide key={item.id} movieList={item}></MovieListSlide>
-        ))}
+
+        <div className='mt-5 pt-4'>
+          <ListFilm listType={1} />
+          <ListFilm listType={2} />
+          <ListFilm listType={3} />
+        </div>
+        <div>
+          {publicList.list && publicList.list.map((item) => (
+             <MovieListSlide key={item.id} movieList={item}></MovieListSlide>
+          ))}
+        </div>
         {/* {publicList.list.length>0 && <MovieListSlide movieList={publicList.list[0]}></MovieListSlide>} */}
       </div>
 

@@ -75,7 +75,7 @@ function AdminContainer() {
     <>
       <div className="h-100" style={{ display: 'flex' }}>
         {/* Left Navigation Bar */}
-        <div style={{ width: '200px', height: '914px', backgroundColor: '#333', color: '#fff', padding: '10px' }}>
+        <div style={{ width: '150px', height: '921px', backgroundColor: '#333', color: '#fff', padding: '10px' }}>
           <div className="custom-nav" style={{ cursor: 'pointer' }} onClick={() => handleTabClick('thêm-phim')}>
             Thêm Phim
           </div>

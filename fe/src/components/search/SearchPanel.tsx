@@ -42,6 +42,7 @@ function SearchPanel(props: SearchPanelProps) {
             source: props.source,
             max_rating: props.max_rating,
             min_rating: props.min_rating,
+            is_deleted: false,
         }
         const res = dispatch(advancedSearchRequest(payload));
     }

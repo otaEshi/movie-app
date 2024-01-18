@@ -634,12 +634,16 @@ async def create_movie(db: Session, movie: MovieCreate):
     Returns:
         models.Movie: The created movie object.
     """
+    print('continue: ')
+    print(movie.subgenre)
     db_movie = db.query(Movie).filter(Movie.title == movie.title, Movie.is_deleted == False).first()
     if db_movie is not None:
         raise HTTPException(status_code=400, detail="ERR_MOVIE_NAME_ALREADY_EXISTS")
     db_movie = Movie(**movie.model_dump())
-    db_movie.subgenre = ",".join(movie.subgenre)
+    db_movie.subgenre = movie.subgenre
     db_movie.views = 0
+    print('last?')
+    print(db_movie.subgenre)
     db.add(db_movie)
     db.commit()
     db.refresh(db_movie)

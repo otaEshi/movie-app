@@ -12,6 +12,7 @@ import { Modal } from 'react-bootstrap';
 import EditCommentModal from '../comment/EditCommentModal';
 import ReactStars from '../../lib/reactStar/react-star';
 import { firstRateMovie, updateRating } from '../homes/homeApi';
+import AddToListModal from '../homes/AddToListModal';
 // import Upcomming from '../listFilm/ListFilm';
 
 // interface IWatchProps {
@@ -26,6 +27,7 @@ function Watch() {
   // const [item, setItem] = useState<Item | null>(null);
   const dispatch = useAppDispatch();
   const [openEditCommentModal, setOpenEditCommentModal] = useState<boolean>(false)
+  const [openAddToListModal, setOpenAddToListModal] = useState<boolean>(false)
   const [currentComment, setCurrentComment] = useState<IComment>()
   const [newComment, setNewComment] = useState<string>('')
   const [commentPage, setCommentPage] = useState<number>(1)
@@ -193,8 +195,10 @@ function Watch() {
                     ></ReactStars>
                   </div>
                   <label>{currentMovie.average_rating / 2}/5 - {currentMovie.num_ratings} lượt đánh giá</label>
-
                 </div>
+                  {currentUser.id && <div className='d-flex mb-2'>
+                    <div className='btn btn-primary me-2' onClick={() => setOpenAddToListModal(true)}>Thêm vào danh sách</div>
+                  </div>}
                 <div className='comment-container'>
                   <div style={{ textAlign: 'center', fontWeight: '600', fontSize: '24px' }}>BÌNH LUẬN CỦA NGƯỜI DÙNG</div>
                   {currentUser.id && <div className='d-flex justify-content-center mt-2 pb-3'>
@@ -283,6 +287,21 @@ function Watch() {
         >
         </EditCommentModal>
 
+      </Modal>
+
+      <Modal
+        show={openAddToListModal}
+        onHide={() => {
+          localStorage.removeItem('chosenList')
+          setOpenAddToListModal(false)
+        }
+        }
+      >
+        <AddToListModal
+          currentMovie={currentMovie}
+        >
+
+        </AddToListModal>
       </Modal>
 
     </>

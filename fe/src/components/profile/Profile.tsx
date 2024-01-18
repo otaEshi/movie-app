@@ -122,10 +122,10 @@ function Profile(props: IProfileProps) {
                                 <label htmlFor="username" className="form-label">Tên tài khoản</label>
                                 <input type="text" className="form-control" id="username" value={props.currentUser.username} disabled />
                             </div>
-                            <div className="mb-3">
+                            {/* <div className="mb-3">
                                 <label htmlFor="email" className="form-label">Email</label>
                                 <input type="email" className="form-control" id="email" value={props.currentUser.email} disabled />
-                            </div>
+                            </div> */}
                             <div className="mb-3">
                                 <label htmlFor="fullname" className="form-label">Họ tên</label>
                                 <input

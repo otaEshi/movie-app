@@ -15,8 +15,8 @@ function SignUpPage(props: ISignUpFormatProps) {
   const [fullname, setfullname] = useState<string>('');
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
-  const [emailError, setEmailError] = useState<string>('');
+  // const [email, setEmail] = useState<string>('');
+  // const [emailError, setEmailError] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [fullnameError, setfullnameError] = useState<string>('');
   const [usernameError, setUsernameError] = useState<string>('');
@@ -52,10 +52,10 @@ function SignUpPage(props: ISignUpFormatProps) {
       setUsername(value);
       setUsernameError('');
     }
-    if (id === 'email') {
-      setEmail(value);
-      setEmailError('');
-    }
+    // if (id === 'email') {
+    //   setEmail(value);
+    //   setEmailError('');
+    // }
     if (id === 'password') {
       setPassword(value);
       setPasswordError('');
@@ -73,10 +73,10 @@ function SignUpPage(props: ISignUpFormatProps) {
       return;
     }
 
-    if (email !== '' && !emailRegex.test(email)) {
-      setEmailError('Email không hợp lệ');
-      return;
-    }
+    // if (email !== '' && !emailRegex.test(email)) {
+    //   setEmailError('Email không hợp lệ');
+    //   return;
+    // }
 
     if (username === '') {
       setUsernameError('Không được để trống');
@@ -104,7 +104,7 @@ function SignUpPage(props: ISignUpFormatProps) {
     // Dispatch sign up request
     const payload: ISignUpPayload = {
       name: fullname,
-      email: email,
+      // email: email,
       username: username,
       password: password,
       date_of_birth: dateOfBirth,
@@ -153,7 +153,7 @@ function SignUpPage(props: ISignUpFormatProps) {
               />
             </div>
             <div className='custom-error-text-wrapper'>{fullnameError && <div className="text-danger small custom-error-text">{fullnameError}</div>}</div>
-            <div>
+            {/* <div>
               <input
                 type="mail"
                 id="email"
@@ -164,7 +164,7 @@ function SignUpPage(props: ISignUpFormatProps) {
                 autoComplete='off'
               />
             </div>
-            <div className='custom-error-text-wrapper'>{emailError && <div className="text-danger small custom-error-text">{emailError}</div>}</div>
+            <div className='custom-error-text-wrapper'>{emailError && <div className="text-danger small custom-error-text">{emailError}</div>}</div> */}
             <div className="mb-3">
               <label htmlFor="date" className="col-form-label">Ngày sinh</label>
               <input

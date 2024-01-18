@@ -35,6 +35,7 @@ function EditMovieModal(props: EditMovieModalProps) {
             is_deleted: false,
             thumbnail_url: thumbnail_url,
         }
+        console.log('tmbnail: ', thumbnail_url)
         dispatch(updateMovieRequest(payload))
         alert('Cập nhật thành công')
         props.setOpenedModal(false)

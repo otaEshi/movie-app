@@ -504,7 +504,7 @@ class MovieCreateThumbnailUrl(BaseModel):
             date_of_release (date): The date of release of the movie.
             url (str): The url of the movie.
             genre (str): The genre of the movie.
-            subgenre (list[str]): The subgenre of the movie.
+            subgenre (str): The subgenre of the movie.
             source (str): The source of the movie.
             thumbnail_url (str): The thumbnail url of the movie.
     """
@@ -527,6 +527,8 @@ async def create_movie_thumbnail_url(
     """
     if not current_user.is_content_admin:
         raise HTTPException(status_code=401, detail="Unauthorized")
+    print('debugging')
+    print(payload.subgenre)
     movie = MovieCreate(title=payload.title, 
                         description=payload.description, 
                         date_of_release=payload.date_of_release, 

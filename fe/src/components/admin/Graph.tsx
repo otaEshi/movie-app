@@ -47,7 +47,7 @@ function Graph() {
         labels: listRatingsByGenre.map((item: { genre: string }) => item.genre),
         datasets: [
             {
-                label: 'Lượt xem',
+                label: 'Điểm đánh giá',
                 data: listRatingsByGenre.map((item: { rating: number }) => item.rating / 2),
                 backgroundColor: [
                     'rgba(255, 99, 132, 0.2)',

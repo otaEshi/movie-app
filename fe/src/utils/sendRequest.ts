@@ -39,13 +39,15 @@ export const sendRequest = async (url: string, options?: Partial<RequestOptions>
             if (error.response?.data.detail === "ERR_USERNAME_ALREADY_EXISTS"){
                 alert('Tài khoản đã tồn tại')
                 localStorage.setItem('error_sign_up', 'true')
-            } else if(error.response?.status === 422){
+            } else if(error.response?.data.detail === "ERR_MOVIE_NAME_ALREADY_EXISTS"){
                 // if () {
 
                     // alert('Ngày sinh không hợp lệ')
                     // localStorage.setItem('error_sign_up', 'true')
                 // } 
-            }
+                alert('Tên phim đã tồn tại')
+            } 
+
             if (!options?.defineAlert) {
                 if (axios.isAxiosError(error)) {
                     const statusCode = error.response?.status;

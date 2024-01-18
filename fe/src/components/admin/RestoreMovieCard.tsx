@@ -47,7 +47,7 @@ function RestoreMovieCard(props: RestoreMovieCardProps) {
             subgenre: props.item.subgenre,
             source: props.item.source,
             thumbnail_url: props.item.thumbnail_url,
-            is_deleted: true,
+            is_deleted: false,
         }
         dispatch(restoreMovieRequest(payload))
         alert('Khôi phục thành công')

@@ -104,13 +104,26 @@ const ListFilm: React.FC<ListFilmProps> = ({ listType }) => {
     }
   },[])
 
+  const [toURL, setToURL] = useState<string>('')
+  useEffect(() => {
+    if (listType === 1){
+      setToURL('Sport')
+    }
+    if (listType === 2){
+      setToURL('Music')
+    }
+    if (listType === 3){
+      setToURL('Travel')
+    }
+  },[])
+
   return (
     <>
       <section className='upcome pt-5'>
         <div className='container'>
           <div className='heading flexSB'>
             <h1>{translate }</h1>
-            <Link to={`/tags/${ListFilmTypeDic[listType]}`}>Xem tất cả</Link>
+            <Link to={`/tags/${toURL}`}>Xem tất cả</Link>
           </div>
           <div className='content'>
             <Slider {...settings}>

@@ -59,6 +59,7 @@ function SearchResultContainer() {
             source: source,
             max_rating: max_rating,
             min_rating: min_rating,
+            is_deleted: false,
         }
         const res = dispatch(advancedSearchRequest(payload));
     }
@@ -115,7 +116,7 @@ function SearchResultContainer() {
                 <MoviesSearch></MoviesSearch>
             </div>
             {searchList &&
-                    <div className="pagination-container">
+                    <div className="pagination-container mt-3 pt-3 mb-1">
                       <span
                         className={`pagination-item ${currentPage === 1 ? 'disabled' : ''}`}
                         onClick={() => changePage(1)}
